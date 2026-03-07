@@ -1,0 +1,22 @@
+from pydantic import BaseModel, EmailStr, Field
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+    user_metadata: dict = Field(default_factory=dict)
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    refresh_token: str | None = None
+    expires_in: int | None = None
+
+class User(BaseModel):
+    id: str
+    email: str
+    role: str | None = None
+    created_at: str | None = None
