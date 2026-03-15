@@ -20,6 +20,7 @@ sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from app.core.config import settings
 from app.models.user import Base # Add more models here when created
+from app.models.kyc import KYCRecord
 
 target_metadata = Base.metadata
 
