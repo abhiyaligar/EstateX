@@ -13,7 +13,10 @@ class AuthService:
                 "email": user_data.email,
                 "password": user_data.password,
                 "options": {
-                    "data": user_data.user_metadata
+                    "data": {
+                        **user_data.user_metadata,
+                        "role": user_data.role # Embed the requested role into Supabase metadata
+                    }
                 }
             })
             
@@ -33,7 +36,7 @@ class AuthService:
                 phone=phone,
                 first_name=first_name,
                 last_name=last_name,
-                role='investor'
+                role=user_data.role # Apply dynamic role to SQL DB
             )
             
             db.add(db_user)

@@ -1,8 +1,10 @@
 from pydantic import BaseModel, EmailStr, Field
+from typing import Literal
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
+    role: Literal['investor', 'builder']
     user_metadata: dict = Field(default_factory=dict)
 
 class UserLogin(BaseModel):
