@@ -3,7 +3,10 @@ from sqlalchemy import func
 from fastapi import HTTPException, status
 from app.models.user import User as DBUser
 from app.models.kyc import KYCRecord
-from app.schemas.admin import DashboardStatsResponse, KYCReviewRequest
+from app.schemas.admin import (
+    DashboardStatsResponse, KYCReviewRequest, 
+    AdminMilestoneReviewRequest, AdminProjectStatusUpdateRequest
+)
 
 class AdminService:
     @staticmethod
@@ -69,3 +72,32 @@ class AdminService:
             "message": f"Successfully marked KYC application as {review_data.status}",
             "kyc_status": kyc_record.status
         }
+    
+    @staticmethod
+    def verify_project_milestone(project_id: str, milestone_id: str, review_data: AdminMilestoneReviewRequest, db: Session):
+        from app.models.project import Milestone
+        milestone = db.query(Milestone).filter(
+            Milestone.id == milestone_id, 
+            Milestone.project_id == project_id
+        ).first()
+        
+        if not milestone:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Milestone not found for this project")
+            
+        milestone.status = review_data.status
+        db.commit()
+        db.refresh(milestone)
+        return {"success": True, "milestone_id": milestone.id, "status": milestone.status}
+
+    @staticmethod
+    def update_project_status(project_id: str, status_data: AdminProjectStatusUpdateRequest, db: Session):
+        from app.models.project import Project
+        project = db.query(Project).filter(Project.id == project_id).first()
+        
+        if not project:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+            
+        project.status = status_data.status
+        db.commit()
+        db.refresh(project)
+        return {"success": True, "project_id": project.id, "status": project.status}

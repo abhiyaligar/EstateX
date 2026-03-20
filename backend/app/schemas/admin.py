@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Literal
 from datetime import datetime
 from uuid import UUID
@@ -34,3 +34,9 @@ class KYCReviewResponse(BaseModel):
     success: bool
     message: str
     kyc_status: str
+
+class AdminMilestoneReviewRequest(BaseModel):
+    status: str = Field(..., description="Must be 'completed' or 'in_progress'")
+
+class AdminProjectStatusUpdateRequest(BaseModel):
+    status: str = Field(..., description="Must be 'stalled', 'cancelled', or 'active'")
