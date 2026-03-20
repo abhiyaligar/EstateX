@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy.orm import declarative_base, relationship
 
-from sqlalchemy import Column, String, Boolean, DateTime, CheckConstraint
+from sqlalchemy import Column, String, Boolean, DateTime, CheckConstraint, DECIMAL
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime, timezone
 
@@ -35,6 +35,9 @@ class User(Base):
     is_active = Column(Boolean(), default=True)
     created_at = Column(DateTime(timezone=True), default=utcnow, index=True)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    
+    # Financials
+    wallet_balance = Column(DECIMAL(18, 2), default=0.00, nullable=False)
     
     # Relationships
     kyc_record = relationship("KYCRecord", back_populates="user", uselist=False, cascade="all, delete-orphan")

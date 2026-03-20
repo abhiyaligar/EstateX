@@ -8,9 +8,11 @@ from app.schemas.admin import (
     AdminMilestoneReviewRequest, AdminProjectStatusUpdateRequest
 )
 from app.schemas.builder import BuilderVerificationUpdate, BuilderResponse
+from app.schemas.wallet import AdminWalletAdjustmentRequest
 from app.middleware.auth import get_admin_user
 from app.services.admin_service import AdminService
 from app.services.builder_service import BuilderService
+from app.services.wallet_service import WalletService
 from app.core.db import get_db
 
 router = APIRouter(prefix="/admin", tags=["Admin Portal"])
@@ -72,3 +74,15 @@ def update_project_status(
     Emergency control: Forcefully halts or restarts an active project to protect investors.
     """
     return AdminService.update_project_status(str(project_id), status_data, db)
+
+@router.post("/users/{target_user_id}/wallet/adjust")
+def admin_adjust_user_wallet(
+    target_user_id: str,
+    adjust_data: AdminWalletAdjustmentRequest,
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    God Mode: Directly increase or decrease an arbitrary User's wallet balance (e.g., resolving disputes or manual bank wires).
+    """
+    return WalletService.admin_adjust_balance(target_user_id, adjust_data, db)

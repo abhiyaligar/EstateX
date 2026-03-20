@@ -25,6 +25,7 @@ from app.models.user import User
 from app.models.kyc import KYCRecord
 from app.models.builder import Builder
 from app.models.project import Project, Milestone
+from app.models.wallet import WalletTransaction
 
 target_metadata = Base.metadata
 
