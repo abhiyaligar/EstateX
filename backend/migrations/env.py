@@ -24,6 +24,7 @@ from app.models.user import Base
 from app.models.user import User
 from app.models.kyc import KYCRecord
 from app.models.builder import Builder
+from app.models.project import Project, Milestone
 
 target_metadata = Base.metadata
 

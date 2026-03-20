@@ -45,4 +45,6 @@ class Builder(Base):
     
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
 
+    # Relationships
     user = relationship("User", back_populates="builder_profile")
+    projects = relationship("Project", back_populates="builder", cascade="all, delete-orphan")
