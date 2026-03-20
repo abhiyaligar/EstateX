@@ -19,8 +19,11 @@ from os.path import dirname, abspath
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from app.core.config import settings
-from app.models.user import Base # Add more models here when created
+# Import all your models here for Alembic to auto-detect them
+from app.models.user import Base
+from app.models.user import User
 from app.models.kyc import KYCRecord
+from app.models.builder import Builder
 
 target_metadata = Base.metadata
 

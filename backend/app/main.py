@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import auth, kyc, admin
+from app.api.routes import auth, kyc, admin, builders
 from app.core.config import settings
 import logging
 
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(kyc.router, prefix=settings.API_V1_STR)
 app.include_router(admin.router, prefix=settings.API_V1_STR)
+app.include_router(builders.router, prefix=settings.API_V1_STR)
 
 @app.get("/health")
 def health_check():

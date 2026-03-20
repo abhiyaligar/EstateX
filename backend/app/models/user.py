@@ -38,3 +38,4 @@ class User(Base):
     
     # Relationships
     kyc_record = relationship("KYCRecord", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    builder_profile = relationship("Builder", back_populates="user", uselist=False)

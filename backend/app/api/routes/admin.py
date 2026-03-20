@@ -4,8 +4,10 @@ from typing import List
 from uuid import UUID
 from app.schemas.auth import User
 from app.schemas.admin import DashboardStatsResponse, KYCReviewRequest, AdminKYCRecordBase, KYCReviewResponse
+from app.schemas.builder import BuilderVerificationUpdate, BuilderResponse
 from app.middleware.auth import get_admin_user
 from app.services.admin_service import AdminService
+from app.services.builder_service import BuilderService
 from app.core.db import get_db
 
 router = APIRouter(prefix="/admin", tags=["Admin Portal"])
@@ -45,3 +47,16 @@ def review_kyc_application(
     Updates both the KYC Record and the Parent User's core `kyc_status` attribute.
     """
     return AdminService.review_kyc_application(str(kyc_id), review_data, db)
+
+@router.post("/builders/{builder_id}/verify", response_model=BuilderResponse)
+def verify_builder_profile(
+    builder_id: UUID,
+    verification_data: BuilderVerificationUpdate,
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Approve or Reject a Builder's Compliance Profile.
+    Updates the builder's status and document verification timestamps.
+    """
+    return BuilderService.verify_builder(str(builder_id), verification_data, db)
