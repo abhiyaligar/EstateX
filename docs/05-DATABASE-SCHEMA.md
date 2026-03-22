@@ -44,100 +44,52 @@
 ├─────────────────────┤
 │ id (PK)             │
 │ email (UNIQUE)      │
-│ phone               │
-│ password_hash       │
-│ first_name          │
-│ last_name           │
+│ wallet_balance      │
 │ kyc_status          │
 │ role (enum)         │
-│ is_active           │
-│ created_at          │
-│ updated_at          │
 └────┬─────────────┬──┘
      │             │
-     │             │
 ┌────▼──────────┐  │  ┌─────────────────┐
-│  builders      │  │  │  investor_kyc   │
+│  builders      │  │  │  wallet_txs     │
 ├────────────────┤  │  ├─────────────────┤
 │ id (FK)        │  ├──│ user_id (FK)    │
-│ registration_no│  │  │ aadhaar_hash    │
-│ company_name   │  │  │ pan             │
-│ rera_approved  │  │  │ status          │
-│ headquarters   │  │  │ verified_date   │
-│ created_at     │  │  │ created_at      │
+│ company_name   │  │  │ amount          │
+│ rera_approved  │  │  │ tx_type         │
 └────┬───────────┘  │  └─────────────────┘
-     │              │
      │              │
 ┌────▼──────────────▼──┐
 │    projects           │
 ├──────────────────────┤
 │ id (PK)              │
 │ builder_id (FK)      │
-│ title                │
-│ location             │
-│ total_budget         │
-│ funding_target       │
-│ funding_raised       │
-│ status               │
-│ rera_id              │
-│ token_address        │
-│ created_at           │
-│ updated_at           │
+│ total_bricks         │
+│ face_value           │
+│ ipo_price            │
+│ market_value         │
+│ previous_close       │
+│ ipo_status           │
 └────┬──────────────┬──┘
      │              │
 ┌────▼──────────┐  │
-│  investments   │  │  ┌──────────────────┐
-├────────────────┤  │  │  milestones      │
+│ brick_holdings │  │  ┌──────────────────┐
+├────────────────┤  │  │    orders        │
 │ id (PK)        │  ├──│ id (PK)          │
 │ user_id (FK)   │  │  │ project_id (FK)  │
-│ project_id (FK)├──┘  │ description      │
-│ amount         │     │ target_date      │
-│ tokens         │     │ release_percent  │
-│ status         │     │ completed        │
-│ order_id       │     │ created_at       │
-│ created_at     │     └──────────────────┘
-└────┬───────────┘
-     │
-┌────▼──────────────────────┐
-│  payments                  │
-├────────────────────────────┤
-│ id (PK)                    │
-│ investment_id (FK)         │
-│ razorpay_payment_id        │
-│ razorpay_order_id          │
-│ amount                     │
-│ status                     │
-│ signature_verified         │
-│ created_at                 │
-└────────────────────────────┘
-
-┌──────────────────────────┐
-│  distributions           │
-├──────────────────────────┤
-│ id (PK)                  │
-│ project_id (FK)          │
-│ user_id (FK)             │
-│ amount                    │
-│ distribution_date        │
-│ tx_hash                   │
-│ status                    │
-│ created_at               │
-└──────────────────────────┘
-
-┌──────────────────────────────┐
-│  secondary_market_orders     │
-├──────────────────────────────┤
-│ id (PK)                      │
-│ seller_id (FK, user)         │
-│ buyer_id (FK, user)          │
-│ project_id (FK)              │
-│ token_amount                 │
-│ price_per_token              │
-│ order_type (BUY/SELL)        │
-│ status (OPEN/FILLED/CANCEL)  │
-│ tx_hash                      │
-│ created_at                   │
-└──────────────────────────────┘
+│ project_id (FK)├──┘  │ user_id (FK)     │
+│ quantity       │     │ order_type       │
+└─────────┬──────┘     │ price_per_brick  │
+          │            │ unfilled_qty     │
+          │            └─────────┬────────┘
+          │                      │
+          │            ┌─────────▼────────┐
+          │            │      trades      │
+          └────────────┤ id (PK)          │
+                       │ project_id (FK)  │
+                       │ buyer_id (FK)    │
+                       │ seller_id (FK)   │
+                       │ price            │
+                       │ quantity         │
+                       └──────────────────┘
 ```
 
 ---
@@ -264,7 +216,7 @@ CREATE INDEX idx_builders_rera_approved ON builders(rera_approved);
 
 ### 3. projects Table
 
-Real estate project information and funding details.
+Real estate project information and IPO funding details.
 
 ```sql
 CREATE TABLE projects (
@@ -274,168 +226,69 @@ CREATE TABLE projects (
     -- Project Info
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    type VARCHAR(100), -- residential, commercial, mixed-use
-    property_type VARCHAR(100), -- apartment, villa, office, retail
     
     -- Location
     location_address TEXT,
     city VARCHAR(100) NOT NULL,
     state VARCHAR(100),
     pincode VARCHAR(10),
-    latitude DECIMAL(10,8),
-    longitude DECIMAL(11,8),
     
-    -- Project Details
-    total_area DECIMAL(12,2), -- in sqft
-    total_units INTEGER,
-    total_budget DECIMAL(18,2), -- Total construction cost
-    
-    -- Funding
-    funding_target DECIMAL(18,2), -- Amount to raise via crowdfunding
+    -- Financials & Brick Exchange Logistics
+    total_budget DECIMAL(18,2),
+    total_bricks INTEGER NOT NULL DEFAULT 1000,
+    face_value DECIMAL(18,2) NOT NULL DEFAULT 100.00,
+    ipo_price DECIMAL(18,2) NOT NULL,
+    market_value DECIMAL(18,2),
+    previous_close_price DECIMAL(18,2),
     funding_raised DECIMAL(18,2) DEFAULT 0,
-    funding_percentage DECIMAL(5,2) DEFAULT 0,
-    min_investment DECIMAL(18,2) DEFAULT 10000, -- Min: Rs. 10,000
-    max_investment DECIMAL(18,2), -- Per investor
     
     -- Regulatory
     rera_id VARCHAR(100) UNIQUE,
-    rera_approval_date DATE,
-    approval_letter_url VARCHAR(500),
-    
-    -- Blockchain
-    token_address VARCHAR(66) UNIQUE, -- Smart contract address
-    tokens_minted DECIMAL(18,2),
-    
-    -- Timeline
-    launch_date DATE,
-    expected_completion_date DATE,
-    construction_start_date DATE,
     
     -- Status
-    status VARCHAR(50) DEFAULT 'draft', -- draft, pending, approved, active, completed, stalled, cancelled
-    published_at TIMESTAMP,
-    
-    -- Images & Documents
-    thumbnail_url VARCHAR(500),
-    images JSONB, -- Array of image URLs
-    brochure_url VARCHAR(500),
-    floor_plan_url VARCHAR(500),
-    
-    -- Compliance
-    environmental_clearance BOOLEAN DEFAULT false,
-    municipal_approval BOOLEAN DEFAULT false,
-    insurance_coverage BOOLEAN DEFAULT false,
-    
-    -- Analytics
-    investor_count INTEGER DEFAULT 0,
-    view_count INTEGER DEFAULT 0,
+    status VARCHAR(50) DEFAULT 'draft',
+    ipo_status VARCHAR(50) DEFAULT 'upcoming', -- upcoming, active, completed
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_projects_builder_id ON projects(builder_id);
-CREATE INDEX idx_projects_city ON projects(city);
-CREATE INDEX idx_projects_status ON projects(status);
-CREATE INDEX idx_projects_rera_id ON projects(rera_id);
-CREATE INDEX idx_projects_token_address ON projects(token_address);
-CREATE INDEX idx_projects_created_at ON projects(created_at DESC);
-CREATE INDEX idx_projects_funding_target ON projects(funding_target);
+CREATE INDEX idx_projects_ipo_status ON projects(ipo_status);
 ```
 
-### 4. investments Table
+### 4. wallet_transactions Table
 
-Tracks all investments made by investors in projects.
+Tracks all fiat deposits, withdrawals, and stock trades.
 
 ```sql
-CREATE TABLE investments (
+CREATE TABLE wallet_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    amount DECIMAL(18,2) NOT NULL,
+    transaction_type VARCHAR(50) NOT NULL, -- deposit, withdrawal, brick_purchase, brick_sale
+    status VARCHAR(50) DEFAULT 'completed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_wallet_txs_user_id ON wallet_transactions(user_id);
+```
+
+### 5. brick_holdings Table
+
+Portfolio mapping connecting Investors strictly to fractional pieces (Bricks) of real estate.
+
+```sql
+CREATE TABLE brick_holdings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id),
     project_id UUID NOT NULL REFERENCES projects(id),
-    
-    -- Investment Details
-    amount DECIMAL(18,2) NOT NULL, -- Investment amount in INR
-    tokens DECIMAL(18,2) NOT NULL, -- Tokens minted (amount / 1000)
-    
-    -- Status
-    status VARCHAR(50) DEFAULT 'pending', -- pending, confirmed, completed, cancelled
-    
-    -- Payment
-    payment_id UUID REFERENCES payments(id),
-    razorpay_order_id VARCHAR(100),
-    razorpay_payment_id VARCHAR(100),
-    
-    -- Blockchain
-    tx_hash VARCHAR(66), -- Smart contract transaction hash
-    wallet_address VARCHAR(66), -- Investor's wallet for tokens
-    
-    -- ROI & Returns
-    current_value DECIMAL(18,2),
-    total_distributions DECIMAL(18,2) DEFAULT 0,
-    roi_percentage DECIMAL(5,2) DEFAULT 0,
-    
-    -- Exit
-    exit_date TIMESTAMP,
-    exit_amount DECIMAL(18,2),
-    exit_method VARCHAR(50), -- secondary_market, project_completion
-    
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    quantity INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_investments_user_id ON investments(user_id);
-CREATE INDEX idx_investments_project_id ON investments(project_id);
-CREATE INDEX idx_investments_status ON investments(status);
-CREATE INDEX idx_investments_created_at ON investments(created_at DESC);
-CREATE INDEX idx_investments_wallet_address ON investments(wallet_address);
-CREATE UNIQUE INDEX idx_investments_unique_per_project ON investments(user_id, project_id);
-```
-
-### 5. payments Table
-
-Payment transaction records from Razorpay.
-
-```sql
-CREATE TABLE payments (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    investment_id UUID REFERENCES investments(id),
-    user_id UUID NOT NULL REFERENCES users(id),
-    
-    -- Razorpay Details
-    razorpay_payment_id VARCHAR(100) UNIQUE NOT NULL,
-    razorpay_order_id VARCHAR(100) NOT NULL,
-    razorpay_signature VARCHAR(256),
-    
-    -- Payment Info
-    amount DECIMAL(18,2) NOT NULL,
-    currency VARCHAR(3) DEFAULT 'INR',
-    method VARCHAR(50), -- card, upi, netbanking, wallet
-    
-    -- Verification
-    signature_verified BOOLEAN DEFAULT false,
-    signature_verified_at TIMESTAMP,
-    
-    -- Status
-    status VARCHAR(50) DEFAULT 'created', -- created, authorized, captured, failed, refunded
-    
-    -- Metadata
-    email VARCHAR(255),
-    phone VARCHAR(20),
-    notes JSONB,
-    
-    -- Refund
-    refund_id VARCHAR(100),
-    refund_amount DECIMAL(18,2),
-    refund_status VARCHAR(50),
-    
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_payments_user_id ON payments(user_id);
-CREATE INDEX idx_payments_razorpay_order_id ON payments(razorpay_order_id);
-CREATE INDEX idx_payments_status ON payments(status);
-CREATE INDEX idx_payments_created_at ON payments(created_at DESC);
+CREATE INDEX idx_holdings_user ON brick_holdings(user_id);
+CREATE UNIQUE INDEX idx_holding_unique ON brick_holdings(user_id, project_id);
 ```
 
 ### 6. milestones Table
@@ -514,45 +367,36 @@ CREATE INDEX idx_distributions_distribution_date ON distributions(distribution_d
 CREATE INDEX idx_distributions_created_at ON distributions(created_at DESC);
 ```
 
-### 8. secondary_market_orders Table
+### 8. orders & trades Tables
 
-Buy/sell orders in secondary marketplace.
+The pure Peer-to-Peer Stock Broker Matching Engine.
 
 ```sql
-CREATE TABLE secondary_market_orders (
+CREATE TABLE orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id),
-    
-    -- Order Details
-    order_type VARCHAR(10) NOT NULL, -- BUY or SELL
-    seller_id UUID REFERENCES users(id),
-    buyer_id UUID REFERENCES users(id),
-    
-    -- Token Details
-    token_amount DECIMAL(18,2) NOT NULL,
-    price_per_token DECIMAL(18,2) NOT NULL, -- In INR
-    total_price DECIMAL(18,2),
-    
-    -- Status
-    status VARCHAR(50) DEFAULT 'open', -- open, filled, cancelled, expired
-    
-    -- Blockchain
-    tx_hash VARCHAR(66),
-    
-    -- Timing
-    expires_at TIMESTAMP,
-    filled_at TIMESTAMP,
-    
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    user_id UUID NOT NULL REFERENCES users(id),
+    order_type VARCHAR(20) NOT NULL, -- buy / sell
+    price_per_brick DECIMAL(18,2) NOT NULL,
+    quantity INTEGER NOT NULL,
+    unfilled_quantity INTEGER NOT NULL,
+    status VARCHAR(50) DEFAULT 'open',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX idx_orders_unfilled ON orders(project_id, order_type, status);
 
-CREATE INDEX idx_orders_project_id ON secondary_market_orders(project_id);
-CREATE INDEX idx_orders_seller_id ON secondary_market_orders(seller_id);
-CREATE INDEX idx_orders_buyer_id ON secondary_market_orders(buyer_id);
-CREATE INDEX idx_orders_status ON secondary_market_orders(status);
-CREATE INDEX idx_orders_type ON secondary_market_orders(order_type);
-CREATE INDEX idx_orders_created_at ON secondary_market_orders(created_at DESC);
+CREATE TABLE trades (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id),
+    buyer_id UUID REFERENCES users(id),
+    seller_id UUID REFERENCES users(id),
+    buy_order_id UUID REFERENCES orders(id),
+    sell_order_id UUID REFERENCES orders(id),
+    price DECIMAL(18,2) NOT NULL,
+    quantity INTEGER NOT NULL,
+    executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_trades_project ON trades(project_id);
 ```
 
 ### 9. kyc_records Table

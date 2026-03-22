@@ -354,51 +354,16 @@ Get detailed project information.
 
 ---
 
-## Investment Endpoints
+## Primary Market (IPO) Endpoints
 
-### POST /investments
+### POST /exchange/ipo/{project_id}/subscribe
 
-Create new investment in a project.
-
-**Request**:
-```json
-{
-  "project_id": "proj_123",
-  "amount": 50000,
-  "accept_terms": true
-}
-```
-
-**Response** (201):
-```json
-{
-  "success": true,
-  "data": {
-    "investment_id": "inv_123",
-    "project_id": "proj_123",
-    "amount": 50000,
-    "tokens": 50,
-    "status": "pending",
-    "payment_order": {
-      "id": "order_123",
-      "amount": 50000,
-      "currency": "INR"
-    },
-    "message": "Proceed to payment"
-  }
-}
-```
-
-### POST /investments/{id}/verify-payment
-
-Verify payment and confirm investment.
+Direct primary market purchase. Maps real-world fiat directly to real-estate Bricks from the Builder's internal supply. Assumes the Admin has marked `ipo_status` as `active`.
 
 **Request**:
 ```json
 {
-  "razorpay_payment_id": "pay_...",
-  "razorpay_order_id": "order_...",
-  "razorpay_signature": "signature..."
+  "quantity": 50
 }
 ```
 
@@ -406,245 +371,78 @@ Verify payment and confirm investment.
 ```json
 {
   "success": true,
-  "data": {
-    "investment_id": "inv_123",
-    "status": "confirmed",
-    "tokens": 50,
-    "wallet_address": "0x742d35...",
-    "tx_hash": "0xabc123...",
-    "message": "Tokens minted successfully"
-  }
+  "message": "Successfully purchased 50 Bricks for 5000.00 INR."
 }
 ```
-
-### GET /investments
-
-List user's investments.
-
-**Query Parameters**:
-- `project_id`: Filter by project
-- `status`: pending, confirmed, completed, cancelled
-- `sort`: created_at, amount, roi
-- `page`: Page number
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "inv_123",
-      "project": {
-        "id": "proj_123",
-        "title": "BuilderX Residency"
-      },
-      "amount": 50000,
-      "tokens": 50,
-      "current_value": 52500,
-      "total_distributions": 2500,
-      "roi_percentage": 5,
-      "status": "confirmed",
-      "invested_date": "2024-01-15T10:30:00Z"
-    }
-  ],
-  "meta": { "total": 8, "page": 1 }
-}
-```
-
-### GET /investments/{id}
-
-Get investment details.
-
-**Response** (200): Single investment object with full details
 
 ---
 
 ## Portfolio Endpoints
 
-### GET /portfolio
+### GET /exchange/portfolio
 
-Get user's portfolio summary.
+Displays the user's legally backed Equity (Bricks) inside various Real Estate Projects.
 
 **Response** (200):
 ```json
-{
-  "success": true,
-  "data": {
-    "summary": {
-      "total_invested": 250000,
-      "current_value": 275000,
-      "total_distributions": 15000,
-      "portfolio_roi": 10,
-      "portfolio_roi_percentage": 10,
-      "investment_count": 5
-    },
-    "breakdown": {
-      "by_project": [
-        {
-          "project_id": "proj_123",
-          "project_name": "BuilderX Residency",
-          "invested": 50000,
-          "current_value": 52500,
-          "percentage": 20
-        }
-      ],
-      "by_status": {
-        "confirmed": 250000,
-        "pending": 0,
-        "completed": 0
-      }
-    },
-    "performance": {
-      "average_roi": 10,
-      "best_investment": { "project": "proj_456", "roi": 15 },
-      "worst_investment": { "project": "proj_789", "roi": 5 }
-    }
+[
+  {
+    "id": "uuid-string",
+    "user_id": "uuid-string",
+    "project_id": "uuid-string",
+    "quantity": 50,
+    "created_at": "2024-03-01T00:00:00Z"
   }
-}
-```
-
-### GET /portfolio/holdings
-
-Get detailed token holdings.
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "project_id": "proj_123",
-      "project_name": "BuilderX Residency",
-      "token_address": "0xtoken...",
-      "tokens_held": 50,
-      "tokens_percentage": 0.167,
-      "wallet_address": "0x742d35...",
-      "current_price": 1050,
-      "total_value": 52500
-    }
-  ]
-}
-```
-
-### GET /portfolio/distributions
-
-Get distribution history.
-
-**Query Parameters**:
-- `project_id`: Filter by project
-- `from_date`: Start date
-- `to_date`: End date
-- `page`: Page number
-
-**Response** (200):
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "dist_123",
-      "project": "BuilderX Residency",
-      "amount": 2500,
-      "percentage": 1.67,
-      "distribution_date": "2024-02-28",
-      "type": "monthly_rental",
-      "tx_hash": "0xabc..."
-    }
-  ],
-  "meta": {
-    "total_distributions": 45,
-    "total_amount": 15000,
-    "average_per_distribution": 333.33
-  }
-}
+]
 ```
 
 ---
 
-## Secondary Market Endpoints
+## Exchange & Secondary Market Endpoints
 
-### POST /secondary-market/orders/sell
+### POST /exchange/orders
 
-Create sell order for tokens.
+Push intent into the Secondary Orderbook. Bound by `+20% / -10%` circuit breakers! Automatically freezes Fiat (for BUYS) or Bricks (for SELLS) instantly spawning matches via the internal FIFO algorithmic engine.
 
 **Request**:
 ```json
 {
-  "project_id": "proj_123",
-  "token_amount": 10,
-  "price_per_token": 1100
+  "project_id": "uuid-string",
+  "order_type": "buy",
+  "price_per_brick": 105.00,
+  "quantity": 50
 }
 ```
-
-**Response** (201):
-```json
-{
-  "success": true,
-  "data": {
-    "order_id": "order_123",
-    "type": "SELL",
-    "status": "open",
-    "token_amount": 10,
-    "price_per_token": 1100,
-    "total_price": 11000
-  }
-}
-```
-
-### GET /secondary-market/listings
-
-Get active sell orders.
-
-**Query Parameters**:
-- `project_id`: Filter by project
-- `min_price`, `max_price`: Price range
-- `sort`: price, created_at
-- `page`: Pagination
 
 **Response** (200):
 ```json
 {
-  "success": true,
-  "data": [
-    {
-      "order_id": "order_123",
-      "project_id": "proj_123",
-      "seller": "User#1234",
-      "token_amount": 10,
-      "price_per_token": 1100,
-      "total_price": 11000,
-      "created_at": "2024-02-20T10:30:00Z"
-    }
-  ],
-  "meta": { "total": 45, "page": 1 }
+  "id": "uuid-string",
+  "project_id": "uuid-string",
+  "user_id": "uuid-string",
+  "order_type": "buy",
+  "price_per_brick": 105.00,
+  "quantity": 50,
+  "unfilled_quantity": 50,
+  "status": "open",
+  "created_at": "2024-03-01T00:00:00Z"
 }
 ```
 
-### POST /secondary-market/orders/buy
+### GET /exchange/orders
 
-Create buy order.
+Lists the current user's outstanding intent to purchase or liquidate assets.
 
-**Request**:
-```json
-{
-  "project_id": "proj_123",
-  "token_amount": 5,
-  "price_per_token": 1050
-}
-```
+**Query Parameters**:
+- `status`: open, partial, fulfilled, cancelled
 
-**Response** (201):
-```json
-{
-  "success": true,
-  "data": {
-    "order_id": "order_456",
-    "type": "BUY",
-    "amount_required": 5250,
-    "status": "pending_payment"
-  }
-}
-```
+**Response** (200): Array of Order objects perfectly dictating active limit trades.
+
+### GET /exchange/trades/{project_id}
+
+Publicly tracks transparent historical `Trades` shifting the underlying `Project.market_value` ticker globally!
+
+**Response** (200): Array of Trade objects mapping exactly who bought from who at what price!
 
 ---
 
