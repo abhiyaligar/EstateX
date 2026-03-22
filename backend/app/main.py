@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import auth, kyc, admin, builders, projects, wallet
+from app.api.routes import auth, kyc, admin, builders, projects, wallet, exchange
 from app.core.config import settings
 import logging
 
@@ -30,6 +30,7 @@ app.include_router(admin.router, prefix=settings.API_V1_STR)
 app.include_router(builders.router, prefix=settings.API_V1_STR)
 app.include_router(projects.router, prefix=settings.API_V1_STR)
 app.include_router(wallet.router, prefix=settings.API_V1_STR)
+app.include_router(exchange.router, prefix=settings.API_V1_STR)
 
 @app.get("/health")
 def health_check():

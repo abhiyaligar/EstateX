@@ -20,13 +20,20 @@ class Project(Base):
     state = Column(String(100), nullable=False)
     pincode = Column(String(10), nullable=False)
     
-    # Financials
-    total_budget = Column(DECIMAL(18, 2), nullable=False)
-    funding_target = Column(DECIMAL(18, 2), nullable=False)
-    funding_raised = Column(DECIMAL(18, 2), default=0.00)
+    # Financials (Stock Broker Model)
+    total_budget = Column(DECIMAL(18, 2), nullable=False) # Only for Builder reference
+    funding_raised = Column(DECIMAL(18, 2), default=0.00) # Realtime tracking of actual IPO sales
+    
+    # Brick Metrics
+    total_bricks = Column(Integer, nullable=False)
+    face_value = Column(DECIMAL(18, 2), nullable=False)
+    ipo_price = Column(DECIMAL(18, 2), nullable=False)
+    market_value = Column(DECIMAL(18, 2)) # Latest matched trade price. Defaults directly to ipo_price on IPO completion.
+    previous_close_price = Column(DECIMAL(18, 2)) # Captures previous day's close for Circuit Breaker (+20% / -10%) logic
     
     # Status & Compliance
-    status = Column(String(50), default='draft', index=True) # draft, active, funded, completed, stalled
+    ipo_status = Column(String(50), default='upcoming', index=True) # upcoming, active, completed
+    status = Column(String(50), default='draft', index=True) # draft, approved, halted, cancelled
     rera_id = Column(String(100), unique=True)
     expected_completion_date = Column(DateTime)
     

@@ -26,6 +26,8 @@ from app.models.kyc import KYCRecord
 from app.models.builder import Builder
 from app.models.project import Project, Milestone
 from app.models.wallet import WalletTransaction
+from app.models.portfolio import BrickHolding
+from app.models.exchange import Order, Trade
 
 target_metadata = Base.metadata
 

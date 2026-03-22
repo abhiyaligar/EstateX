@@ -25,7 +25,7 @@ class ProjectService:
                 detail=f"Milestone release percentages must total exactly 100.0%. Current total: {total_percentage}%"
             )
 
-        # Create Core Project Entity
+        # Create Core Project Entity (IPO Structure)
         new_project = Project(
             builder_id=builder_id,
             title=project_data.title,
@@ -35,10 +35,17 @@ class ProjectService:
             state=project_data.state,
             pincode=project_data.pincode,
             total_budget=project_data.total_budget,
-            funding_target=project_data.funding_target,
+            
+            # Brick Logistics
+            total_bricks=project_data.total_bricks,
+            face_value=project_data.face_value,
+            ipo_price=project_data.ipo_price,
+            market_value=project_data.ipo_price, # Starts pegged precisely to the IPO benchmark
+            
             rera_id=project_data.rera_id,
             expected_completion_date=project_data.expected_completion_date,
-            status='active' # Automatically set to active for investors to browse
+            ipo_status='upcoming', 
+            status='active' # Visible for browsing
         )
         db.add(new_project)
         db.flush() # Flush to generate the project's UUID for the milestones

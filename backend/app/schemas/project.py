@@ -28,7 +28,11 @@ class ProjectBase(BaseModel):
     state: str
     pincode: str
     total_budget: float
-    funding_target: float
+    
+    total_bricks: int = Field(..., gt=0)
+    face_value: float = Field(..., gt=0)
+    ipo_price: float = Field(..., gt=0)
+    
     rera_id: Optional[str] = None
     expected_completion_date: Optional[datetime] = None
 
@@ -39,6 +43,9 @@ class ProjectListResponse(ProjectBase):
     id: UUID
     builder_id: UUID
     funding_raised: float
+    market_value: Optional[float]
+    previous_close_price: Optional[float]
+    ipo_status: str
     status: str
     created_at: datetime
     

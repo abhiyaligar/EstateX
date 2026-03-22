@@ -86,3 +86,38 @@ def admin_adjust_user_wallet(
     God Mode: Directly increase or decrease an arbitrary User's wallet balance (e.g., resolving disputes or manual bank wires).
     """
     return WalletService.admin_adjust_balance(target_user_id, adjust_data, db)
+
+from app.models.project import Project
+from fastapi import HTTPException, status
+
+@router.post("/projects/{project_id}/approve_ipo")
+def approve_project_ipo(
+    project_id: str,
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Officially launches a Builder's Project IPO, allowing Investors to begin Subscribing and purchasing Bricks.
+    """
+    project = db.query(Project).filter(Project.id == project_id).with_for_update().first()
+    if not project or project.ipo_status != 'upcoming':
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project IPO must be 'upcoming'.")
+        
+    project.ipo_status = 'active'
+    db.commit()
+    return {"success": True, "message": "Project IPO is now completely active! Investors can begin subscribing."}
+
+@router.post("/projects/{project_id}/trigger_ipo_completion")
+def trigger_secondary_market(
+    project_id: str,
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    project = db.query(Project).filter(Project.id == project_id).with_for_update().first()
+    if not project or project.ipo_status != 'active':
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project IPO must be 'active'.")
+        
+    project.ipo_status = 'completed'
+    project.previous_close_price = project.ipo_price # Baseline bounds
+    db.commit()
+    return {"success": True, "message": "Secondary Market trading is now completely unlocked!"}
