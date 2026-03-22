@@ -211,7 +211,7 @@ Update user profile.
 
 ### POST /users/bank-accounts
 
-Add bank account for distributions.
+Link a new bank account to the user profile for seamless fiat deposits and withdrawals.
 
 **Request**:
 ```json
@@ -219,22 +219,35 @@ Add bank account for distributions.
   "account_number": "1234567890123456",
   "ifsc_code": "SBIN0001234",
   "account_holder_name": "John Doe",
-  "account_type": "savings"
+  "is_primary": true
 }
 ```
 
-**Response** (201):
+**Response** (200):
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "bank_123",
-    "account_number": "****7890",
-    "ifsc_code": "SBIN0001234",
-    "verified": false
-  }
+  "id": "uuid-string",
+  "user_id": "uuid-string",
+  "account_number": "1234567890123456",
+  "ifsc_code": "SBIN0001234",
+  "account_holder_name": "John Doe",
+  "is_primary": true,
+  "is_verified": false,
+  "created_at": "2024-03-01T00:00:00Z"
 }
 ```
+
+### GET /users/bank-accounts
+
+Retrieve all globally banked liquidity exit points configured for the current user.
+
+**Response** (200): Array of Bank Account objects.
+
+### DELETE /users/bank-accounts/{bank_id}
+
+Drop a specific bank account from the user profile mapping.
+
+**Response** (204): No Content.
 
 ---
 

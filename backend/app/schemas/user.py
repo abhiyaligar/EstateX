@@ -12,11 +12,6 @@ class UserProfileUpdate(BaseModel):
     profile_image_url: Optional[str] = None
     account_type: Optional[str] = None
     
-    # Banking
-    bank_account_number: Optional[str] = None
-    bank_ifsc_code: Optional[str] = None
-    bank_account_holder_name: Optional[str] = None
-    
     # Preferences
     notification_email: Optional[bool] = None
     notification_sms: Optional[bool] = None
@@ -35,6 +30,25 @@ class UserProfileResponse(BaseModel):
     wallet_balance: float
     wallet_address: Optional[str]
     account_type: Optional[str]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class BankAccountCreate(BaseModel):
+    account_number: str
+    ifsc_code: str
+    account_holder_name: Optional[str] = None
+    is_primary: Optional[bool] = False
+
+class BankAccountResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    account_number: str
+    ifsc_code: str
+    account_holder_name: Optional[str]
+    is_primary: bool
+    is_verified: bool
     created_at: datetime
     
     class Config:

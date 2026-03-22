@@ -127,12 +127,6 @@ CREATE TABLE users (
     phone_verified BOOLEAN DEFAULT false,
     two_factor_enabled BOOLEAN DEFAULT false,
     
-    -- Bank Details
-    bank_account_number VARCHAR(20),
-    bank_ifsc_code VARCHAR(20),
-    bank_account_holder_name VARCHAR(100),
-    bank_verified BOOLEAN DEFAULT false,
-    
     -- Wallet
     wallet_address VARCHAR(66) UNIQUE, -- Ethereum wallet address
     
@@ -255,6 +249,25 @@ CREATE TABLE projects (
 
 CREATE INDEX idx_projects_builder_id ON projects(builder_id);
 CREATE INDEX idx_projects_ipo_status ON projects(ipo_status);
+```
+
+### 3b. bank_accounts Table
+
+Discrete entity mapping infinite isolated bank accounts allowing global liquidity flow.
+
+```sql
+CREATE TABLE bank_accounts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    account_number VARCHAR(50) NOT NULL,
+    ifsc_code VARCHAR(20) NOT NULL,
+    account_holder_name VARCHAR(100),
+    is_primary BOOLEAN DEFAULT false,
+    is_verified BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_bank_accounts_user_id ON bank_accounts(user_id);
 ```
 
 ### 4. wallet_transactions Table
