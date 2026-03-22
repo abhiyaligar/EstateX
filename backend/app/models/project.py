@@ -1,6 +1,6 @@
 import uuid
-from sqlalchemy import Column, String, Float, Integer, ForeignKey, DateTime, DECIMAL
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Float, Integer, ForeignKey, DateTime, DECIMAL, Boolean, Date
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from app.models.user import Base
 import datetime
@@ -19,6 +19,8 @@ class Project(Base):
     city = Column(String(100), nullable=False, index=True)
     state = Column(String(100), nullable=False)
     pincode = Column(String(10), nullable=False)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     
     # Financials (Stock Broker Model)
     total_budget = Column(DECIMAL(18, 2), nullable=False) # Only for Builder reference
@@ -35,7 +37,28 @@ class Project(Base):
     ipo_status = Column(String(50), default='upcoming', index=True) # upcoming, active, completed
     status = Column(String(50), default='draft', index=True) # draft, approved, halted, cancelled
     rera_id = Column(String(100), unique=True)
+    rera_approved = Column(Boolean(), default=False)
+    environmental_clearance = Column(Boolean(), default=False)
+    insurance_coverage = Column(Boolean(), default=False)
+    
+    # Timeline
+    launch_date = Column(Date, nullable=True)
+    construction_start_date = Column(Date, nullable=True)
     expected_completion_date = Column(DateTime)
+    
+    # Media & Documents
+    rera_approval_url = Column(String(500), nullable=True)
+    brochure_url = Column(String(500), nullable=True)
+    floor_plans = Column(JSONB, default=list) # Array of Image URLs
+    images = Column(JSONB, default=list) # Array of Image URLs
+    
+    # Arbitrary Legacy Financials
+    funding_target = Column(DECIMAL(18, 2), nullable=True)
+    min_investment = Column(DECIMAL(18, 2), nullable=True)
+    
+    # Metrics
+    investor_count = Column(Integer, default=0)
+    view_count = Column(Integer, default=0)
     
     # Blockchain / Tokenization
     token_address = Column(String(66), unique=True)
