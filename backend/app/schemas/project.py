@@ -105,7 +105,8 @@ class ProjectListResponse(BaseModel):
             return v
             
         def get_attr(attr, default=None):
-            return getattr(v, attr, default)
+            val = getattr(v, attr, None)
+            return val if val is not None else default
             
         b = get_attr("builder")
         builder_data = None
