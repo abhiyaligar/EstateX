@@ -4,3 +4,4 @@ __pycache__
 .env.example
 backend/alembic.ini
 tests
+venv

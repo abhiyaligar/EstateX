@@ -184,7 +184,7 @@ class ExchangeService:
             
             seller_fiat_value = Decimal(str(trade_qty)) * execution_price
             buyer_locked_fiat = Decimal(str(trade_qty)) * buy_order.price_per_brick
-            refund_fiat = buyer_locked_fiat - seller_fiat_value # If Buyer was willing to pay $110 but executed at $100, refund the $10.
+            refund_fiat = buyer_locked_fiat - seller_fiat_value # If Buyer was willing to pay ₹110 but executed at ₹100, refund the ₹10.
             
             # Credit Seller's Fiat
             seller_model = db.query(User).filter(User.id == seller).with_for_update().first()
