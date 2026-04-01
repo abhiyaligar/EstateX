@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from app.schemas.auth import User
 from app.schemas.admin import (
     DashboardStatsResponse, KYCReviewRequest, AdminKYCRecordBase, KYCReviewResponse,
-    AdminMilestoneReviewRequest, AdminProjectStatusUpdateRequest
+    AdminMilestoneReviewRequest, AdminProjectStatusUpdateRequest, KYCListResponse
 )
 from app.schemas.builder import BuilderVerificationUpdate, BuilderResponse
 from app.schemas.wallet import AdminWalletAdjustmentRequest
@@ -24,13 +24,34 @@ def get_dashboard_stats(
 ):
     return AdminService.get_dashboard_stats(db)
 
-@router.get("/kyc-applications", response_model=List[AdminKYCRecordBase])
+@router.get("/kyc-applications", response_model=KYCListResponse)
 def list_kyc_applications(
     status: str = 'all',
+    assigned_admin_id: Optional[str] = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
     current_admin: User = Depends(get_admin_user),
     db: Session = Depends(get_db)
 ):
-    return AdminService.get_kyc_applications(db, status_filter=status)
+    return AdminService.get_kyc_applications(
+        db, status_filter=status, assigned_admin_id=assigned_admin_id, skip=skip, limit=limit
+    )
+
+@router.post("/kyc-applications/{kyc_id}/claim")
+def claim_kyc_application(
+    kyc_id: UUID,
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    return AdminService.claim_kyc_application(str(kyc_id), str(current_admin.id), db)
+
+@router.post("/kyc-applications/{kyc_id}/release")
+def release_kyc_application(
+    kyc_id: UUID,
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    return AdminService.release_kyc_application(str(kyc_id), str(current_admin.id), db)
 
 @router.post("/kyc-applications/{kyc_id}/review", response_model=KYCReviewResponse)
 def review_kyc_application(
@@ -39,7 +60,7 @@ def review_kyc_application(
     current_admin: User = Depends(get_admin_user),
     db: Session = Depends(get_db)
 ):
-    return AdminService.review_kyc_application(str(kyc_id), review_data, db)
+    return AdminService.review_kyc_application(str(kyc_id), str(current_admin.id), review_data, db)
 
 @router.post("/builders/{builder_id}/verify", response_model=BuilderResponse)
 def verify_builder_profile(

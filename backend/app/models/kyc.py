@@ -31,8 +31,20 @@ class KYCRecord(Base):
     status = Column(String(50), default='pending', index=True) # pending, otp_sent, otp_verified, approved, rejected
     rejection_reason = Column(String(500), nullable=True)
     
+    # Audit & Queue Claiming
+    assigned_admin_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='SET NULL'), nullable=True, index=True)
+    reviewed_by_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # Future Uploads (S3 URLs)
+    pan_image_url = Column(String(500), nullable=True)
+    aadhaar_front_url = Column(String(500), nullable=True)
+    aadhaar_back_url = Column(String(500), nullable=True)
+    
     created_at = Column(DateTime(timezone=True), default=utcnow)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
-    # Relationship back to user
-    user = relationship("User", back_populates="kyc_record")
+    # Relationships
+    user = relationship("User", foreign_keys=[user_id], back_populates="kyc_record")
+    assigned_admin = relationship("User", foreign_keys=[assigned_admin_id])
+    reviewed_by = relationship("User", foreign_keys=[reviewed_by_id])

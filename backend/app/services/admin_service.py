@@ -35,30 +35,78 @@ class AdminService:
         )
 
     @staticmethod
-    def get_kyc_applications(db: Session, status_filter: str = 'all'):
+    def get_kyc_applications(
+        db: Session, 
+        status_filter: str = 'all', 
+        assigned_admin_id: str = None,
+        skip: int = 0, 
+        limit: int = 50
+    ):
         query = db.query(KYCRecord)
         
         if status_filter != 'all':
             query = query.filter(KYCRecord.status == status_filter)
         else:
-            # By default, only show relevant ones (not rejected)
+            # By default, only show relevant ones
             query = query.filter(KYCRecord.status.in_(['pending', 'otp_verified', 'approved']))
+
+        if assigned_admin_id:
+            query = query.filter(KYCRecord.assigned_admin_id == assigned_admin_id)
             
-        return query.order_by(KYCRecord.created_at.desc()).all()
+        total = query.count()
+        items = query.order_by(KYCRecord.updated_at.asc()).offset(skip).limit(limit).all()
+        
+        return {
+            "items": items,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
 
     @staticmethod
-    def review_kyc_application(kyc_id: str, review_data: KYCReviewRequest, db: Session):
-        kyc_record = db.query(KYCRecord).filter(KYCRecord.id == kyc_id).first()
+    def claim_kyc_application(kyc_id: str, admin_id: str, db: Session):
+        kyc_record = db.query(KYCRecord).filter(KYCRecord.id == kyc_id).with_for_update().first()
+        if not kyc_record:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="KYC Application not found")
+            
+        if kyc_record.assigned_admin_id and str(kyc_record.assigned_admin_id) != admin_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Application already claimed by another admin")
+            
+        kyc_record.assigned_admin_id = admin_id
+        db.commit()
+        return {"success": True, "message": "Successfully claimed application", "kyc_status": kyc_record.status}
+
+    @staticmethod
+    def release_kyc_application(kyc_id: str, admin_id: str, db: Session):
+        kyc_record = db.query(KYCRecord).filter(KYCRecord.id == kyc_id).with_for_update().first()
+        if not kyc_record:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="KYC Application not found")
+            
+        if kyc_record.assigned_admin_id and str(kyc_record.assigned_admin_id) != admin_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Application claimed by another admin")
+            
+        kyc_record.assigned_admin_id = None
+        db.commit()
+        return {"success": True, "message": "Successfully released application", "kyc_status": kyc_record.status}
+
+    @staticmethod
+    def review_kyc_application(kyc_id: str, admin_id: str, review_data: KYCReviewRequest, db: Session):
+        from datetime import datetime, timezone
+        kyc_record = db.query(KYCRecord).filter(KYCRecord.id == kyc_id).with_for_update().first()
         
         if not kyc_record:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="KYC Application not found")
             
-        # Optional: You might enforce that only 'otp_verified' applications can be reviewed here
-        # But we'll leave it open for manual admin override.
-        
+        if kyc_record.assigned_admin_id and str(kyc_record.assigned_admin_id) != admin_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Application claimed by another admin")
+            
         kyc_record.status = review_data.status
         if review_data.status == 'rejected':
             kyc_record.rejection_reason = review_data.rejection_reason
+            
+        kyc_record.reviewed_by_id = admin_id
+        kyc_record.reviewed_at = datetime.now(timezone.utc)
+        kyc_record.assigned_admin_id = None # Release the queue lock
             
         # Look up parent User and safely update their KYC cache Status
         user = db.query(DBUser).filter(DBUser.id == kyc_record.user_id).first()

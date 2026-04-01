@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 from datetime import datetime
 from uuid import UUID
 
@@ -23,12 +23,25 @@ class AdminKYCRecordBase(BaseModel):
     user_id: UUID
     status: str
     aadhaar_last_4_digits: Optional[str]
-    pan_number: Optional[str]
+    pan_number: Optional[str] = None
+    assigned_admin_id: Optional[UUID] = None
+    reviewed_by_id: Optional[UUID] = None
+    reviewed_at: Optional[datetime] = None
+    rejection_reason: Optional[str] = None
+    pan_image_url: Optional[str] = None
+    aadhaar_front_url: Optional[str] = None
+    aadhaar_back_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+
+class KYCListResponse(BaseModel):
+    items: List[AdminKYCRecordBase]
+    total: int
+    skip: int
+    limit: int
 
 class KYCReviewResponse(BaseModel):
     success: bool

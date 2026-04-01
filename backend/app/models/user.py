@@ -57,7 +57,7 @@ class User(Base):
     ip_address_created = Column(String(50), nullable=True)
     
     # Relationships
-    kyc_record = relationship("KYCRecord", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    kyc_record = relationship("KYCRecord", back_populates="user", uselist=False, cascade="all, delete-orphan", foreign_keys="[KYCRecord.user_id]")
     builder_profile = relationship("Builder", back_populates="user", uselist=False)
     bank_accounts = relationship("BankAccount", back_populates="user", cascade="all, delete-orphan")
 
