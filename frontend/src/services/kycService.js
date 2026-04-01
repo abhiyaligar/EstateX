@@ -11,13 +11,13 @@ export const kycService = {
     return response.data;
   },
 
-  verifyOTP: async (otp) => {
-    const response = await api.post('/kyc/verify-otp', { otp });
+  verifyOTP: async (otp, kyc_session_id) => {
+    const response = await api.post('/kyc/verify-otp', { otp, kyc_session_id });
     return response.data;
   },
 
-  verifyPAN: async (pan) => {
-    const response = await api.post('/kyc/verify-pan', { pan });
+  verifyPAN: async (pan, kyc_session_id) => {
+    const response = await api.post('/kyc/verify-pan', { pan, kyc_session_id });
     return response.data;
   }
 };

@@ -29,7 +29,11 @@ const LoginForm = () => {
     const result = await login(formData.email, formData.password);
     
     if (result.success) {
-      navigate('/dashboard');
+      if (result.user && result.user.kyc_status !== 'approved') {
+        navigate('/dashboard/kyc');
+      } else {
+        navigate('/dashboard');
+      }
     } else {
       setError(result.error || 'Invalid credentials');
       setIsSubmitting(false);

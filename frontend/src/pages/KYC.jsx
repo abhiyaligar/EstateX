@@ -12,6 +12,8 @@ const KYC = () => {
   const [error, setError] = useState('');
   const [otp, setOtp] = useState('');
   const [pan, setPan] = useState('');
+  const [aadhaar, setAadhaar] = useState('');
+  const [kycSessionId, setKycSessionId] = useState('');
   const [kycStatus, setKycStatus] = useState(null);
   const navigate = useNavigate();
 
@@ -29,13 +31,18 @@ const KYC = () => {
   }, []);
 
   const handleInitiate = async () => {
+    if (aadhaar.length !== 12 || pan.length !== 10) {
+      setError('Please provide a valid 12-digit Aadhaar and 10-character PAN.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      await kycService.initiateKYC();
+      const result = await kycService.initiateKYC({ aadhaar, pan });
+      setKycSessionId(result.kyc_session_id);
       setStep(1);
     } catch (err) {
-      setError('Failed to initiate KYC. Please try again.');
+      setError(err.response?.data?.detail || 'Failed to initiate KYC. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -45,10 +52,10 @@ const KYC = () => {
     setLoading(true);
     setError('');
     try {
-      await kycService.verifyOTP(otp);
+      await kycService.verifyOTP(otp, kycSessionId);
       setStep(2);
     } catch (err) {
-      setError('Invalid OTP. Please try again.');
+      setError(err.response?.data?.detail || 'Invalid OTP. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -58,10 +65,10 @@ const KYC = () => {
     setLoading(true);
     setError('');
     try {
-      await kycService.verifyPAN(pan);
+      await kycService.verifyPAN(pan, kycSessionId);
       setStep(3);
     } catch (err) {
-      setError('PAN verification failed. Ensure the number is correct.');
+      setError(err.response?.data?.detail || 'PAN verification failed. Ensure the number is correct.');
     } finally {
       setLoading(false);
     }
@@ -82,6 +89,21 @@ const KYC = () => {
               </p>
             </div>
             <div className="space-y-4 pt-4">
+              <Input 
+                placeholder="12-digit Aadhaar Number"
+                value={aadhaar}
+                onChange={(e) => setAadhaar(e.target.value.replace(/\D/g, ''))}
+                maxLength={12}
+                icon={CreditCard}
+              />
+              <Input 
+                placeholder="10-character PAN Number"
+                value={pan}
+                onChange={(e) => setPan(e.target.value.toUpperCase())}
+                maxLength={10}
+                icon={CreditCard}
+              />
+              {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
               <div className="flex items-center gap-3 text-sm text-secondary-600 bg-secondary-50 dark:bg-slate-900 p-4 rounded-xl text-left">
                 <CheckCircle2 size={18} className="text-green-500" />
                 <span>Verified investors get 24/7 priority support.</span>

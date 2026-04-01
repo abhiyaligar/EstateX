@@ -18,7 +18,7 @@ const RegisterForm = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { register } = useAuth();
+  const { register, login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -47,8 +47,15 @@ const RegisterForm = () => {
     });
     
     if (result.success) {
-      // Redirect to login after successful registration
-      navigate('/login', { state: { message: "Registration successful. Please login." } });
+      // Auto-login after successful registration
+      const loginResult = await login(formData.email, formData.password);
+      
+      if (loginResult.success) {
+        navigate('/dashboard/kyc');
+      } else {
+        // Fallback to login page if auto-login fails
+        navigate('/login', { state: { message: "Registration successful. Please login." } });
+      }
     } else {
       setError(result.error || 'Registration failed');
       setIsSubmitting(false);
