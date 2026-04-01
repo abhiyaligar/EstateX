@@ -440,9 +440,17 @@ CREATE TABLE kyc_records (
     status VARCHAR(50) DEFAULT 'pending', -- pending, otp_sent, verified, rejected
     rejection_reason VARCHAR(500),
     
+    -- Audit & Queue Claiming
+    assigned_admin_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    reviewed_by_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMP,
+    
     -- Documents
     document_upload_date TIMESTAMP,
     document_verification_date TIMESTAMP,
+    pan_image_url VARCHAR(500),
+    aadhaar_front_url VARCHAR(500),
+    aadhaar_back_url VARCHAR(500),
     
     -- Session
     session_id VARCHAR(100),
@@ -454,6 +462,7 @@ CREATE TABLE kyc_records (
 CREATE INDEX idx_kyc_user_id ON kyc_records(user_id);
 CREATE INDEX idx_kyc_pan_number ON kyc_records(pan_number);
 CREATE INDEX idx_kyc_status ON kyc_records(status);
+CREATE INDEX idx_kyc_assigned_admin_id ON kyc_records(assigned_admin_id);
 ```
 
 ### 10. audit_logs Table

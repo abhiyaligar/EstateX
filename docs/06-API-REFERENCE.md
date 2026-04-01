@@ -551,6 +551,89 @@ Get current KYC status.
 
 ---
 
+---
+
+## Admin Endpoints
+
+### GET /admin/kyc-applications
+
+Retrieve a paginated list of KYC applications for admin review. Supports filtering by status and assigned admin.
+
+**Query Parameters**:
+- `status`: pending, approved, rejected, or all (default: 'all')
+- `assigned_admin_id`: UUID of the admin who claimed the ticket (optional)
+- `skip`: Records to skip (default: 0)
+- `limit`: Records to return (default: 50)
+
+**Response** (200):
+```json
+{
+  "items": [
+    {
+      "id": "uuid-string",
+      "user_id": "uuid-string",
+      "status": "pending",
+      "assigned_admin_id": null,
+      "pan_number": "AAXPA...",
+      "created_at": "2024-03-01T00:00:00Z",
+      "updated_at": "2024-03-01T00:00:00Z"
+    }
+  ],
+  "total": 120,
+  "skip": 0,
+  "limit": 50
+}
+```
+
+### POST /admin/kyc-applications/{id}/claim
+
+Locks a KYC application so the current admin can review it without collision.
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "message": "Successfully claimed application",
+  "kyc_status": "pending"
+}
+```
+
+### POST /admin/kyc-applications/{id}/release
+
+Releases the lock on a KYC application, returning it to the global queue.
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "message": "Successfully released application",
+  "kyc_status": "pending"
+}
+```
+
+### POST /admin/kyc-applications/{id}/review
+
+Finalizes the KYC review process, marking it Approved or Rejected and logging the admin who performed the action.
+
+**Request**:
+```json
+{
+  "status": "approved",
+  "rejection_reason": null
+}
+```
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "message": "Successfully marked KYC application as approved",
+  "kyc_status": "approved"
+}
+```
+
+---
+
 ## Analytics Endpoints
 
 ### GET /analytics/portfolio
