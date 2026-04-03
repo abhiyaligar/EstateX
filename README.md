@@ -299,6 +299,7 @@ npm run dev
 
 # Backend setup (in another terminal)
 cd backend
+python -m venv venv
 pip install -r requirements.txt
 uvicorn main:app --reload
 
