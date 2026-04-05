@@ -300,7 +300,7 @@ npm run dev
 # Backend setup (in another terminal)
 cd backend
 python -m venv venv
-.venv/scripts/activate.ps1
+.\venv\Scripts\activate.ps1
 pip install -r requirements.txt
 uvicorn main:app --reload
 
