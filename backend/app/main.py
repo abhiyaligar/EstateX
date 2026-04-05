@@ -33,6 +33,14 @@ app.include_router(projects.router, prefix=settings.API_V1_STR)
 app.include_router(wallet.router, prefix=settings.API_V1_STR)
 app.include_router(exchange.router, prefix=settings.API_V1_STR)
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to EstateX Backend API", "docs": "/docs"}
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return ""
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
