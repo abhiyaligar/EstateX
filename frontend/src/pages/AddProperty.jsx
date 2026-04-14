@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { Building, MapPin, DollarSign, UploadCloud, Banknote } from 'lucide-react';
+import { Building, MapPin, DollarSign, UploadCloud, Banknote, Calendar, Layers } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import propertyService from '../services/propertyService';
 
@@ -10,16 +10,23 @@ const AddProperty = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    price: '',
-    location: '',
+    location_address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    total_budget: '',
+    face_value: '',
+    ipo_price: '',
     type: 'Apartment',
     beds: '',
     baths: '',
     area: '',
-    status: 'For Sale'
+    expected_completion_date: '',
+    status: 'Upcoming'
   });
 
   const handleChange = (e) => {
@@ -32,6 +39,11 @@ const AddProperty = () => {
     }
   };
 
+  // Auto calculate bricks correctly
+  const totalBricks = formData.total_budget && formData.face_value 
+      ? Math.floor(parseFloat(formData.total_budget) / parseFloat(formData.face_value)) 
+      : 0;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -39,27 +51,43 @@ const AddProperty = () => {
       alert("Please upload at least one image.");
       return;
     }
+
+    if (totalBricks <= 0) {
+      alert("Invalid financial configuration. Total Bricks must be greater than zero.");
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
+      // Structure the data to strictly match our backend ProjectCreate Schema
       const projectData = {
         title: formData.title,
         description: formData.description,
-        location_address: formData.location,
-        city: 'Default City',
-        state: 'Default State',
-        pincode: '000000',
-        total_budget: parseFloat(formData.price) || 0,
-        total_bricks: 10000,
-        face_value: 100,
-        ipo_price: 100,
-        expected_completion_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+        location_address: formData.location_address,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+        total_budget: parseFloat(formData.total_budget),
+        total_bricks: totalBricks,
+        face_value: parseFloat(formData.face_value),
+        ipo_price: parseFloat(formData.ipo_price),
+        expected_completion_date: formData.expected_completion_date ? new Date(formData.expected_completion_date).toISOString() : null,
         milestones: [
           {
             milestone_number: 1,
-            description: "Initial Phase",
-            release_percentage: 100.0
+            description: "Phase 1: Project Initiation & Land Verification",
+            release_percentage: 20.0
+          },
+          {
+            milestone_number: 2,
+            description: "Phase 2: Foundation & Framing",
+            release_percentage: 40.0
+          },
+          {
+            milestone_number: 3,
+            description: "Phase 3: Final Completion & Handover",
+            release_percentage: 40.0
           }
         ]
       };
@@ -78,27 +106,29 @@ const AddProperty = () => {
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white font-heading">
-          Add New Property
+          Launch New IPO Project
         </h1>
         <p className="mt-2 text-secondary-600 dark:text-secondary-400">
-          List a new property for investment on the EstateX platform.
+          Create and list a new fractionalized property offering on EstateX.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* SECTION 1: BASIC INFORMATION */}
         <Card>
           <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
-            <CardDescription>Enter the primary details for the property listing.</CardDescription>
+            <CardTitle>Overview</CardTitle>
+            <CardDescription>Primary details outlining this Real Estate project.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Input
-              label="Property Title"
+              label="Project Title"
               name="title"
               required
               value={formData.title}
               onChange={handleChange}
-              placeholder="e.g. Luxury Penthouse in Downtown"
+              placeholder="e.g. The Sapphire Penthouses"
             />
             
             <div className="space-y-2">
@@ -110,29 +140,7 @@ const AddProperty = () => {
                 value={formData.description}
                 onChange={handleChange}
                 className="w-full rounded-xl border border-secondary-200 bg-white px-3 py-2 text-sm text-secondary-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-secondary-800 dark:bg-slate-900/50 dark:text-secondary-100"
-                placeholder="Describe the property, its features, and surrounding area..."
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <Input
-                label="Asking Price (₹)"
-                name="price"
-                type="number"
-                required
-                icon={DollarSign}
-                value={formData.price}
-                onChange={handleChange}
-                placeholder="1000000"
-              />
-              <Input
-                label="Location / Address"
-                name="location"
-                required
-                icon={MapPin}
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="New York, NY"
+                placeholder="Detail the uniqueness, architecture, and core value proposition of this project..."
               />
             </div>
 
@@ -152,28 +160,127 @@ const AddProperty = () => {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Status</label>
+                <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Listing Status</label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
                   className="flex h-11 w-full rounded-xl border border-secondary-200 bg-white px-3 py-2 text-sm text-secondary-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:border-secondary-800 dark:bg-slate-900/50 dark:text-secondary-100"
                 >
-                  <option value="For Sale">For Sale</option>
+                  <option value="Upcoming">Upcoming IPO</option>
                   <option value="Off-Plan">Off-Plan</option>
-                  <option value="Upcoming">Upcoming</option>
                 </select>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* SECTION 2: LOCATION */}
         <Card>
           <CardHeader>
-            <CardTitle>Specifications</CardTitle>
-            <CardDescription>Technical details and dimensions.</CardDescription>
+            <CardTitle>Location Info</CardTitle>
+            <CardDescription>Accurate geographical data helps investors analyze market yield.</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <CardContent className="space-y-6">
+            <Input
+              label="Street Address / Locality"
+              name="location_address"
+              required
+              icon={MapPin}
+              value={formData.location_address}
+              onChange={handleChange}
+              placeholder="123 Financial District Ave"
+            />
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+              <Input
+                label="City"
+                name="city"
+                required
+                value={formData.city}
+                onChange={handleChange}
+                placeholder="Mumbai"
+              />
+               <Input
+                label="State"
+                name="state"
+                required
+                value={formData.state}
+                onChange={handleChange}
+                placeholder="Maharashtra"
+              />
+               <Input
+                label="Pincode"
+                name="pincode"
+                required
+                value={formData.pincode}
+                onChange={handleChange}
+                placeholder="400001"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* SECTION 3: ESTATE-X FINANCIALS */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Financials & Bricks</CardTitle>
+            <CardDescription>Setup fractional tokenization metrics for the property.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+              <Input
+                label="Total Target Budget (₹)"
+                name="total_budget"
+                type="number"
+                required
+                icon={DollarSign}
+                value={formData.total_budget}
+                onChange={handleChange}
+                placeholder="50000000"
+              />
+              <Input
+                label="Face Value per Brick (₹)"
+                name="face_value"
+                type="number"
+                required
+                icon={Banknote}
+                value={formData.face_value}
+                onChange={handleChange}
+                placeholder="100"
+              />
+              <Input
+                label="IPO Launch Price (₹)"
+                name="ipo_price"
+                type="number"
+                required
+                icon={Banknote}
+                value={formData.ipo_price}
+                onChange={handleChange}
+                placeholder="105"
+              />
+            </div>
+            
+            {/* Display Auto Calculated Bricks */}
+             <div className="p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-800/30 flex items-center gap-4">
+                <div className="p-3 bg-primary-100 dark:bg-primary-800 rounded-lg text-primary-700 dark:text-primary-300">
+                   <Layers size={24} />
+                </div>
+                <div>
+                   <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">Calculated Total Bricks to be Issued</p>
+                   <p className="text-2xl font-bold text-primary-700 dark:text-primary-400">
+                     {totalBricks.toLocaleString()}
+                   </p>
+                </div>
+             </div>
+          </CardContent>
+        </Card>
+
+        {/* SECTION 4: SPECIFICATIONS */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Specifications & Timeline</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <Input
               label="Bedrooms"
               name="beds"
@@ -199,13 +306,23 @@ const AddProperty = () => {
               onChange={handleChange}
               placeholder="2000"
             />
+            <Input
+              label="Est. Completion"
+              name="expected_completion_date"
+              type="date"
+              icon={Calendar}
+              required
+              value={formData.expected_completion_date}
+              onChange={handleChange}
+            />
           </CardContent>
         </Card>
 
+        {/* SECTION 5: MEDIA */}
         <Card>
           <CardHeader>
             <CardTitle>Media & Documents</CardTitle>
-            <CardDescription>Upload high-quality images and legal documents.</CardDescription>
+            <CardDescription>Upload high-quality images of the property.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="rounded-2xl border-2 border-dashed border-secondary-300 bg-secondary-50 px-6 py-12 text-center dark:border-secondary-700 dark:bg-secondary-900/20">
@@ -232,12 +349,13 @@ const AddProperty = () => {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-4">
+        {/* SUBMIT */}
+        <div className="flex justify-end gap-4 pb-12">
           <Button variant="outline" type="button" onClick={() => navigate('/dashboard')}>
             Cancel
           </Button>
           <Button type="submit" isLoading={isSubmitting} leftIcon={<Building size={18} />}>
-            List Property
+            Launch Project
           </Button>
         </div>
       </form>

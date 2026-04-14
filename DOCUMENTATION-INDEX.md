@@ -10,8 +10,8 @@ Comprehensive Technical Documentation Suite
 This documentation suite provides complete technical specifications, architectural design, implementation guides, and user guides for the EstateX platform.
 
 **Total Documentation**: ~35,000 lines  
-**Last Updated**: March 6, 2026  
-**Version**: 1.0
+**Last Updated**: April 14, 2026  
+**Version**: 1.1
 
 ---
 
@@ -35,6 +35,25 @@ This documentation suite provides complete technical specifications, architectur
 - Solution: Fractional tokenized ownership (Rs. 10,000 minimum)
 - Timeline: 16 weeks to MVP
 - Documentation: 9 comprehensive guides
+
+---
+
+## Recent Technical Updates (April 2026)
+
+### S3 Storage Resilience
+- **Path-Style Addressing**: Configured `boto3` to use `addressing_style='path'` to ensure compatibility with Supabase S3 endpoints.
+- **Auto-Bucket Creation**: Implemented logic to automatically detect and create missing storage buckets (`NoSuchBucket`) during the upload process.
+- **Filename Sanitization**: Enhanced storage utility to handle special characters in filenames, preventing `InvalidKey` errors.
+
+### Security & Authentication
+- **Custom OTP Flow**: Implemented a local `otps` table and service for 2FA-style password resets.
+- **Supabase Admin Integration**: Leveraged `SUPABASE_SERVICE_KEY` and the Admin API (`update_user_by_id`) to allow secure password overrides without active user sessions.
+- **Alembic Tracking**: Unified all new security models into the Alembic migration history.
+
+### Property IPO Launcher
+- **Dynamic IPO Form**: Overhauled the property listing UI to capture fractionalization metrics (Face Value, IPO Price, Total Budget).
+- **Auto-Calculation**: Integrated live "Brick" count calculations based on financial inputs.
+- **Enhanced Schemas**: Updated frontend payloads to strictly match backend `ProjectCreate` requirements, including multi-phase milestone definitions.
 
 ---
 
