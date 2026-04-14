@@ -4,10 +4,12 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Building, MapPin, DollarSign, UploadCloud, Banknote } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import propertyService from '../services/propertyService';
 
 const AddProperty = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -24,15 +26,52 @@ const AddProperty = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e) => {
+    if (e.target.files) {
+      setSelectedFiles(Array.from(e.target.files));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (selectedFiles.length === 0) {
+      alert("Please upload at least one image.");
+      return;
+    }
+    
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    navigate('/dashboard');
+    try {
+      const projectData = {
+        title: formData.title,
+        description: formData.description,
+        location_address: formData.location,
+        city: 'Default City',
+        state: 'Default State',
+        pincode: '000000',
+        total_budget: parseFloat(formData.price) || 0,
+        total_bricks: 10000,
+        face_value: 100,
+        ipo_price: 100,
+        expected_completion_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+        milestones: [
+          {
+            milestone_number: 1,
+            description: "Initial Phase",
+            release_percentage: 100.0
+          }
+        ]
+      };
+      
+      await propertyService.createProject(projectData, selectedFiles);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error("Failed to list property:", error);
+      alert("Failed to create property. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -174,11 +213,21 @@ const AddProperty = () => {
                <div className="mt-4 flex flex-col items-center text-sm leading-6 text-secondary-600 dark:text-secondary-400">
                  <label htmlFor="file-upload" className="relative cursor-pointer rounded-md bg-transparent font-semibold text-primary-600 focus-within:outline-none hover:text-primary-500 dark:text-primary-400">
                    <span>Upload files</span>
-                   <input id="file-upload" name="file-upload" type="file" className="sr-only" multiple />
+                   <input onChange={handleFileChange} id="file-upload" name="file-upload" type="file" className="sr-only" multiple accept="image/*" />
                  </label>
                  <p className="pl-1">or drag and drop</p>
                </div>
-               <p className="text-xs leading-5 text-secondary-500 mt-2">PNG, JPG, PDF up to 10MB</p>
+               <p className="text-xs leading-5 text-secondary-500 mt-2">PNG, JPG up to 10MB</p>
+               {selectedFiles.length > 0 && (
+                 <div className="mt-4 text-sm text-secondary-700 dark:text-secondary-300 text-left">
+                   <p className="font-semibold mb-2">Selected Images:</p>
+                   <ul className="list-disc pl-5">
+                     {selectedFiles.map((file, index) => (
+                       <li key={index}>{file.name}</li>
+                     ))}
+                   </ul>
+                 </div>
+               )}
             </div>
           </CardContent>
         </Card>
