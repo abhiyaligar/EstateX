@@ -11,6 +11,13 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str
     SUPABASE_JWT_SECRET: str | None = None
 
+    # S3 Storage Configuration
+    S3_ENDPOINT: str
+    S3_ACCESS_KEY: str
+    S3_SECRET_KEY: str
+    S3_BUCKET: str = "property-images"
+    S3_REGION: str = "us-east-1"
+
     # Database Configuration
     DATABASE_URL: str
     DATABASE_POOL_SIZE: int = 10

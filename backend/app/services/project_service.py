@@ -8,7 +8,7 @@ import datetime
 
 class ProjectService:
     @staticmethod
-    def create_project(builder_id: str, project_data: ProjectCreate, db: Session) -> Project:
+    def create_project(builder_id: str, project_data: ProjectCreate, db: Session, image_urls: List[str] = None) -> Project:
         # Verify the Builder exists and is officially 'approved' by an Admin
         builder = db.query(Builder).filter(Builder.id == builder_id).first()
         if not builder or builder.verification_status != 'approved':
@@ -44,6 +44,7 @@ class ProjectService:
             
             rera_id=project_data.rera_id,
             expected_completion_date=project_data.expected_completion_date,
+            images=image_urls or [],
             ipo_status='upcoming', 
             status='active' # Visible for browsing
         )
