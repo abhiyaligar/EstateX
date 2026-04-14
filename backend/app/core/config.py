@@ -7,8 +7,10 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # Supabase Configuration
+    # Supabase Configuration
     SUPABASE_URL: str
     SUPABASE_KEY: str
+    SUPABASE_SERVICE_KEY: str | None = None
     SUPABASE_JWT_SECRET: str | None = None
 
     # S3 Storage Configuration

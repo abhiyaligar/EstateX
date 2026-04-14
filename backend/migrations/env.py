@@ -28,6 +28,7 @@ from app.models.project import Project, Milestone
 from app.models.wallet import WalletTransaction
 from app.models.portfolio import BrickHolding
 from app.models.exchange import Order, Trade
+from app.models.otp import OTPRecord
 
 target_metadata = Base.metadata
 

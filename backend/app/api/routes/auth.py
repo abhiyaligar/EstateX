@@ -35,3 +35,21 @@ def get_me(current_user: User = Depends(get_current_user)):
     Demonstrates route protection using Supabase auth.
     """
     return current_user
+
+from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
+
+@router.post("/forgot-password")
+def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Generates a 6-digit OTP for the given email.
+    """
+    otp = AuthService.forgot_password(data.email, db)
+    return {"message": "OTP generated successfully", "otp": otp}
+
+@router.post("/reset-password")
+def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Resets the user's password using the generated OTP.
+    """
+    AuthService.reset_password(data.email, data.otp, data.new_password, db)
+    return {"message": "Password reset successfully"}

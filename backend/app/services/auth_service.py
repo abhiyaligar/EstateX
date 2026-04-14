@@ -3,6 +3,10 @@ from app.core.database import supabase
 from app.schemas.auth import UserCreate, UserLogin, Token, User
 from app.models.user import User as DBUser
 from sqlalchemy.orm import Session
+from app.models.otp import OTPRecord
+from app.core.database import supabase, supabase_admin
+import random
+import datetime
 
 class AuthService:
     @staticmethod
@@ -80,3 +84,65 @@ class AuthService:
                 status_code=status_code,
                 detail=error_detail
             )
+
+    @staticmethod
+    def forgot_password(email: str, db: Session) -> str:
+        # Check if user exists
+        user = db.query(DBUser).filter(DBUser.email == email).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        # Generate 6 digit OTP
+        otp_code = str(random.randint(100000, 999999))
+        
+        # Invalidate old unused OTPs
+        db.query(OTPRecord).filter(OTPRecord.email == email, OTPRecord.is_used == False).update({"is_used": True})
+        
+        # Create new OTP record valid for 10 minutes
+        expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+        otp_record = OTPRecord(email=email, otp_code=otp_code, expires_at=expires_at)
+        
+        db.add(otp_record)
+        db.commit()
+        
+        # Return the generated OTP (since we are not sending emails yet)
+        return otp_code
+
+    @staticmethod
+    def reset_password(email: str, otp: str, new_password: str, db: Session):
+        if not supabase_admin:
+            raise HTTPException(
+                status_code=500, 
+                detail="Server configuration error: SUPABASE_SERVICE_KEY is required to reset passwords."
+            )
+            
+        # Verify OTP
+        otp_record = db.query(OTPRecord).filter(
+            OTPRecord.email == email,
+            OTPRecord.otp_code == otp,
+            OTPRecord.is_used == False,
+            OTPRecord.expires_at > datetime.datetime.utcnow()
+        ).first()
+        
+        if not otp_record:
+            raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+            
+        user = db.query(DBUser).filter(DBUser.email == email).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        try:
+            # Update password in Supabase via Admin API
+            supabase_admin.auth.admin.update_user_by_id(
+                str(user.id),
+                {"password": new_password}
+            )
+            
+            # Mark OTP as used
+            otp_record.is_used = True
+            db.commit()
+            
+            return True
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to reset password: {str(e)}")

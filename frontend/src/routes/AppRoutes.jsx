@@ -19,6 +19,8 @@ import Wallet from '../pages/Wallet';
 import KYC from '../pages/KYC';
 import Portfolio from '../pages/Portfolio';
 
+import ForgotPassword from '../pages/ForgotPassword';
+
 // Protected Route Component
 const ProtectedRoute = ({ children, roles = [] }) => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -50,6 +52,7 @@ const AppRoutes = () => {
             <Route path="/properties/:id" element={<PropertyDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/unauthorized" element={<div className="p-20 text-center">Unauthorized Access</div>} />
           </Route>
 

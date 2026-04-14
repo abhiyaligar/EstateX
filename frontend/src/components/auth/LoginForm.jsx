@@ -101,9 +101,9 @@ const LoginForm = () => {
           </div>
 
           <div className="text-sm">
-            <a href="#" className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
+            <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
               Forgot password?
-            </a>
+            </Link>
           </div>
         </div>
 
