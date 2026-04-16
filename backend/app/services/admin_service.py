@@ -140,12 +140,34 @@ class AdminService:
     @staticmethod
     def update_project_status(project_id: str, status_data: AdminProjectStatusUpdateRequest, db: Session):
         from app.models.project import Project
+        from app.models.exchange import Order
+        from app.services.exchange_service import ExchangeService
+        
         project = db.query(Project).filter(Project.id == project_id).first()
         
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
             
+        old_status = project.status
         project.status = status_data.status
+        
+        # If transitioning to HALTED, mathematically purge the order book to protect users
+        if status_data.status == 'halted' and old_status != 'halted':
+            # Find all open/partial orders for this project
+            open_orders = db.query(Order).filter(
+                Order.project_id == project_id,
+                Order.status.in_(['open', 'partial'])
+            ).all()
+            
+            for order in open_orders:
+                # We use the existing cancellation logic to ensure atomicity and proper asset refunding
+                ExchangeService.cancel_order(str(order.user_id), str(order.id), db)
+        
         db.commit()
         db.refresh(project)
-        return {"success": True, "project_id": project.id, "status": project.status}
+        return {
+            "success": True, 
+            "project_id": project.id, 
+            "status": project.status, 
+            "orders_cancelled": True if status_data.status == 'halted' else False
+        }

@@ -25,6 +25,9 @@ class ExchangeService:
         if not project or project.ipo_status != 'active':
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project IPO is not active.")
         
+        if project.status == 'halted':
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project is currently halted for regulatory/compliance audit. Subscriptions paused.")
+        
         # Calculate exactly how many bricks are remaining
         sold_so_far = db.query(BrickHolding).filter(BrickHolding.project_id == project_id).with_entities(
             func.sum(BrickHolding.quantity)
@@ -81,6 +84,9 @@ class ExchangeService:
         project = db.query(Project).filter(Project.id == str(order_data.project_id)).first()
         if not project or project.ipo_status != 'completed':
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project is not open for Secondary Market Trading.")
+            
+        if project.status == 'halted':
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Trading is currently halted for this project by administration.")
             
         ExchangeService._enforce_circuit_breakers(project, Decimal(str(order_data.price_per_brick)))
         
@@ -218,3 +224,43 @@ class ExchangeService:
                 
             # 4. Push Market Ticker
             project.market_value = execution_price
+
+    @staticmethod
+    def cancel_order(user_id: str, order_id: str, db: Session):
+        """
+        Secondary Market: Withdraws an active intent and returns locked assets (Fiat/Bricks) to the user.
+        """
+        order = db.query(Order).filter(Order.id == order_id, Order.user_id == user_id).with_for_update().first()
+        
+        if not order:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found.")
+            
+        if order.status not in ['open', 'partial']:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Order cannot be cancelled. Current status: {order.status}")
+
+        user = db.query(User).filter(User.id == user_id).with_for_update().first()
+        
+        # Calculate assets to return
+        if order.order_type == 'buy':
+            # Balance locked at order.price_per_brick
+            refund_amount = Decimal(str(order.unfilled_quantity)) * order.price_per_brick
+            user.wallet_balance += refund_amount
+            db.add(WalletTransaction(
+                user_id=user.id, 
+                amount=refund_amount, 
+                transaction_type='order_cancellation', 
+                status='completed', 
+                reference_id=f"CNL-{order.id}"
+            ))
+        else:
+            # Bricks locked
+            holding = db.query(BrickHolding).filter(BrickHolding.user_id == user_id, BrickHolding.project_id == order.project_id).with_for_update().first()
+            if holding:
+                holding.quantity += order.unfilled_quantity
+            else:
+                # This shouldn't normally happen as the bricks were locked from a holding, but for safety:
+                db.add(BrickHolding(user_id=user_id, project_id=order.project_id, quantity=order.unfilled_quantity))
+
+        order.status = 'cancelled'
+        db.commit()
+        return {"success": True, "message": "Order cancelled and assets released."}

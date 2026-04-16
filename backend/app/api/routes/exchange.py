@@ -4,7 +4,7 @@ from typing import List
 from uuid import UUID
 
 from app.schemas.auth import User
-from app.schemas.exchange import OrderCreate, OrderResponse, BrickHoldingResponse
+from app.schemas.exchange import OrderCreate, OrderResponse, BrickHoldingResponse, PublicOrderResponse
 from app.models.portfolio import BrickHolding
 from app.models.exchange import Order
 from app.middleware.auth import get_current_user
@@ -69,3 +69,28 @@ def get_project_trade_history(
     Publicly tracks transparent historical matches shifting the underlying market_value ticker.
     """
     return db.query(Trade).filter(Trade.project_id == str(project_id)).order_by(Trade.executed_at.desc()).limit(50).all()
+
+@router.get("/orders/public/{project_id}", response_model=List[PublicOrderResponse])
+def get_public_order_book(
+    project_id: UUID,
+    db: Session = Depends(get_db)
+):
+    """
+    Exposes ALL open buy/sell intents for a project!
+    Used to build the live 'Depth' or 'Order Book' visualization.
+    """
+    return db.query(Order).filter(
+        Order.project_id == str(project_id),
+        Order.status.in_(['open', 'partial'])
+    ).order_by(Order.price_per_brick.desc()).all()
+
+@router.post("/orders/{order_id}/cancel")
+def cancel_order(
+    order_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Withdraws an active intent and returns locked assets (Fiat/Bricks) to the user.
+    """
+    return ExchangeService.cancel_order(str(current_user.id), str(order_id), db)

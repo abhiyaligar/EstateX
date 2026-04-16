@@ -42,3 +42,12 @@ class TradeResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+class PublicOrderResponse(BaseModel):
+    order_type: str
+    price_per_brick: float
+    unfilled_quantity: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

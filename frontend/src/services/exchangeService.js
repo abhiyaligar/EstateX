@@ -24,6 +24,16 @@ export const exchangeService = {
   getTradeHistory: async (projectId) => {
     const response = await api.get(`/exchange/trades/${projectId}`);
     return response.data;
+  },
+
+  getPublicOrderBook: async (projectId) => {
+    const response = await api.get(`/exchange/orders/public/${projectId}`);
+    return response.data;
+  },
+
+  cancelOrder: async (orderId) => {
+    const response = await api.post(`/exchange/orders/${orderId}/cancel`);
+    return response.data;
   }
 };
 

@@ -179,6 +179,22 @@ const AdminPortal = () => {
     } catch (err) { alert(err.response?.data?.detail || "Action failed"); }
   };
 
+  const handleProjectHalt = async (projectId, currentStatus) => {
+    const isHalted = currentStatus === 'halted';
+    const msg = isHalted 
+      ? "Resume trading and subscriptions for this project?" 
+      : "STOP ALL TRADING? This will HALT the exchange for this project and CANCEL all active intents. This is an emergency action.";
+    
+    if (!confirm(msg)) return;
+
+    try {
+      await adminService.updateProjectStatus(projectId, { status: isHalted ? 'approved' : 'halted' });
+      const projectsData = await propertyService.getProperties('all');
+      setProjects(projectsData);
+      alert(isHalted ? "Project resumed." : "Project HALTED and orders purged.");
+    } catch (err) { alert(err.response?.data?.detail || "Status update failed"); }
+  };
+
   if (loading && !stats) return (
     <div className="flex items-center justify-center h-screen bg-black">
       <div className="w-12 h-12 border-t-2 border-white animate-spin" />
@@ -380,6 +396,7 @@ const AdminPortal = () => {
                       <th className="p-6 md:p-8">Builder</th>
                       <th className="p-6 md:p-8">IPO Status</th>
                       <th className="p-6 md:p-8">Lifecycle</th>
+                      <th className="p-6 md:p-8">Market Control</th>
                       <th className="p-6 md:p-8 text-right">Operational Actions</th>
                     </tr>
                   </thead>
@@ -410,6 +427,13 @@ const AdminPortal = () => {
                           <td className="p-6 md:p-8">
                             <span className="text-xs text-white/60 uppercase">{p.lifecycle_status}</span>
                           </td>
+                          <td className="p-6 md:p-8">
+                            <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest rounded-none border ${
+                              p.status === 'halted' ? 'bg-red-500 text-white border-red-500' : 'bg-white/5 text-white/40 border-white/10'
+                            }`}>
+                              {p.status || 'approved'}
+                            </span>
+                          </td>
                           <td className="p-6 md:p-8 text-right">
                              <div className="flex justify-end gap-2">
                                {p.ipo_status === 'upcoming' && (
@@ -417,6 +441,11 @@ const AdminPortal = () => {
                                )}
                                {p.ipo_status === 'active' && (
                                  <Button size="sm" className="text-[10px] h-9 bg-blue-600 hover:bg-blue-700" onClick={() => handleIPOAction(p.id, 'complete')}>COMPLETE IPO</Button>
+                               )}
+                               {p.status === 'halted' ? (
+                                 <Button size="sm" variant="primary" className="text-[10px] h-9 bg-green-600 hover:bg-green-700" onClick={() => handleProjectHalt(p.id, p.status)}>RESUME</Button>
+                               ) : (
+                                 <Button size="sm" variant="danger" className="text-[10px] h-9" onClick={() => handleProjectHalt(p.id, p.status)}>HALT</Button>
                                )}
                                <Button size="sm" variant="outline" className="text-[10px] h-9" onClick={() => alert("Milestone verification view not implemented yet")}>MILESTONES</Button>
                              </div>
