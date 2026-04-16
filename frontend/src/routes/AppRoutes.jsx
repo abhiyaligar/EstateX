@@ -19,6 +19,7 @@ import Wallet from '../pages/Wallet';
 import KYC from '../pages/KYC';
 import Portfolio from '../pages/Portfolio';
 import SecondaryMarket from '../pages/SecondaryMarket';
+import AdminPortal from '../pages/AdminPortal';
 
 import ForgotPassword from '../pages/ForgotPassword';
 
@@ -74,6 +75,14 @@ const AppRoutes = () => {
               element={
                 <ProtectedRoute roles={['builder', 'admin']}>
                   <AddProperty />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="admin" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <AdminPortal />
                 </ProtectedRoute>
               } 
             />

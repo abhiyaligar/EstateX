@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UserCircle, Settings, Home, PlusCircle, Wallet, ArrowLeftRight } from 'lucide-react';
+import { LayoutDashboard, UserCircle, Settings, Home, PlusCircle, Wallet, ArrowLeftRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = () => {
@@ -17,6 +17,10 @@ const Sidebar = () => {
       ? [{ name: 'Add Property', path: '/dashboard/add-property', icon: PlusCircle }] 
       : []),
     { name: 'Settings', path: '/dashboard/settings', icon: Settings },
+    // Only show admin portal for admin users
+    ...(user?.role === 'admin' 
+      ? [{ name: 'Admin Portal', path: '/dashboard/admin', icon: ShieldCheck }] 
+      : []),
   ];
 
   return (
