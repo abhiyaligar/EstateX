@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UserCircle, Settings, Home, PlusCircle, Wallet } from 'lucide-react';
+import { LayoutDashboard, UserCircle, Settings, Home, PlusCircle, Wallet, ArrowLeftRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = () => {
@@ -8,6 +8,7 @@ const Sidebar = () => {
 
   const links = [
     { name: 'Overview', path: '/dashboard', icon: LayoutDashboard, exact: true },
+    { name: 'Secondary Market', path: '/dashboard/exchange', icon: ArrowLeftRight },
     { name: 'My Portfolio', path: '/dashboard/portfolio', icon: Home }, // Renamed/Adjusted
     { name: 'Wallet', path: '/dashboard/wallet', icon: Wallet },
     { name: 'My Profile', path: '/dashboard/profile', icon: UserCircle },
