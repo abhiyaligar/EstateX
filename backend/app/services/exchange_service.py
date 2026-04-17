@@ -12,6 +12,7 @@ from app.models.wallet import WalletTransaction
 from app.schemas.exchange import OrderCreate
 
 from sqlalchemy import func
+from app.core.db import SessionLocal
 
 class ExchangeService:
     @staticmethod
@@ -121,12 +122,28 @@ class ExchangeService:
         db.add(new_order)
         db.flush() # Secure UUID without committing entirely yet
         
-        # 3. Fire Engine 
-        ExchangeService._matching_engine(new_order.id, db)
+        # NOTE: Matching Engine is now fired as a BackgroundTask in the API layer 
+        # for instant user feedback.
         
-        db.commit() # Globally commits the spawned order AND whatever trades the engine materialized automatically
+        db.commit() # Globally commits the spawned order
         db.refresh(new_order)
         return new_order
+
+    @staticmethod
+    def run_matching_engine(order_id: UUID):
+        """
+        Background Worker for the matching engine.
+        Spawns a new database session to ensure isolation from the request cycle.
+        """
+        db = SessionLocal()
+        try:
+            ExchangeService._matching_engine(order_id, db)
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            print(f"MATCHING ENGINE BACKGROUND ERROR: {str(e)}")
+        finally:
+            db.close()
 
     @staticmethod
     def _matching_engine(new_order_id: UUID, db: Session):

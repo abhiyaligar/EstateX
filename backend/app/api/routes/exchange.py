@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -28,14 +28,21 @@ def subscribe_to_primary_ipo(
 @router.post("/orders", response_model=OrderResponse)
 def place_secondary_market_order(
     order_data: OrderCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Push intent into the Secondary Orderbook!
-    Strictly mathematically trapped by +20% / -10% circuit breakers and instantly spawns matches against existing liquidity.
+    Strictly mathematically trapped by +20% / -10% circuit breakers.
+    Returns instantly; matching logic happens in a background worker.
     """
-    return ExchangeService.place_order(current_user.id, order_data, db)
+    new_order = ExchangeService.place_order(current_user.id, order_data, db)
+    
+    # Fire the matching engine in a background task for sub-100ms response time
+    background_tasks.add_task(ExchangeService.run_matching_engine, new_order.id)
+    
+    return new_order
 
 @router.get("/portfolio", response_model=List[BrickHoldingResponse])
 def get_investor_holdings(
