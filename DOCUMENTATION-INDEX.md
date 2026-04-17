@@ -10,8 +10,8 @@ Comprehensive Technical Documentation Suite
 This documentation suite provides complete technical specifications, architectural design, implementation guides, and user guides for the EstateX platform.
 
 **Total Documentation**: ~35,000 lines  
-**Last Updated**: April 14, 2026  
-**Version**: 1.1
+**Last Updated**: April 17, 2026  
+**Version**: 1.2
 
 ---
 
@@ -54,6 +54,12 @@ This documentation suite provides complete technical specifications, architectur
 - **Dynamic IPO Form**: Overhauled the property listing UI to capture fractionalization metrics (Face Value, IPO Price, Total Budget).
 - **Auto-Calculation**: Integrated live "Brick" count calculations based on financial inputs.
 - **Enhanced Schemas**: Updated frontend payloads to strictly match backend `ProjectCreate` requirements, including multi-phase milestone definitions.
+
+### High-Performance Secondary Market
+- **Optimized Matching Engine**: Refactored the trading core to use in-memory aggregation and bulk database settlements, reducing I/O round-trips from `O(N)` to `O(1)` per request.
+- **Real-time Push (Supabase)**: Replaced 5-second polling with a Vercel-compatible Supabase Realtime layer for instant trade and orderbook updates.
+- **Async Processing**: Implemented FastAPI `BackgroundTasks` to offload complex matching calculations, achieving sub-100ms response times for order placement.
+- **Dependency Optimization**: Resolved Vite/Tailwind peer dependency conflicts to enable the `@supabase/supabase-js` integration.
 
 ---
 

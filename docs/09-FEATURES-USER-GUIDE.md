@@ -463,10 +463,10 @@ Portfolio → Project → Sell:
    ├── Platform fee (1%)
    ├── Net proceeds
    └── Processing time (24 hours)
-5. Confirm & list order
-6. Order visible on marketplace
+5. Confirm & list order. **Performance NOTE**: The order is validated and pushed instantly. Matching logic runs in the background.
+6. Order visible on marketplace within milliseconds.
 7. When buyer found:
-   ├── Notification sent
+   ├── Notification sent via Supabase Realtime
    ├── Tokens locked (cannot sell again)
    ├── Payment processed
    ├── Amount credited to bank (24-48 hours)
@@ -493,9 +493,9 @@ Purchase Flow:
    ├── Platform fee (1%)
    ├── Total cost
    └── Processing time
-4. Payment via Razorpay
-5. Tokens transferred to your account (1 hour)
-6. Start receiving distributions on new project
+4. Payment via Razorpay.
+5. Tokens transferred to your account (Instant settlement).
+6. Start receiving distributions on new project. **Real-time NOTE**: The Order Book and Ledger update instantly on your screen without refreshing.
 ```
 
 ### 4. Distribution Tracking

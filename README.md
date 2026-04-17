@@ -317,7 +317,9 @@ uvicorn main:app --reload
 |--------|--------|
 | Concurrent Users Supported | 10,000+ |
 | Maximum Concurrent Investors per Project | 500+ |
-| Average Transaction Time | <5 seconds |
+| Average Transaction Time | <100ms (P95 Response) |
+| Order Matching Engine | High-Performance In-Memory FIFO |
+| Live Data Feed | Real-time Push (Zero Polling) |
 | Smart Contract Gas Fee (Polygon) | Rs. 5-10 per transaction |
 | Monthly Distribution Batching | Reduces costs by 80% |
 | KYC Verification Time | <2 hours |

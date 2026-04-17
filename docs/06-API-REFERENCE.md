@@ -415,7 +415,9 @@ Displays the user's legally backed Equity (Bricks) inside various Real Estate Pr
 
 ### POST /exchange/orders
 
-Push intent into the Secondary Orderbook. Bound by `+20% / -10%` circuit breakers! Automatically freezes Fiat (for BUYS) or Bricks (for SELLS) instantly spawning matches via the internal FIFO algorithmic engine.
+Push intent into the Secondary Orderbook! Bound by `+20% / -10%` circuit breakers.
+**Performance**: Returns instantly (sub-100ms) while matching logic runs in a background task.
+**Real-time**: Results are pushed to the UI instantly via Supabase Realtime as matches are cleared.
 
 **Request**:
 ```json

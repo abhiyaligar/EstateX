@@ -33,6 +33,7 @@
 - Daily automated backups (30-day retention)
 - Point-in-time recovery (PITR) enabled
 - Monitoring via AWS CloudWatch
+- **Realtime Replication**: Enabled via Supabase/Postgres Wal2json for `trades` and `orders` tables
 
 ---
 
@@ -410,6 +411,9 @@ CREATE TABLE trades (
     executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_trades_project ON trades(project_id);
+
+> [!IMPORTANT]
+> **Supabase Realtime**: The `orders` and `trades` tables MUST have REPLICA IDENTITY FULL or at least Realtime Publication enabled in the Supabase Dashboard to support the sub-100ms UI updates.
 ```
 
 ### 9. kyc_records Table
@@ -759,5 +763,5 @@ ORDER BY completion_percentage DESC;
 ---
 
 **Document Version**: 1.0  
-**Last Updated**: March 6, 2026  
-**Status**: Complete
+**Last Updated**: April 17, 2026  
+**Status**: Complete (High Performance Update)

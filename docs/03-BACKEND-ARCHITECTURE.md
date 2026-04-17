@@ -473,6 +473,14 @@ estateX-backend/
 - get_investor_share(investment_id, month) → Amount
 ```
 
+#### 11. Exchange Service
+```python
+- place_order(user_id, order_data) → Order
+- run_matching_engine(order_id) → None (Background Task)
+- _matching_engine(order_id, db) → None (In-Memory Core)
+- cancel_order(user_id, order_id) → bool
+```
+
 ---
 
 ## API Layer Design

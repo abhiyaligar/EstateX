@@ -117,6 +117,11 @@ SWR 2.0 (Alternative)
 ├── Real-time data
 ├── Focus refetch
 └── Suspense support
+
+Supabase Client SDK
+├── Real-time presence & listeners
+├── Push-based data flow
+└── Zero-polling architecture
 ```
 
 ### Form Management
@@ -365,7 +370,8 @@ estateX-frontend/
 │   │   ├── theme.ts                 # Tailwind theme
 │   │   ├── env.ts                   # Environment variables
 │   │   ├── api-config.ts            # API configuration
-│   │   └── blockchain-config.ts     # Web3 configuration
+│   │   ├── blockchain-config.ts     # Web3 configuration
+│   │   └── supabaseClient.js        # Supabase Realtime setup
 │   │
 │   ├── styles/                      # Global styles
 │   │   ├── globals.css
@@ -1025,9 +1031,9 @@ async function safeApiCall(fn) {
 | Cumulative Layout Shift (CLS) | < 0.1 |
 | Time to Interactive (TTI) | < 3 seconds |
 | Bundle Size | < 200 KB (gzipped) |
+| Transaction Feedback | < 100 ms (Optimistic/Async) |
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: March 6, 2026  
-**Status**: Complete
+**Last Updated**: April 17, 2026  
+**Status**: Complete (High-Performance Real-time Update)
