@@ -359,7 +359,7 @@ const SecondaryMarket = () => {
                      <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold">Live Ledger</h3>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4">
-                     {tradeHistory.slice(0, 20).map((t, i) => (
+                     {tradeHistory.slice(0, 5).map((t, i) => (
                        <LedgerRow key={i} price={t.price} quantity={t.quantity} time={new Date(t.executed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} />
                      ))}
                   </div>

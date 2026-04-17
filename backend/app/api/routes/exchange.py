@@ -68,7 +68,7 @@ def get_project_trade_history(
     """
     Publicly tracks transparent historical matches shifting the underlying market_value ticker.
     """
-    return db.query(Trade).filter(Trade.project_id == str(project_id)).order_by(Trade.executed_at.desc()).limit(50).all()
+    return db.query(Trade).filter(Trade.project_id == str(project_id)).order_by(Trade.executed_at.desc()).limit(5).all()
 
 @router.get("/orders/public/{project_id}", response_model=List[PublicOrderResponse])
 def get_public_order_book(
