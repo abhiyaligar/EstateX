@@ -26,6 +26,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import exchangeService from '../services/exchangeService';
 import propertyService from '../services/propertyService';
+import { supabase } from '../utils/supabaseClient';
 
 // --- Sub-Components ---
 
@@ -172,10 +173,57 @@ const SecondaryMarket = () => {
     }
   };
 
+  // Initialize Data
   useEffect(() => {
     refreshLiveData();
-    const interval = setInterval(refreshLiveData, 5000); 
-    return () => clearInterval(interval);
+  }, [selectedProject]);
+
+  // Real-time Subscriptions
+  useEffect(() => {
+    if (!selectedProject) return;
+
+    // 1. Subscribe to Trades (Live Ledger & Chart)
+    const tradeChannel = supabase
+      .channel('public:trades')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'trades',
+          filter: `project_id=eq.${selectedProject.id}`
+        },
+        (payload) => {
+          console.log('New Trade Received:', payload.new);
+          // Prepend new trade to history
+          setTradeHistory(prev => [payload.new, ...prev].slice(0, 50));
+        }
+      )
+      .subscribe();
+
+    // 2. Subscribe to Orders (Depth / Orderbook)
+    const orderChannel = supabase
+      .channel('public:orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'orders',
+          filter: `project_id=eq.${selectedProject.id}`
+        },
+        () => {
+          // Re-fetch the orderbook to ensure consistency
+          console.log('Orderbook change detected - refreshing depth...');
+          refreshLiveData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(tradeChannel);
+      supabase.removeChannel(orderChannel);
+    };
   }, [selectedProject]);
 
   // Derived Data
