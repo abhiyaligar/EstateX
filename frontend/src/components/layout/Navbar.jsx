@@ -16,6 +16,23 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Properties', path: '/properties' },
     { name: 'About', path: '/about' },
+    ...(isAuthenticated ? [{ name: 'Exchange', path: '/dashboard/exchange' }] : []),
+  ];
+
+  const dashboardLinks = [
+    { name: 'Overview', path: '/dashboard' },
+    { name: 'Exchange', path: '/dashboard/exchange' },
+    { name: 'My Portfolio', path: '/dashboard/portfolio' },
+    { name: 'Wallet', path: '/dashboard/wallet' },
+    { name: 'KYC Verification', path: '/dashboard/kyc' },
+    { name: 'My Profile', path: '/dashboard/profile' },
+    // Role-specific links
+    ...(user?.role === 'builder' || user?.role === 'admin' 
+      ? [{ name: 'Add Property', path: '/dashboard/add-property' }] 
+      : []),
+    ...(user?.role === 'admin' 
+      ? [{ name: 'Admin Portal', path: '/dashboard/admin' }] 
+      : []),
   ];
 
   return (
@@ -93,7 +110,7 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden glass border-b border-secondary-200 shadow-xl dark:border-secondary-800">
           <div className="space-y-1 px-4 pb-3 pt-2">
-            {navLinks.map((link) => (
+            {(isAuthenticated ? dashboardLinks : navLinks).map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
