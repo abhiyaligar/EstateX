@@ -72,47 +72,47 @@ const Dashboard = () => {
   })).slice(0, 3);
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+    <div className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
+      <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white font-heading">
-            Welcome back, {user?.email || 'Investor'}!
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-white font-heading uppercase">
+            Sovereign <span className="opacity-30 italic">Session</span>
           </h1>
-          <p className="mt-1 text-sm text-secondary-500 dark:text-secondary-400">
-            Here's what's happening with your property portfolio today.
+          <p className="mt-4 text-sm text-zinc-500 font-medium tracking-wide uppercase">
+            Identified: {user?.email || 'Premium Member'}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-4">
            <Link to="/properties">
-             <Button variant="outline">Browse Markets</Button>
+             <Button variant="outline" className="px-8 border-white/10 hover:bg-white/5">Markets</Button>
            </Link>
            {user?.role === 'builder' && (
              <Link to="/dashboard/add-property">
-               <Button>Add New Project</Button>
+               <Button className="px-8 shadow-2xl shadow-white/10">Deploy Asset</Button>
              </Link>
            )}
         </div>
       </div>
 
       {/* Stats Overview */}
-      <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mb-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <Card key={i} className="flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-secondary-500 dark:text-secondary-400">{stat.title}</span>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400">
+            <Card key={i} className="flex flex-col p-8 bg-white/[0.02] border-white/5 backdrop-blur-3xl rounded-[var(--radius)]">
+              <div className="flex items-center justify-between mb-8">
+                <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-zinc-500">{stat.title}</span>
+                <div className="flex h-12 w-12 items-center justify-center rounded-[var(--radius)] bg-white/5 text-white border border-white/10">
                   <Icon size={20} />
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-secondary-900 dark:text-white font-heading">{stat.value}</span>
+                <span className="text-4xl font-bold text-white font-heading tracking-tighter">{stat.value}</span>
               </div>
-              <div className="mt-2 flex items-center text-sm">
-                 <ArrowUpRight size={16} className="text-green-500 mr-1" />
-                 <span className="font-medium text-green-500">{stat.change}</span>
-                 <span className="text-secondary-400 ml-1">vs last month</span>
+              <div className="mt-4 flex items-center text-[10px] uppercase tracking-widest">
+                 <ArrowUpRight size={14} className="text-green-400 mr-2" />
+                 <span className="font-bold text-green-400">{stat.change}</span>
+                 <span className="text-zinc-600 ml-2">Delta / 30D</span>
               </div>
             </Card>
           );
@@ -121,55 +121,63 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Performance Chart */}
-        <Card className="lg:col-span-2">
-           <h3 className="text-lg font-bold text-secondary-900 dark:text-white mb-4 font-heading">Portfolio Performance</h3>
-           <div className="h-72 w-full min-h-[300px]">
-             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                 <defs>
-                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                     <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                     <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                   </linearGradient>
-                 </defs>
-                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(156, 163, 175, 0.2)" />
-                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} dy={10} />
-                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                 <Tooltip 
-                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                   cursor={{ stroke: '#c4b5fd', strokeWidth: 1, strokeDasharray: '4 4' }}
-                 />
-                 <Area type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
-               </AreaChart>
-             </ResponsiveContainer>
+        <Card className="lg:col-span-2 overflow-visible p-8 bg-white/[0.02] border-white/5 backdrop-blur-3xl rounded-[var(--radius)]">
+           <h3 className="text-xs font-bold text-zinc-500 mb-10 uppercase tracking-[0.3em]">Institutional Growth</h3>
+           <div className="w-full">
+             {!loading && (
+               <ResponsiveContainer width="100%" aspect={2.5}>
+                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                   <defs>
+                     <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                       <stop offset="5%" stopColor="#ffffff" stopOpacity={0.2}/>
+                       <stop offset="95%" stopColor="#ffffff" stopOpacity={0}/>
+                     </linearGradient>
+                   </defs>
+                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 255, 255, 0.05)" />
+                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#444', fontSize: 10, fontWeight: 600}} dy={10} />
+                   <YAxis axisLine={false} tickLine={false} tick={{fill: '#444', fontSize: 10, fontWeight: 600}} />
+                   <Tooltip 
+                     contentStyle={{ backgroundColor: '#0a0a0a', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}
+                     itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 600 }}
+                     cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
+                   />
+                   <Area type="monotone" dataKey="value" stroke="rgba(255,255,255,0.4)" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
+                 </AreaChart>
+               </ResponsiveContainer>
+             )}
+             {loading && (
+               <div className="w-full aspect-[2.5] flex items-center justify-center text-zinc-600 text-[10px] uppercase tracking-[0.4em] bg-white/[0.01] rounded-[var(--radius)] border border-white/5">
+                 Matrix Synchronization...
+               </div>
+             )}
            </div>
         </Card>
 
         {/* Recent Activity */}
-        <Card>
-           <h3 className="text-lg font-bold text-secondary-900 dark:text-white mb-6 font-heading">Recent Activity</h3>
-           <div className="space-y-6">
+        <Card className="p-8 bg-white/[0.02] border-white/5 backdrop-blur-3xl rounded-[var(--radius)]">
+           <h3 className="text-xs font-bold text-zinc-500 mb-10 uppercase tracking-[0.3em]">Ledger Events</h3>
+           <div className="space-y-8">
                {(recentActivity.length > 0 ? recentActivity : [
-                 { title: 'No recent activity', desc: 'Your transactions will appear here', amount: null, time: '', type: 'info' }
+                 { title: 'No Ledger Events', desc: 'Awaiting first transaction sequence', amount: null, time: '', type: 'info' }
                ]).map((activity, i) => (
-                 <div key={i} className="flex gap-4">
-                    <div className="mt-1 bg-secondary-100 p-2 rounded-full text-secondary-500 dark:bg-slate-800 dark:text-secondary-400 h-8 w-8 flex items-center justify-center shrink-0">
-                       <Clock size={14} />
+                 <div key={i} className="flex gap-6 items-start">
+                    <div className="bg-white/5 p-3 rounded-[var(--radius)] text-zinc-400 border border-white/5 h-10 w-10 flex items-center justify-center shrink-0">
+                       <Clock size={16} />
                     </div>
                     <div className="flex-1">
-                       <p className="text-sm font-semibold text-secondary-900 dark:text-white">{activity.title}</p>
-                       <p className="text-xs text-secondary-500 dark:text-secondary-400">{activity.desc}</p>
-                       <p className="text-xs text-secondary-400 mt-1">{activity.time}</p>
+                       <p className="text-sm font-bold text-white tracking-tight">{activity.title}</p>
+                       <p className="text-xs text-zinc-500 mt-1 font-medium">{activity.desc}</p>
+                       <p className="text-[10px] text-zinc-600 mt-2 font-bold uppercase tracking-widest">{activity.time}</p>
                     </div>
                     {activity.amount && (
-                       <div className={`text-sm font-semibold ${activity.type === 'positive' ? 'text-green-500' : 'text-secondary-900 dark:text-white'}`}>
+                       <div className={`text-sm font-bold tracking-tighter ${activity.type === 'positive' ? 'text-green-400' : 'text-white'}`}>
                           {activity.amount}
                        </div>
                     )}
                  </div>
               ))}
            </div>
-           <Button variant="ghost" className="w-full mt-6 text-primary-600 dark:text-primary-400">View All Activity</Button>
+           <Button variant="ghost" className="w-full mt-12 text-[10px] tracking-[0.3em] font-bold uppercase border border-white/5 hover:bg-white/5 py-6">Audit All Events</Button>
         </Card>
       </div>
     </div>

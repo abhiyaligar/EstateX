@@ -18,7 +18,7 @@ export const Button = React.forwardRef(({
   rightIcon,
   ...props
 }, ref) => {
-  const baseStyles = "inline-flex items-center justify-center rounded-none font-medium tracking-wide uppercase text-xs transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-red disabled:pointer-events-none disabled:opacity-50";
+  const baseStyles = "inline-flex items-center justify-center rounded-[var(--radius)] font-semibold tracking-tight uppercase text-[10px] transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-red disabled:pointer-events-none disabled:opacity-50";
   
   const variants = {
     primary: "bg-white text-black hover:bg-neutral-200",

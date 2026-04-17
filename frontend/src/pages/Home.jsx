@@ -4,6 +4,7 @@ import { Search, ArrowRight, ShieldCheck, TrendingUp, Building } from 'lucide-re
 import { Button } from '../components/ui/Button';
 import PropertyGrid from '../components/property/PropertyGrid';
 import propertyService from '../services/propertyService';
+import LiquidChrome from '../components/ui/LiquidChrome';
 
 const Home = () => {
   const [featuredProperties, setFeaturedProperties] = React.useState([]);
@@ -25,60 +26,63 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="flex flex-col bg-background">
+    <div className="flex flex-col bg-[#0a0a0a]">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden px-6 lg:px-8">
-        {/* Cinematic Background Overlay */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(20,20,20,0.4),rgba(10,10,10,1))]" />
-          <img 
-            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000" 
-            alt="Luxury Architecture" 
-            className="h-full w-full object-cover opacity-40 mix-blend-luminosity"
+      <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden px-6 lg:px-8">
+        {/* Local Background - Localized to Home Only */}
+        <div className="absolute inset-0 z-0">
+          <LiquidChrome 
+            baseColor={[1.0, 1.0, 1.0]} 
+            speed={0.12} 
+            amplitude={0.6} 
+            interactive={true}
           />
         </div>
-
-        <div className="mx-auto max-w-5xl text-center space-y-12">
-          <div className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-accent-red font-semibold mb-4">
-            <span className="h-px w-8 bg-accent-red"></span>
-            System Status: Live Wealth Flow
+ 
+        <div className="mx-auto max-w-5xl text-center space-y-16 relative z-10">
+          <div className="inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.4em] text-zinc-500 font-bold mb-4">
+            <span className="h-px w-10 bg-white/10"></span>
+            System Status: 01 // Wealth Synchronization
           </div>
           
-          <h1 className="text-5xl md:text-8xl font-serif text-white leading-[1.1] tracking-tight">
+          <h1 className="text-7xl md:text-9xl font-bold text-white leading-[0.9] tracking-tighter uppercase font-heading">
             Architect your <br />
-            <span className="italic opacity-90">Attention.</span>
+            <span className="italic opacity-20">Attention.</span>
           </h1>
 
-          <p className="mt-8 text-lg md:text-xl leading-relaxed text-white/60 max-w-2xl mx-auto font-light tracking-wide">
+          <p className="mt-12 text-lg md:text-xl leading-relaxed text-zinc-400 max-w-3xl mx-auto font-medium tracking-tight">
             Real estate investment is a fractured landscape of noise. <br className="hidden md:block" />
-            EstateX is the fortress. An adaptive digital environment for institutional-grade growth.
+            EstateX is the fortress—an adaptive digital environment for institutional-grade growth.
           </p>
 
-          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
+          <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8">
             <Link to="/properties">
-              <Button size="lg" className="px-12 bg-white text-black hover:bg-neutral-200">
+              <Button size="lg" className="px-16 py-8 bg-white text-black hover:bg-neutral-200 rounded-[var(--radius)] text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:scale-105 shadow-2xl shadow-white/10">
                 Enter the Sanctuary
               </Button>
             </Link>
-            <Link to="/about">
-              <Button variant="ghost" size="lg" className="border border-white/10">
-                How it works
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="px-16 py-8 border-white/10 text-white hover:bg-white/5 rounded-[var(--radius)] text-[10px] font-bold uppercase tracking-[0.2em] transition-all cursor-pointer"
+              onClick={() => document.getElementById('methodology')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              How it works
+            </Button>
           </div>
         </div>
 
         {/* Bottom Credits */}
-        <div className="absolute bottom-12 left-12 hidden lg:block">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-medium">
-            Trusted by operators at <br />
-            <span className="text-white/60 font-semibold uppercase">Linear, OpenAI, and Teenage Engineering.</span>
+        <div className="absolute bottom-12 left-12 hidden lg:block z-10">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 font-bold leading-loose">
+            Validation Protocol // <br />
+            <span className="text-zinc-400 font-semibold uppercase">Linear, OpenAI, and Teenage Engineering.</span>
           </p>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-32 relative">
+      <section id="methodology" className="py-32 relative">
         <div className="mx-auto max-w-7xl px-6 lg:px-12">
           <div className="mx-auto max-w-2xl text-center space-y-4">
             <div className="text-[10px] uppercase tracking-[0.3em] text-accent-red font-bold">The Methodology</div>

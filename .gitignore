@@ -1,5 +1,7 @@
 .venv
 __pycache__
+node_modules
+
 .env
 .env.example
 backend/alembic.ini

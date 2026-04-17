@@ -8,7 +8,7 @@ const DashboardLayout = () => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-black text-white">Loading Dashboard...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white">Loading Dashboard...</div>;
   }
 
   if (!isAuthenticated) {
@@ -16,7 +16,7 @@ const DashboardLayout = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white font-sans">
+    <div className="flex min-h-screen flex-col bg-[#0a0a0a] text-white font-sans">
       <Navbar />
       <div className="flex flex-1 pt-16 overflow-hidden">
         {/* Sidebar for Desktop */}

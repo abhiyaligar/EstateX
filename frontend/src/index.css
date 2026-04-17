@@ -25,9 +25,8 @@
   --color-secondary-900: #e5e5e5;
   --color-secondary-950: #ffffff;
 
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-serif: 'DM Serif Display', serif;
-  --font-heading: var(--font-serif);
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Outfit', sans-serif;
 
   --color-background: #0a0a0a;
   --color-foreground: #f5f5f5;
@@ -46,7 +45,7 @@
   --color-border: #1a1a1a;
   --color-input: #111111;
   --color-ring: #cc4433;
-  --radius: 0rem;
+  --radius: 1.25rem;
 }
 
 @layer base {
