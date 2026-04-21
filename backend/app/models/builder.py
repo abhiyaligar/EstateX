@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Float, Integer, ForeignKey
+from sqlalchemy import Column, String, Boolean, DateTime, Float, Integer, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.models.user import Base
@@ -36,6 +36,7 @@ class Builder(Base):
     # Financial
     total_funding_raised = Column(Float, default=0.0)
     total_construction_cost = Column(Float, default=0.0)
+    wallet_balance = Column(DECIMAL(18, 2), default=0.00, nullable=False) # Liquid business capital
     
     # Verification System
     document_verified = Column(Boolean, default=False)

@@ -25,6 +25,7 @@ class Project(Base):
     # Financials (Stock Broker Model)
     total_budget = Column(DECIMAL(18, 2), nullable=False) # Only for Builder reference
     funding_raised = Column(DECIMAL(18, 2), default=0.00) # Realtime tracking of actual IPO sales
+    total_escrow_held = Column(DECIMAL(18, 2), default=0.00) # Funds currently in Admin control for this project
     
     # Brick Metrics
     total_bricks = Column(Integer, nullable=False)

@@ -30,6 +30,7 @@ class AdminService:
         projects_active = db.query(func.count(Project.id)).filter(Project.status == 'approved').scalar() or 0
         projects_completed = db.query(func.count(Project.id)).filter(Project.ipo_status == 'completed').scalar() or 0
         total_investments_locked_inr = db.query(func.sum(Project.funding_raised)).scalar() or 0.0
+        total_platform_escrow = db.query(func.sum(Project.total_escrow_held)).scalar() or 0.0
         
         return DashboardStatsResponse(
             total_users=total_users,
@@ -39,7 +40,8 @@ class AdminService:
             kyc_pending_approvals=pending_kyc,
             projects_active=projects_active,
             projects_completed=projects_completed,
-            total_investments_locked_inr=float(total_investments_locked_inr)
+            total_investments_locked_inr=float(total_investments_locked_inr),
+            total_platform_escrow=float(total_platform_escrow)
         )
 
     @staticmethod
@@ -140,19 +142,60 @@ class AdminService:
     
     @staticmethod
     def verify_project_milestone(project_id: str, milestone_id: str, review_data: AdminMilestoneReviewRequest, db: Session):
-        from app.models.project import Milestone
+        from app.models.project import Milestone, Project
+        from app.models.wallet import WalletTransaction
+        from decimal import Decimal
+
+        project = db.query(Project).filter(Project.id == project_id).with_for_update().first()
+        if not project:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
         milestone = db.query(Milestone).filter(
             Milestone.id == milestone_id, 
             Milestone.project_id == project_id
-        ).first()
+        ).with_for_update().first()
         
         if not milestone:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Milestone not found for this project")
+        
+        if milestone.status == 'completed' and review_data.status == 'completed':
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Milestone already verified and funds released.")
             
+        old_status = milestone.status
         milestone.status = review_data.status
+        
+        # Financial Release Logic: If milestone marked as 'completed', move funds from Escrow to Builder
+        if review_data.status == 'completed' and old_status != 'completed':
+            # Calculate payout: Percentage of funding_raised currently held in escrow
+            payout_amount = (Decimal(str(milestone.release_percentage)) / Decimal('100.0')) * (project.funding_raised or Decimal('0.0'))
+            
+            current_escrow = project.total_escrow_held or Decimal('0.0')
+            if current_escrow < payout_amount:
+                # Safety check: should not happen if accounting is correct
+                payout_amount = current_escrow
+                
+            project.total_escrow_held = current_escrow - payout_amount
+        
+            # Find the Builder profile (Business Wallet) and credit it
+            from app.models.builder import Builder
+            builder_profile = db.query(Builder).filter(Builder.id == project.builder_id).with_for_update().first()
+            if builder_profile:
+                builder_profile.wallet_balance += payout_amount
+                
+                # Log Transactions
+                # 1. Admin/Escrow Release (Tagged for Builder Wallet)
+                db.add(WalletTransaction(
+                    user_id=builder_profile.id, 
+                    amount=payout_amount,
+                    transaction_type='milestone_payout',
+                    is_builder_transaction=True, # STRICT SEPARATION
+                    status='completed',
+                    reference_id=f"MS-REL-{milestone.id}"
+                ))
+            
         db.commit()
         db.refresh(milestone)
-        return {"success": True, "milestone_id": milestone.id, "status": milestone.status}
+        return {"success": True, "milestone_id": milestone.id, "status": milestone.status, "payout_executed": True if review_data.status == 'completed' else False}
 
     @staticmethod
     def update_project_status(project_id: str, status_data: AdminProjectStatusUpdateRequest, db: Session):

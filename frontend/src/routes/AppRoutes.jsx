@@ -22,6 +22,7 @@ import SecondaryMarket from '../pages/SecondaryMarket';
 import AdminPortal from '../pages/AdminPortal';
 
 import ForgotPassword from '../pages/ForgotPassword';
+import BuilderWallet from '../pages/BuilderWallet';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, roles = [] }) => {
@@ -75,6 +76,14 @@ const AppRoutes = () => {
               element={
                 <ProtectedRoute roles={['builder', 'admin']}>
                   <AddProperty />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="builder-wallet" 
+              element={
+                <ProtectedRoute roles={['builder']}>
+                  <BuilderWallet />
                 </ProtectedRoute>
               } 
             />

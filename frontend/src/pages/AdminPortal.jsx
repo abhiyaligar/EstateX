@@ -102,14 +102,17 @@ const MilestonesModal = ({ isOpen, onClose, project, onVerify }) => {
                     </td>
                     <td className="p-6 md:p-8 text-right">
                        {m.status !== 'completed' && (
-                         <Button 
-                           size="sm" 
-                           variant="primary" 
-                           className="text-[10px] h-9 px-4 tracking-widest"
-                           onClick={() => onVerify(project.id, m.id)}
-                         >
-                           VERIFY
-                         </Button>
+                         <div className="flex flex-col items-end gap-2">
+                           <span className="text-[10px] text-white/40 font-mono">PAYOUT: ₹{((m.release_percentage / 100) * (project.funding_raised || 0)).toLocaleString()}</span>
+                           <Button 
+                             size="sm" 
+                             variant="primary" 
+                             className="text-[10px] h-9 px-4 tracking-widest"
+                             onClick={() => onVerify(project.id, m.id)}
+                           >
+                             VERIFY
+                           </Button>
+                         </div>
                        )}
                     </td>
                  </tr>
@@ -338,11 +341,12 @@ const AdminPortal = () => {
             className="space-y-10"
           >
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <StatCard title="Total Users" value={stats?.total_users || 0} icon={Users} color="blue" />
               <StatCard title="Active Builders" value={stats?.total_builders || 0} icon={Building2} color="purple" />
               <StatCard title="Pending KYC" value={stats?.kyc_pending_approvals || 0} icon={Clock} color="amber" />
-              <StatCard title="Locked Assets (INR)" value={`₹${(stats?.total_investments_locked_inr || 0).toLocaleString()}`} icon={Lock} color="green" />
+              <StatCard title="Platform Escrow" value={`₹${(stats?.total_platform_escrow || 0).toLocaleString()}`} icon={Shield} color="red" />
+              <StatCard title="Locked Assets" value={`₹${(stats?.total_investments_locked_inr || 0).toLocaleString()}`} icon={Lock} color="green" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -494,7 +498,7 @@ const AdminPortal = () => {
                       <th className="p-6 md:p-8">Project Name</th>
                       <th className="p-6 md:p-8">Builder</th>
                       <th className="p-6 md:p-8">IPO Status</th>
-                      <th className="p-6 md:p-8">Lifecycle</th>
+                      <th className="p-6 md:p-8">Escrow Balance</th>
                       <th className="p-6 md:p-8">Market Control</th>
                       <th className="p-6 md:p-8 text-right">Operational Actions</th>
                     </tr>
@@ -524,7 +528,7 @@ const AdminPortal = () => {
                             </span>
                           </td>
                           <td className="p-6 md:p-8">
-                            <span className="text-xs text-white/60 uppercase">{p.lifecycle_status}</span>
+                            <span className="text-xs font-bold text-white">₹{(p.total_escrow_held || 0).toLocaleString()}</span>
                           </td>
                           <td className="p-6 md:p-8">
                             <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest rounded-none border ${

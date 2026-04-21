@@ -11,15 +11,27 @@ export const dashboardService = {
     return response.data;
   },
 
-  getDashboardData: async () => {
-    const [wallet, portfolio] = await Promise.all([
+  getBuilderWalletInfo: async () => {
+    const response = await api.get('/wallet/builder');
+    return response.data;
+  },
+
+  getDashboardData: async (isBuilder = false) => {
+    const promises = [
       dashboardService.getWalletInfo(),
       dashboardService.getPortfolio()
-    ]);
+    ];
+
+    if (isBuilder) {
+      promises.push(dashboardService.getBuilderWalletInfo());
+    }
+
+    const results = await Promise.all(promises);
 
     return {
-      wallet,
-      portfolio
+      wallet: results[0],
+      portfolio: results[1],
+      builder_wallet: isBuilder ? results[2] : null
     };
   }
 };

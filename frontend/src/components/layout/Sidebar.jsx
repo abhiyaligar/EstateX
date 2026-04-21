@@ -10,7 +10,10 @@ const Sidebar = () => {
     { name: 'Overview', path: '/dashboard', icon: LayoutDashboard, exact: true },
     { name: 'Secondary Market', path: '/dashboard/exchange', icon: ArrowLeftRight },
     { name: 'My Portfolio', path: '/dashboard/portfolio', icon: Home }, // Renamed/Adjusted
-    { name: 'Wallet', path: '/dashboard/wallet', icon: Wallet },
+    { name: user?.role === 'builder' ? 'Investor Wallet' : 'Wallet', path: '/dashboard/wallet', icon: Wallet },
+    ...(user?.role === 'builder' 
+      ? [{ name: 'Builder Wallet', path: '/dashboard/builder-wallet', icon: ShieldCheck }] 
+      : []),
     { name: 'KYC Verification', path: '/dashboard/kyc', icon: ShieldCheck },
     { name: 'My Profile', path: '/dashboard/profile', icon: UserCircle },
     // Only show add property for builders or admins

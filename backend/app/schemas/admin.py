@@ -12,6 +12,7 @@ class DashboardStatsResponse(BaseModel):
     total_investments_locked_inr: float
     projects_active: int
     projects_completed: int
+    total_platform_escrow: float
 
 class KYCReviewRequest(BaseModel):
     status: Literal['approved', 'rejected']

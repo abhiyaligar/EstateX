@@ -48,8 +48,9 @@ class ExchangeService:
         # Log transaction
         db.add(WalletTransaction(user_id=user.id, amount=-total_cost, transaction_type='brick_purchase', status='completed', reference_id=f"IPO-{project.id}"))
         
-        # Add to Builder's funding raised
+        # Add to Builder's funding raised and Admin Escrow
         project.funding_raised += total_cost
+        project.total_escrow_held += total_cost
         
         # Allocate bricks natively to the investor's Portfolio
         holding = db.query(BrickHolding).filter(BrickHolding.user_id == user_id, BrickHolding.project_id == project_id).first()

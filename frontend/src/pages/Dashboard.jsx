@@ -19,7 +19,7 @@ const Dashboard = () => {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
-        const data = await dashboardService.getDashboardData();
+        const data = await dashboardService.getDashboardData(user?.role === 'builder');
         setDashboardData(data);
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
@@ -48,10 +48,12 @@ const Dashboard = () => {
       isPositive: true 
     },
     { 
-      title: 'Properties Owned', 
-      value: loading ? '...' : (dashboardData?.portfolio?.length || 0).toString(), 
-      icon: Home, 
-      change: (dashboardData?.portfolio?.length || 0) > 0 ? '+1 recently' : 'No assets', 
+      title: user?.role === 'builder' ? 'Construction Revenue' : 'Properties Owned', 
+      value: loading ? '...' : (user?.role === 'builder' 
+        ? `₹${(dashboardData?.builder_wallet?.balance || 0).toLocaleString()}` 
+        : (dashboardData?.portfolio?.length || 0).toString()), 
+      icon: user?.role === 'builder' ? Briefcase : Home, 
+      change: user?.role === 'builder' ? 'Business Balance' : ((dashboardData?.portfolio?.length || 0) > 0 ? '+1 recently' : 'No assets'), 
       isPositive: true 
     },
     { 
