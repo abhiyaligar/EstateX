@@ -3,6 +3,7 @@ from sqlalchemy import func
 from fastapi import HTTPException, status
 from app.models.user import User as DBUser
 from app.models.kyc import KYCRecord
+from app.models.project import Project
 from app.schemas.admin import (
     DashboardStatsResponse, KYCReviewRequest, 
     AdminMilestoneReviewRequest, AdminProjectStatusUpdateRequest
@@ -11,27 +12,34 @@ from app.schemas.admin import (
 class AdminService:
     @staticmethod
     def get_dashboard_stats(db: Session) -> DashboardStatsResponse:
-        # Group users by their specific roles and convert back to a dictionary table mapping
+        # Group users by their specific roles
         role_counts = dict(
             db.query(DBUser.role, func.count(DBUser.id))
             .group_by(DBUser.role)
             .all()
         )
         
-        # Count all users
         total_users = sum(role_counts.values())
         
-        # Count KYC records waiting on admin approval (Assuming OTP was verified but pan check is pending)
         pending_kyc = db.query(func.count(KYCRecord.id)).filter(
             KYCRecord.status.in_(['pending', 'otp_verified']) 
+            if hasattr(KYCRecord, 'status') else True
         ).scalar() or 0
+
+        # Live Project Stats
+        projects_active = db.query(func.count(Project.id)).filter(Project.status == 'approved').scalar() or 0
+        projects_completed = db.query(func.count(Project.id)).filter(Project.ipo_status == 'completed').scalar() or 0
+        total_investments_locked_inr = db.query(func.sum(Project.funding_raised)).scalar() or 0.0
         
         return DashboardStatsResponse(
             total_users=total_users,
             total_investors=role_counts.get('investor', 0),
             total_builders=role_counts.get('builder', 0),
             total_admins=role_counts.get('admin', 0),
-            kyc_pending_approvals=pending_kyc
+            kyc_pending_approvals=pending_kyc,
+            projects_active=projects_active,
+            projects_completed=projects_completed,
+            total_investments_locked_inr=float(total_investments_locked_inr)
         )
 
     @staticmethod
@@ -42,19 +50,28 @@ class AdminService:
         skip: int = 0, 
         limit: int = 50
     ):
-        query = db.query(KYCRecord)
+        # Join with User table to get full_name
+        query = db.query(
+            KYCRecord,
+            (DBUser.first_name + " " + DBUser.last_name).label("full_name")
+        ).join(DBUser, KYCRecord.user_id == DBUser.id)
         
         if status_filter != 'all':
             query = query.filter(KYCRecord.status == status_filter)
         else:
-            # By default, only show relevant ones
             query = query.filter(KYCRecord.status.in_(['pending', 'otp_verified', 'approved']))
 
         if assigned_admin_id:
             query = query.filter(KYCRecord.assigned_admin_id == assigned_admin_id)
             
         total = query.count()
-        items = query.order_by(KYCRecord.updated_at.asc()).offset(skip).limit(limit).all()
+        results = query.order_by(KYCRecord.updated_at.asc()).offset(skip).limit(limit).all()
+        
+        items = []
+        for kyc, full_name in results:
+            # Add full_name to the kyc object dynamically for the schema dump
+            kyc.full_name = full_name if full_name and full_name.strip() else "Unknown Subject"
+            items.append(kyc)
         
         return {
             "items": items,
