@@ -164,6 +164,7 @@ CREATE TABLE builders (
     id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     company_name VARCHAR(255) NOT NULL,
     company_registration_number VARCHAR(100) UNIQUE,
+    business_type VARCHAR(100),
     rera_registration_number VARCHAR(100) UNIQUE,
     rera_approved BOOLEAN DEFAULT false,
     rera_approved_date TIMESTAMP,
@@ -188,6 +189,13 @@ CREATE TABLE builders (
     -- Financial
     total_funding_raised DECIMAL(18,2) DEFAULT 0,
     total_construction_cost DECIMAL(18,2) DEFAULT 0,
+    wallet_balance DECIMAL(18,2) DEFAULT 0.00 NOT NULL,
+    
+    -- Bank Details
+    bank_account_name VARCHAR(255),
+    bank_name VARCHAR(255),
+    bank_account_number VARCHAR(100),
+    bank_ifsc_code VARCHAR(20),
     
     -- Verification
     document_verified BOOLEAN DEFAULT false,
@@ -281,6 +289,7 @@ CREATE TABLE wallet_transactions (
     user_id UUID NOT NULL REFERENCES users(id),
     amount DECIMAL(18,2) NOT NULL,
     transaction_type VARCHAR(50) NOT NULL, -- deposit, withdrawal, brick_purchase, brick_sale
+    is_builder_transaction BOOLEAN DEFAULT false,
     status VARCHAR(50) DEFAULT 'completed',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

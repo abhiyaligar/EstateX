@@ -498,6 +498,18 @@ Purchase Flow:
 6. Start receiving distributions on new project. **Real-time NOTE**: The Order Book and Ledger update instantly on your screen without refreshing.
 ```
 
+**Manage Active Orders**
+```
+Secondary Market → Active Intents:
+├── View all your open buy/sell orders.
+├── Modify Order:
+│   ├── Adjust price per token based on real-time market depth.
+│   └── Change quantity of tokens to buy/sell.
+└── Cancel Order:
+    ├── Click 'Cancel' to instantly remove your order from the public order book.
+    └── Locked tokens (for sell orders) are immediately returned to your portfolio balance.
+```
+
 ### 4. Distribution Tracking
 
 **View Monthly Distributions**
@@ -682,6 +694,26 @@ My Projects → Communications → Send Update:
     ├── In-app notification
     ├── Email (opt-in by investor)
     └── SMS (premium feature)
+```
+
+### 4. Builder Wallet (Dual Ledger)
+
+**Separate Business Funds**
+```
+Dashboard → Builder Wallet:
+├── Dedicated Business Ledger:
+│   ├── Tracks all project construction funds.
+│   ├── Strictly isolated from personal investor funds.
+│   └── Prevents commingling of personal and business capital.
+├── Balance View:
+│   ├── Total liquid capital available for withdrawal.
+│   ├── Breakdown of funds by project milestones.
+│   └── Recent transaction history (deposits, milestone credits, withdrawals).
+└── Withdrawal Process:
+    ├── Select registered business bank account.
+    ├── Enter amount to withdraw.
+    ├── Confirm via OTP.
+    └── Funds credited in 24-48 hours.
 ```
 
 **Investor Queries**

@@ -164,6 +164,45 @@ Logout and invalidate tokens.
 }
 ```
 
+### POST /auth/forgot-password
+
+Generates a 6-digit OTP for the given email to reset password.
+
+**Request**:
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response** (200):
+```json
+{
+  "message": "OTP generated successfully",
+  "otp": "123456"
+}
+```
+
+### POST /auth/reset-password
+
+Resets the user's password using the generated OTP.
+
+**Request**:
+```json
+{
+  "email": "user@example.com",
+  "otp": "123456",
+  "new_password": "NewSecurePass123!"
+}
+```
+
+**Response** (200):
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
 ---
 
 ## User Endpoints
@@ -248,6 +287,78 @@ Retrieve all globally banked liquidity exit points configured for the current us
 Drop a specific bank account from the user profile mapping.
 
 **Response** (204): No Content.
+
+---
+
+## Wallet Endpoints
+
+### GET /wallet
+
+Fetch user's liquid Fiat wallet balance and 10 most recent ledger transactions.
+
+**Response** (200):
+```json
+{
+  "balance": 50000.00,
+  "recent_transactions": [
+    {
+      "id": "tx_123",
+      "amount": 10000.00,
+      "transaction_type": "deposit",
+      "status": "completed",
+      "created_at": "2024-03-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### POST /wallet/deposit
+
+Instantly inject external Fiat into your internal EstateX Wallet.
+
+**Request**:
+```json
+{
+  "amount": 10000.00,
+  "reference_id": "pi_123"
+}
+```
+
+**Response** (200): Returns the created Transaction object.
+
+### POST /wallet/withdraw
+
+Securely extract internal Fiat back to your external bank accounts.
+
+**Request**:
+```json
+{
+  "amount": 5000.00,
+  "bank_account_id": "bank_123"
+}
+```
+
+**Response** (200): Returns the created Transaction object.
+
+### GET /wallet/builder
+
+Fetch builder-specific business balance and recent construction earnings.
+
+**Response** (200): Same format as `/wallet`.
+
+### POST /wallet/builder/withdraw
+
+Securely extract construction revenue from business wallet to builder's registered bank account.
+
+**Request**:
+```json
+{
+  "amount": 50000.00,
+  "bank_account_id": "builder_bank_123"
+}
+```
+
+**Response** (200): Returns the created Transaction object.
 
 ---
 
