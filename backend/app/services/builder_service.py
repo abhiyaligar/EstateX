@@ -8,29 +8,21 @@ from typing import Any
 
 class BuilderService:
     @staticmethod
-    def create_profile(user_id: str, profile_data: BuilderCreate, db: Session) -> Builder:
-        # Check if they already have a profile
-        existing = db.query(Builder).filter(Builder.id == user_id).first()
-        if existing:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Builder profile already exists.")
+    def update_profile(builder_id: str, profile_data: BuilderCreate, db: Session) -> Builder:
+        builder = db.query(Builder).filter(Builder.id == builder_id).first()
+        if not builder:
+            # Fallback to creation if it doesn't exist (though it should from the Wallet flow)
+            builder = Builder(id=builder_id, company_name=profile_data.company_name)
+            db.add(builder)
             
-        new_builder = Builder(
-            id=user_id,
-            company_name=profile_data.company_name,
-            company_registration_number=profile_data.company_registration_number,
-            rera_registration_number=profile_data.rera_registration_number,
-            headquarters_address=profile_data.headquarters_address,
-            headquarters_city=profile_data.headquarters_city,
-            headquarters_state=profile_data.headquarters_state,
-            headquarters_pincode=profile_data.headquarters_pincode,
-            year_established=profile_data.year_established,
-            verification_status='details_required'
-        )
-        
-        db.add(new_builder)
+        # Update fields
+        for field, value in profile_data.model_dump(exclude_unset=True).items():
+            setattr(builder, field, value)
+            
+        builder.verification_status = 'details_required' # Reset to details_required on major edit
         db.commit()
-        db.refresh(new_builder)
-        return new_builder
+        db.refresh(builder)
+        return builder
 
     @staticmethod
     def submit_for_review(builder_id: str, db: Session) -> Builder:
@@ -38,7 +30,7 @@ class BuilderService:
         if not builder:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Builder profile not found.")
         
-        if builder.verification_status not in ['details_required', 'rejected']:
+        if builder.verification_status not in ['details_required', 'rejected', 'revision_required']:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 
                 detail=f"Cannot submit for review when status is {builder.verification_status}"
@@ -111,7 +103,8 @@ class BuilderService:
             builder.document_verified = True
             builder.documents_verified_date = datetime.datetime.utcnow()
             builder.rejection_reason = None
-        elif verification_data.status == 'rejected':
+        else:
+            # For 'rejected' or 'revision_required'
             builder.document_verified = False
             builder.rejection_reason = verification_data.rejection_reason
             

@@ -123,6 +123,7 @@ const Dashboard = () => {
           dashboardData.builder_profile.verification_status === 'approved' ? 'bg-green-500/10 border-green-500' :
           dashboardData.builder_profile.verification_status === 'pending' ? 'bg-amber-500/10 border-amber-500' :
           dashboardData.builder_profile.verification_status === 'rejected' ? 'bg-red-500/10 border-red-500' :
+          dashboardData.builder_profile.verification_status === 'revision_required' ? 'bg-blue-500/10 border-blue-500' :
           'bg-indigo-500/10 border-indigo-500'
         }`}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -132,15 +133,17 @@ const Dashboard = () => {
                 dashboardData.builder_profile.verification_status === 'approved' ? 'bg-green-500/20 text-green-500' :
                 dashboardData.builder_profile.verification_status === 'pending' ? 'bg-amber-500/20 text-amber-500' :
                 dashboardData.builder_profile.verification_status === 'rejected' ? 'bg-red-500/20 text-red-500' :
+                dashboardData.builder_profile.verification_status === 'revision_required' ? 'bg-blue-500/20 text-blue-500' :
                 'bg-indigo-500/20 text-indigo-500'
               }`}>
                 {!dashboardData?.builder_profile ? <Shield /> :
                  dashboardData.builder_profile.verification_status === 'approved' ? <CheckCircle2 /> :
                  dashboardData.builder_profile.verification_status === 'pending' ? <Clock /> :
                  dashboardData.builder_profile.verification_status === 'rejected' ? <AlertCircle /> :
+                 dashboardData.builder_profile.verification_status === 'revision_required' ? <AlertCircle /> :
                  <Shield />}
               </div>
-              <div>
+              <div className="flex-1">
                 <h4 className="text-lg font-bold uppercase tracking-tight">
                   {!dashboardData?.builder_profile ? 'Action Required: Set Up Profile' : 
                    `Verification Status: ${dashboardData.builder_profile.verification_status.replace('_', ' ')}`}
@@ -150,15 +153,18 @@ const Dashboard = () => {
                    dashboardData.builder_profile.verification_status === 'approved' ? 'Your profile is fully verified. You can now post properties and manage projects.' :
                    dashboardData.builder_profile.verification_status === 'pending' ? 'Your profile is currently under review by our administration. This typically takes 24-48 hours.' :
                    dashboardData.builder_profile.verification_status === 'rejected' ? `Your profile was rejected. Reason: ${dashboardData.builder_profile.rejection_reason || 'See details below.'}` :
+                   dashboardData.builder_profile.verification_status === 'revision_required' ? `The administration has requested some revisions. Feedback: ${dashboardData.builder_profile.rejection_reason}` :
                    'You need to submit your profile for admin approval before you can post properties.'}
                 </p>
               </div>
             </div>
             
-            {(!dashboardData?.builder_profile || dashboardData.builder_profile.verification_status === 'details_required' || dashboardData.builder_profile.verification_status === 'rejected') && (
-              <Button onClick={!dashboardData?.builder_profile ? () => alert("Please go to Wallet and register your bank account first to initialize your profile context.") : handleSubmitForReview} className="shrink-0 h-14 px-8 font-bold text-lg shadow-lg">
-                {!dashboardData?.builder_profile ? 'Setup Builder Profile' : 'Submit for Final Approval'}
-              </Button>
+            {(dashboardData.builder_profile?.verification_status !== 'approved' && dashboardData.builder_profile?.verification_status !== 'pending') && (
+              <Link to="/dashboard/verification" className="shrink-0">
+                <Button className="h-14 px-8 font-bold text-lg shadow-lg">
+                  {!dashboardData?.builder_profile || dashboardData.builder_profile.verification_status === 'details_required' ? 'Setup Profile' : 'Edit & Re-submit'}
+                </Button>
+              </Link>
             )}
           </div>
         </div>

@@ -19,7 +19,7 @@ def create_builder_profile(
     Creates the Builder's company profile.
     Requires 'builder' role.
     """
-    return BuilderService.create_profile(current_builder.id, profile_data, db)
+    return BuilderService.update_profile(current_builder.id, profile_data, db)
 
 @router.get("/profile", response_model=BuilderResponse)
 def get_my_builder_profile(

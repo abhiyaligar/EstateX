@@ -6,12 +6,22 @@ from uuid import UUID
 class BuilderBase(BaseModel):
     company_name: str
     company_registration_number: Optional[str] = None
+    business_type: Optional[str] = None
+    pan_number: Optional[str] = None
+    gst_number: Optional[str] = None
     rera_registration_number: Optional[str] = None
     headquarters_address: Optional[str] = None
     headquarters_city: Optional[str] = None
     headquarters_state: Optional[str] = None
     headquarters_pincode: Optional[str] = None
     year_established: Optional[int] = None
+    
+    # Document URLs (text/references)
+    reg_cert_url: Optional[str] = None
+    balance_sheet_url: Optional[str] = None
+    it_returns_url: Optional[str] = None
+    bank_statements_url: Optional[str] = None
+    rera_cert_url: Optional[str] = None
 
 class BuilderCreate(BuilderBase):
     pass
@@ -43,7 +53,7 @@ class BuilderResponse(BuilderBase):
         from_attributes = True
 
 class BuilderVerificationUpdate(BaseModel):
-    status: str = Field(..., description="Must be 'approved' or 'rejected'")
+    status: str = Field(..., description="Must be 'approved', 'rejected', or 'revision_required'")
     rejection_reason: Optional[str] = None
 
 class BuilderBankAccountUpdate(BaseModel):

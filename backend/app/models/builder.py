@@ -12,6 +12,9 @@ class Builder(Base):
     
     company_name = Column(String(255), nullable=False)
     company_registration_number = Column(String(100), unique=True)
+    business_type = Column(String(100)) # Private Ltd, Proprietorship, etc.
+    pan_number = Column(String(20))
+    gst_number = Column(String(20))
     rera_registration_number = Column(String(100), unique=True)
     rera_approved = Column(Boolean, default=False)
     rera_approved_date = Column(DateTime(timezone=True))
@@ -21,6 +24,13 @@ class Builder(Base):
     headquarters_city = Column(String(100))
     headquarters_state = Column(String(100))
     headquarters_pincode = Column(String(10))
+    
+    # Documents (Text references/URLs for now)
+    reg_cert_url = Column(String(500))
+    balance_sheet_url = Column(String(500))
+    it_returns_url = Column(String(500))
+    bank_statements_url = Column(String(500))
+    rera_cert_url = Column(String(500))
     
     # Company Details
     year_established = Column(Integer)
@@ -47,7 +57,7 @@ class Builder(Base):
     # Verification System
     document_verified = Column(Boolean, default=False)
     documents_verified_date = Column(DateTime(timezone=True))
-    verification_status = Column(String(50), default='details_required') # details_required, pending, approved, rejected
+    verification_status = Column(String(50), default='details_required') # details_required, pending, approved, rejected, revision_required
     rejection_reason = Column(String(500))
     
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
