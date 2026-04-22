@@ -203,11 +203,14 @@ const ProjectReviewModal = ({ isOpen, onClose, project, onIPOAction, onHaltActio
                 <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-1">
                         <span className="text-[10px] uppercase tracking-widest text-white/20">Category</span>
-                        <span className="block text-white font-bold uppercase">{project.type || 'N/A'}</span>
+                        <span className="block text-white font-bold uppercase">{project.property_type || 'Apartment'}</span>
                     </div>
                     <div className="space-y-1">
                         <span className="text-[10px] uppercase tracking-widest text-white/20">Dimensions</span>
-                        <span className="block text-white font-bold uppercase">{(project.location?.area || 'N/A')} SQ. FT.</span>
+                        <span className="block text-white font-bold uppercase">
+                            {project.location?.area_sqft || 'N/A'} SQ. FT.
+                            {project.bedrooms && ` • ${project.bedrooms} BHK`}
+                        </span>
                     </div>
                 </div>
               </div>

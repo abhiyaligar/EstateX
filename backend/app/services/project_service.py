@@ -49,6 +49,12 @@ class ProjectService:
             ipo_price=project_data.ipo_price,
             market_value=project_data.ipo_price, # Starts pegged precisely to the IPO benchmark
             
+            # Property Attributes
+            property_type=project_data.property_type,
+            area_sqft=project_data.area_sqft,
+            bedroom_count=project_data.bedroom_count,
+            bathroom_count=project_data.bathroom_count,
+            
             # Compliance
             rera_id=project_data.rera_id,
             rera_approved=project_data.rera_approved,

@@ -13,6 +13,10 @@ class Project(Base):
     
     title = Column(String(255), nullable=False)
     description = Column(String)
+    property_type = Column(String(100), default='Apartment')
+    bedroom_count = Column(Integer, nullable=True)
+    bathroom_count = Column(Float, nullable=True)
+    area_sqft = Column(Float, nullable=True)
     
     # Location
     location_address = Column(String, nullable=False)

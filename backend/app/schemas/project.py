@@ -27,6 +27,10 @@ class ProjectBase(BaseModel):
     city: str
     state: str
     pincode: str
+    property_type: Optional[str] = 'Apartment'
+    bedroom_count: Optional[int] = None
+    bathroom_count: Optional[float] = None
+    area_sqft: Optional[float] = None
     total_budget: float
     
     total_bricks: int = Field(..., gt=0)
@@ -60,6 +64,7 @@ class ProjectLocationResponse(BaseModel):
     pincode: str
     latitude: Optional[float]
     longitude: Optional[float]
+    area_sqft: Optional[float]
 
 class ProjectFinancialResponse(BaseModel):
     total_budget: float
@@ -147,8 +152,12 @@ class ProjectListResponse(BaseModel):
                 "state": get_attr("state", ""),
                 "pincode": get_attr("pincode", ""),
                 "latitude": get_attr("latitude"),
-                "longitude": get_attr("longitude")
+                "longitude": get_attr("longitude"),
+                "area_sqft": get_attr("area_sqft")
             },
+            "property_type": get_attr("property_type", "Apartment"),
+            "bedrooms": get_attr("bedroom_count"),
+            "bathrooms": get_attr("bathroom_count"),
             "financial": {
                 "total_budget": get_attr("total_budget", 0),
                 "funding_target": get_attr("funding_target"),
