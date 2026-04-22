@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from typing import List
+from typing import List, Optional
+from uuid import UUID
 from app.models.project import Project, Milestone
 from app.models.builder import Builder
 from app.schemas.project import ProjectCreate
@@ -88,10 +89,12 @@ class ProjectService:
         return new_project
 
     @staticmethod
-    def list_projects(db: Session, status_filter: str = 'active') -> List[Project]:
+    def list_projects(db: Session, status_filter: str = 'active', builder_id: Optional[UUID] = None) -> List[Project]:
         query = db.query(Project)
         if status_filter != 'all':
             query = query.filter(Project.status == status_filter)
+        if builder_id:
+            query = query.filter(Project.builder_id == builder_id)
         return query.order_by(Project.created_at.desc()).all()
 
     @staticmethod

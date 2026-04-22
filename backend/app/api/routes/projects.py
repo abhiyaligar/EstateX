@@ -55,6 +55,16 @@ def get_all_projects(
     """
     return ProjectService.list_projects(db, status_filter=lifecycle_status)
 
+@router.get("/builder/me", response_model=List[ProjectListResponse])
+def get_builder_projects(
+    current_builder: User = Depends(get_approved_builder_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Fetch all projects listed by the authenticated builder.
+    """
+    return ProjectService.list_projects(db, status_filter='all', builder_id=current_builder.id)
+
 @router.get("/{project_id}", response_model=ProjectDetailResponse)
 def get_project_details(
     project_id: UUID,

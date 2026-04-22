@@ -24,6 +24,7 @@ import AdminPortal from '../pages/AdminPortal';
 import ForgotPassword from '../pages/ForgotPassword';
 import BuilderWallet from '../pages/BuilderWallet';
 import BuilderVerification from '../pages/BuilderVerification';
+import MyProjects from '../pages/MyProjects';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, roles = [] }) => {
@@ -93,6 +94,14 @@ const AppRoutes = () => {
               element={
                 <ProtectedRoute roles={['builder']}>
                   <BuilderVerification />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="my-projects" 
+              element={
+                <ProtectedRoute roles={['builder']}>
+                  <MyProjects />
                 </ProtectedRoute>
               } 
             />
