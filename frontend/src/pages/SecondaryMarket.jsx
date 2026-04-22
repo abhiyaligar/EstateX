@@ -16,9 +16,11 @@ import {
   ArrowDown,
   X,
   Edit2,
-  Trash2
+  Trash2,
+  Maximize,
+  Minimize
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { TradingViewChart } from '../components/charts/TradingViewChart';
 
 import { useAuth } from '../context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
@@ -123,8 +125,14 @@ const SecondaryMarket = () => {
   const [openOrders, setOpenOrders] = useState([]);
   const [publicOrderBook, setPublicOrderBook] = useState([]);
   const [tradeHistory, setTradeHistory] = useState([]);
+  const [ohlcvData, setOhlcvData] = useState([]);
+  const [macroData, setMacroData] = useState(null);
   
   // UI Logic State
+  const [timeframe, setTimeframe] = useState('1h');
+  const [dateRange, setDateRange] = useState('ALL');
+  const [chartType, setChartType] = useState('candlestick');
+  const [isExpanded, setIsExpanded] = useState(false);
   const [orderType, setOrderType] = useState('buy');
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
@@ -160,14 +168,25 @@ const SecondaryMarket = () => {
   const refreshLiveData = async () => {
     if (!selectedProject) return;
     try {
-      const [history, orders, book] = await Promise.all([
+      const [history, orders, book, ohlcv] = await Promise.all([
         exchangeService.getTradeHistory(selectedProject.id),
         exchangeService.getOpenOrders('open'),
-        exchangeService.getPublicOrderBook(selectedProject.id)
+        exchangeService.getPublicOrderBook(selectedProject.id),
+        exchangeService.getOHLCV(selectedProject.id, timeframe)
       ]);
       setTradeHistory(history);
       setOpenOrders(orders);
       setPublicOrderBook(book);
+      setOhlcvData(ohlcv);
+
+      // Fetch Macro data based on pincode if project has it
+      if (selectedProject.pincode) {
+         const macro = await exchangeService.getMacroAnalytics(selectedProject.pincode);
+         setMacroData(macro);
+      } else {
+         const macro = await exchangeService.getMacroAnalytics("400001"); // Default fallback
+         setMacroData(macro);
+      }
     } catch (error) {
       console.error("Live data fetch failed", error);
     }
@@ -176,7 +195,7 @@ const SecondaryMarket = () => {
   // Initialize Data
   useEffect(() => {
     refreshLiveData();
-  }, [selectedProject]);
+  }, [selectedProject, timeframe]);
 
   // Real-time Subscriptions
   useEffect(() => {
@@ -226,17 +245,24 @@ const SecondaryMarket = () => {
     };
   }, [selectedProject]);
 
-  // Derived Data
   const buyOrders = useMemo(() => publicOrderBook.filter(o => o.order_type === 'buy').slice(0, 15), [publicOrderBook]);
   const sellOrders = useMemo(() => publicOrderBook.filter(o => o.order_type === 'sell').sort((a,b) => a.price_per_brick - b.price_per_brick).slice(0, 15), [publicOrderBook]);
-  
-  const chartData = useMemo(() => {
-    if (!tradeHistory.length) return [];
-    return tradeHistory.slice().reverse().map(t => ({
-      time: new Date(t.executed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      price: t.price
-    }));
-  }, [tradeHistory]);
+
+  const filteredChartData = useMemo(() => {
+    if (!ohlcvData || ohlcvData.length === 0) return [];
+    if (dateRange === 'ALL') return ohlcvData;
+    
+    // Using current time (or max time in data)
+    const maxTime = Math.max(...ohlcvData.map(d => d.time));
+    let cutoff = 0;
+    if (dateRange === '1D') cutoff = maxTime - 24 * 60 * 60;
+    else if (dateRange === '1W') cutoff = maxTime - 7 * 24 * 60 * 60;
+    else if (dateRange === '1M') cutoff = maxTime - 30 * 24 * 60 * 60;
+    else if (dateRange === '3M') cutoff = maxTime - 90 * 24 * 60 * 60;
+    else if (dateRange === '1Y') cutoff = maxTime - 365 * 24 * 60 * 60;
+    
+    return ohlcvData.filter(d => d.time >= cutoff);
+  }, [ohlcvData, dateRange]);
 
   const latestPrice = tradeHistory.length > 0 ? tradeHistory[0].price : (selectedProject?.market_price || 0);
 
@@ -334,6 +360,7 @@ const SecondaryMarket = () => {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="grid grid-cols-1 md:grid-cols-12 gap-6"
           >
+            {!isExpanded && (
             <div className="md:col-span-3 order-3 md:order-1">
                <Card noPadding className="h-[600px] flex flex-col">
                   <div className="p-4 border-b border-white/5">
@@ -361,32 +388,92 @@ const SecondaryMarket = () => {
                   </div>
                </Card>
             </div>
+            )}
 
-            <div className="md:col-span-6 order-1 md:order-2 space-y-6">
-               <Card noPadding className="h-[450px] relative">
-                  <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                     <span className="text-[10px] font-bold uppercase tracking-widest text-green-500">Node-01 Live Feed</span>
+            <div className={`${isExpanded ? 'md:col-span-12' : 'md:col-span-6'} order-1 md:order-2 space-y-6 transition-all duration-300`}>
+               <Card noPadding className={`${isExpanded ? 'h-[750px]' : 'h-[450px]'} relative transition-all duration-300`}>
+                  <div className="p-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-4">
+                     <div className="flex items-center gap-3">
+                         <span className="text-[12px] font-bold uppercase tracking-widest text-green-500">Terminal</span>
+                         <button onClick={() => setIsExpanded(!isExpanded)} className="text-white/40 hover:text-white transition-colors" title="Toggle Fullscreen Terminal">
+                            {isExpanded ? <Minimize size={14} /> : <Maximize size={14} />}
+                         </button>
+                     </div>
+                     
+                     {/* Controls Container */}
+                     <div className="flex items-center gap-4">
+                         {/* Chart Type */}
+                         <div className="flex bg-[#111] border border-white/5 p-0.5">
+                            {['candlestick', 'line', 'area'].map(type => (
+                                <button 
+                                  key={type}
+                                  onClick={() => setChartType(type)}
+                                  className={`px-3 py-1 text-[9px] uppercase font-bold transition-colors ${chartType === type ? 'bg-white text-black' : 'text-white/30 hover:text-white/60'}`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                         </div>
+                         
+                         {/* Date Range */}
+                         <div className="flex bg-[#111] border border-white/5 p-0.5">
+                            {['1D', '1W', '1M', '3M', '1Y', 'ALL'].map(dr => (
+                                <button 
+                                  key={dr}
+                                  onClick={() => setDateRange(dr)}
+                                  className={`px-3 py-1 text-[9px] uppercase font-bold transition-colors ${dateRange === dr ? 'bg-white text-black' : 'text-white/30 hover:text-white/60'}`}
+                                >
+                                    {dr}
+                                </button>
+                            ))}
+                         </div>
+
+                         {/* Timeframe Bucket */}
+                         <div className="flex bg-[#111] border border-white/5 p-0.5">
+                            {['1m', '5m', '1h', '1d'].map(tf => (
+                                <button 
+                                  key={tf}
+                                  onClick={() => setTimeframe(tf)}
+                                  className={`px-3 py-1 text-[9px] uppercase font-bold transition-colors ${timeframe === tf ? 'bg-white text-black' : 'text-white/30 hover:text-white/60'}`}
+                                >
+                                    {tf}
+                                </button>
+                            ))}
+                         </div>
+                     </div>
                   </div>
-                  <div className="h-[350px] w-full p-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData}>
-                        <defs>
-                          <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.02)" />
-                        <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fill: 'rgba(255,255,255,0.2)', fontSize: 8}} dy={10} />
-                        <YAxis domain={['auto', 'auto']} axisLine={false} tickLine={false} tick={{fill: 'rgba(255,255,255,0.2)', fontSize: 8}} dx={-10} />
-                        <Tooltip contentStyle={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '0', fontSize: '10px' }} />
-                        <Area type="stepAfter" dataKey="price" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                  <div className={`${isExpanded ? 'h-[650px]' : 'h-[350px]'} w-full p-4 transition-all duration-300`}>
+                    <TradingViewChart data={filteredChartData} chartType={chartType} />
                   </div>
                </Card>
+
+               {/* Macro Economic Panel */}
+               {macroData && (
+                   <Card noPadding>
+                       <div className="p-4 border-b border-white/5 flex items-center gap-2">
+                           <Layers size={14} className="text-violet-500" />
+                           <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold">Macro Analytics</h3>
+                           <span className="ml-auto text-[8px] text-white/30 uppercase tracking-widest bg-white/5 px-2 py-1 rounded-full">Pincode: {macroData.pincode}</span>
+                       </div>
+                       <div className="grid grid-cols-3 divide-x divide-white/5">
+                           <div className="p-4 text-center">
+                               <p className="text-[9px] uppercase tracking-widest text-white/40 mb-2">YoY Growth</p>
+                               <p className="text-lg font-mono font-bold text-green-500">+{macroData.yoy_growth_percentage}%</p>
+                           </div>
+                           <div className="p-4 text-center">
+                               <p className="text-[9px] uppercase tracking-widest text-white/40 mb-2">Avg Rental Yield</p>
+                               <p className="text-lg font-mono font-bold text-sky-400">{macroData.avg_rental_yield}%</p>
+                           </div>
+                           <div className="p-4 text-center">
+                               <p className="text-[9px] uppercase tracking-widest text-white/40 mb-2">Demand Score</p>
+                               <p className="text-lg font-mono font-bold text-violet-500">{macroData.demand_score}/100</p>
+                           </div>
+                       </div>
+                   </Card>
+               )}
             </div>
 
+            {!isExpanded && (
             <div className="md:col-span-3 order-2 md:order-3 space-y-6">
                <Card>
                   <div className="flex bg-[#111] p-0.5 border border-white/5 mb-6">
@@ -413,6 +500,7 @@ const SecondaryMarket = () => {
                   </div>
                </Card>
             </div>
+            )}
           </motion.div>
         )}
 

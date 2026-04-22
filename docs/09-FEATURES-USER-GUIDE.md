@@ -510,6 +510,23 @@ Secondary Market → Active Intents:
     └── Locked tokens (for sell orders) are immediately returned to your portfolio balance.
 ```
 
+**Advanced Trading Terminal**
+```
+Secondary Market → Terminal:
+├── Interactive Charting:
+│   ├── View real-time aggregated trades via TradingView Lightweight Charts.
+│   ├── Seamlessly switch between Candlestick, Line, and Area charts.
+│   └── Built-in volume histogram and 20-period Simple Moving Average (SMA).
+├── Deep Customization:
+│   ├── Change data bucket timeframes (1m, 5m, 1h, 1d).
+│   └── Filter historical data directly (1D, 1W, 1M, 3M, 1Y, ALL).
+├── Fullscreen Mode:
+│   └── Click the 'Maximize' icon to hide orderbooks and expand the terminal for distraction-free technical analysis.
+└── Macro Analytics Panel:
+    ├── Real-time display of YoY property growth percentage for the project's pincode.
+    └── Average rental yield and local demand score to aid fundamental analysis.
+```
+
 ### 4. Distribution Tracking
 
 **View Monthly Distributions**

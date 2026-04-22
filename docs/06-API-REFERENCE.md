@@ -570,6 +570,46 @@ Publicly tracks transparent historical `Trades` shifting the underlying `Project
 
 **Response** (200): Array of Trade objects mapping exactly who bought from who at what price!
 
+### GET /exchange/trades/{project_id}/ohlcv
+
+Aggregates historical trades into Open, High, Low, Close, Volume buckets for advanced candlestick charting in the Terminal.
+
+**Query Parameters**:
+- `interval`: 1m, 5m, 1h, 1d (Time bucket size)
+
+**Response** (200):
+```json
+[
+  {
+    "time": 1712345600,
+    "open": 102.50,
+    "high": 105.00,
+    "low": 102.50,
+    "close": 104.50,
+    "value": 1500
+  }
+]
+```
+
+---
+
+## Analytics Endpoints
+
+### GET /analytics/macro/{pincode}
+
+Provides macroeconomic real estate data for a specific area, empowering investors with external market context. Currently returns simulated deterministic data, built to scale to external real estate APIs (e.g., MagicBricks, 99acres).
+
+**Response** (200):
+```json
+{
+  "pincode": "400001",
+  "yoy_growth_percentage": 12.5,
+  "avg_rental_yield": 6.8,
+  "demand_score": 85,
+  "last_updated": "2024-03-01T00:00:00Z"
+}
+```
+
 ---
 
 ## KYC Endpoints

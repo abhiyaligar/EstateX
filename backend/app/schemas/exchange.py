@@ -51,3 +51,18 @@ class PublicOrderResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class OHLCVResponse(BaseModel):
+    time: int # Unix timestamp for charting libraries
+    open: float
+    high: float
+    low: float
+    close: float
+    value: float # Volume traded
+
+class MacroDataResponse(BaseModel):
+    pincode: str
+    yoy_growth_percentage: float
+    avg_rental_yield: float
+    demand_score: int
+    last_updated: datetime
