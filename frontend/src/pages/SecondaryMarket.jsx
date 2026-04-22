@@ -18,7 +18,8 @@ import {
   Edit2,
   Trash2,
   Maximize,
-  Minimize
+  Minimize,
+  Shield
 } from 'lucide-react';
 import { TradingViewChart } from '../components/charts/TradingViewChart';
 
@@ -30,6 +31,7 @@ import exchangeService from '../services/exchangeService';
 import propertyService from '../services/propertyService';
 import { supabase } from '../utils/supabaseClient';
 import { Loader } from '../components/ui/Loader';
+import governanceService from '../services/governanceService';
 
 // --- Sub-Components ---
 
@@ -129,6 +131,8 @@ const SecondaryMarket = () => {
   const [tradeHistory, setTradeHistory] = useState([]);
   const [ohlcvData, setOhlcvData] = useState([]);
   const [macroData, setMacroData] = useState(null);
+  const [proposals, setProposals] = useState([]);
+  const [isHolder, setIsHolder] = useState(false);
   
   // UI Logic State
   const [timeframe, setTimeframe] = useState('1h');
@@ -176,21 +180,29 @@ const SecondaryMarket = () => {
     if (!selectedProject) return;
     try {
       setLoading(true);
-      const [project, history, ohlc, orders, book] = await Promise.all([
+      const [project, history, ohlc, orders, book, govProposals, userPortfolio] = await Promise.all([
         propertyService.getPropertyById(selectedProject.id),
         exchangeService.getTradeHistory(selectedProject.id),
         exchangeService.getOHLCV(selectedProject.id, timeframe),
         exchangeService.getOpenOrders(),
-        exchangeService.getPublicOrderBook(selectedProject.id)
+        exchangeService.getPublicOrderBook(selectedProject.id),
+        governanceService.getProposals(selectedProject.id).catch(() => []),
+        exchangeService.getPortfolio().catch(() => [])
       ]);
-
+      
       // Atomic guard: only update if this is still the selected project
       if (selectedProject.id !== activeProjectId.current) return;
 
       setSelectedProject(project);
       setTradeHistory(history);
       setOpenOrders(orders);
+      setOhlcvData(ohlc);
       setPublicOrderBook(book);
+      setProposals(govProposals);
+      
+      const holding = userPortfolio.find(h => h.project_id === selectedProject.id);
+      setIsHolder(holding && holding.quantity > 0);
+      setHoldings(userPortfolio);
       setOhlcvData(ohlc);
       
       // Macro data is now automatically mapped to the project relationship
@@ -321,9 +333,25 @@ const SecondaryMarket = () => {
          price_per_brick: parseFloat(newPrice)
        });
        setModifyingOrder(null);
-       alert("Order successfully modified (Cancel + Re-place complete).");
        refreshLiveData();
-    } catch (err) { alert(err.response?.data?.detail || "Modification failed mid-sequence."); }
+       alert("Order updated successfully.");
+    } catch (err) {
+       alert(err.response?.data?.detail || "Update failed");
+    }
+  };
+
+  const handleVote = async (proposalId, optionIndex) => {
+    if (!isHolder) {
+      alert("Only brick holders can vote on governance proposals.");
+      return;
+    }
+    try {
+      await governanceService.castVote(proposalId, optionIndex);
+      alert("Vote cast successfully!");
+      refreshLiveData();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Voting failed");
+    }
   };
 
   if (loading && projects.length === 0) {
@@ -365,6 +393,11 @@ const SecondaryMarket = () => {
          <div className="flex bg-[#111] p-0.5 border border-white/5">
             <button onClick={() => setActiveTab('marketplace')} className={`px-4 py-1.5 text-[9px] uppercase tracking-[0.2em] font-bold ${activeTab === 'marketplace' ? 'bg-white text-black' : 'text-white/30'}`}>Exchange</button>
             <button onClick={() => setActiveTab('holdings')} className={`px-4 py-1.5 text-[9px] uppercase tracking-[0.2em] font-bold ${activeTab === 'holdings' ? 'bg-white text-black' : 'text-white/30'}`}>My Vault</button>
+            {proposals.length > 0 && (
+               <button onClick={() => setActiveTab('governance')} className={`px-4 py-1.5 text-[9px] uppercase tracking-[0.2em] font-bold ${activeTab === 'governance' ? 'bg-white text-black' : 'text-white/30'} flex items-center gap-2`}>
+                 <Shield size={10} /> GOVERNANCE
+               </button>
+            )}
          </div>
       </div>
 
@@ -609,6 +642,71 @@ const SecondaryMarket = () => {
                         })}
                       </tbody>
                    </table>
+                </div>
+             </Card>
+          </motion.div>
+        )}
+        {activeTab === 'governance' && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="space-y-6"
+          >
+             <Card noPadding>
+                <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                   <div>
+                      <h2 className="text-xl font-bold uppercase tracking-tighter">On-Chain Consensus Protocols</h2>
+                      <p className="text-[10px] uppercase tracking-widest text-white/30 mt-1">Weighted voting for {selectedProject?.title}</p>
+                   </div>
+                   {!isHolder && (
+                     <div className="bg-red-500/10 border border-red-500/20 px-4 py-2 text-[8px] uppercase tracking-widest font-bold text-red-500">
+                       VOTING DISABLED: NO EQUITY DETECTED
+                     </div>
+                   )}
+                </div>
+                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                   {proposals.map(p => (
+                     <div key={p.id} className="bg-white/[0.02] border border-white/10 p-6 space-y-6 relative group">
+                        <div className="absolute top-4 right-4">
+                           <span className={`px-2 py-0.5 text-[8px] font-bold uppercase border ${p.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'text-white/20 border-white/10'}`}>{p.status}</span>
+                        </div>
+                        <div>
+                           <h4 className="text-lg font-bold uppercase tracking-tight">{p.title}</h4>
+                           <p className="text-[10px] text-white/40 uppercase mt-1 leading-relaxed line-clamp-2">{p.description}</p>
+                        </div>
+
+                        <div className="space-y-4">
+                           {p.options.map((opt, idx) => {
+                              const totalWeight = p.total_votes || 1;
+                              const weight = p.vote_distribution?.[idx] || 0;
+                              const percentage = Math.round((weight / totalWeight) * 100);
+                              return (
+                                 <div key={idx} className="space-y-2">
+                                    <div className="flex justify-between text-[8px] uppercase tracking-widest font-bold">
+                                       <span className="text-white/60">{opt}</span>
+                                       <span className="text-white/30">{percentage}% ({weight.toLocaleString()} BK)</span>
+                                    </div>
+                                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                                       <div className="h-full bg-white transition-all duration-1000" style={{ width: `${percentage}%` }}></div>
+                                    </div>
+                                    {p.status === 'active' && isHolder && (
+                                       <Button 
+                                         variant="ghost" 
+                                         className="w-full h-8 text-[8px] font-bold tracking-[0.2em] border border-white/5 hover:bg-white text-white hover:text-black mt-2"
+                                         onClick={() => handleVote(p.id, idx)}
+                                       >
+                                          CAST WEIGHTED VOTE
+                                       </Button>
+                                    )}
+                                 </div>
+                              );
+                           })}
+                        </div>
+                        <div className="pt-4 border-t border-white/5 flex justify-between text-[8px] uppercase tracking-widest text-white/20 font-mono">
+                           <span>ENDS: {new Date(p.end_date).toLocaleDateString()}</span>
+                           <span>TOTAL POWER: {p.total_votes.toLocaleString()}</span>
+                        </div>
+                     </div>
+                   ))}
                 </div>
              </Card>
           </motion.div>

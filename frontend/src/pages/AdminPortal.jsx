@@ -32,6 +32,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import adminService from '../services/adminService';
 import propertyService from '../services/propertyService';
+import governanceService from '../services/governanceService';
 
 // --- Sub-Components ---
 
@@ -493,6 +494,118 @@ const BuilderReviewModal = ({ isOpen, onClose, builder, onVerify, rejectionReaso
   );
 };
 
+const GovernanceModal = ({ isOpen, onClose, projects, onSave }) => {
+  const [formData, setFormData] = useState({
+    project_id: '',
+    title: '',
+    description: '',
+    options: ['Yes', 'No'],
+    end_date: ''
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  const handleOptionChange = (index, value) => {
+    const newOptions = [...formData.options];
+    newOptions[index] = value;
+    setFormData({ ...formData, options: newOptions });
+  };
+
+  const addOption = () => setFormData({ ...formData, options: [...formData.options, ''] });
+  const removeOption = (index) => {
+    if (formData.options.length <= 2) return;
+    setFormData({ ...formData, options: formData.options.filter((_, i) => i !== index) });
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <Card className="max-w-xl w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
+        <CardHeader className="border-b border-white/5">
+          <CardTitle className="text-xl font-bold uppercase tracking-tighter">Initialize Governance Proposal</CardTitle>
+          <CardDescription className="uppercase tracking-widest text-[8px] mt-1">On-chain consensus protocol generation</CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 max-h-[70vh] overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Select Asset</label>
+              <select 
+                className="w-full bg-white/5 border border-white/10 p-3 text-sm font-mono text-white outline-none focus:border-primary-500"
+                value={formData.project_id}
+                onChange={(e) => setFormData({...formData, project_id: e.target.value})}
+                required
+              >
+                <option value="">-- Choose Project --</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.title} ({p.city})</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Proposal Title</label>
+              <Input 
+                placeholder="e.g. Asset Liquidation Offer"
+                value={formData.title}
+                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Description & Rationale</label>
+              <textarea 
+                className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-primary-500 outline-none min-h-[100px]"
+                placeholder="Detailed explanation of the decision required..."
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">Voting Options</label>
+                <Button type="button" variant="ghost" size="sm" className="text-[8px]" onClick={addOption}>+ ADD OPTION</Button>
+              </div>
+              {formData.options.map((opt, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input 
+                    placeholder={`Option ${i+1}`}
+                    value={opt}
+                    onChange={(e) => handleOptionChange(i, e.target.value)}
+                    required
+                  />
+                  <Button type="button" variant="ghost" className="px-2" onClick={() => removeOption(i)}><Trash size={14}/></Button>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Voting Deadline</label>
+              <Input 
+                type="datetime-local"
+                value={formData.end_date}
+                onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button type="button" variant="ghost" className="flex-1 uppercase tracking-widest text-[10px]" onClick={onClose}>Cancel</Button>
+              <Button type="submit" variant="primary" className="flex-1 uppercase tracking-widest text-[10px]">Publish Proposal</Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 const MacroAnalyticsModal = ({ isOpen, onClose, data, onSave }) => {
   const [formData, setFormData] = useState({
     pincode: '',
@@ -627,18 +740,24 @@ const AdminPortal = () => {
   const [selectedMilestoneProject, setSelectedMilestoneProject] = useState(null);
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
   
+  // Governance State
+  const [proposalsList, setProposalsList] = useState([]);
+  const [selectedProposal, setSelectedProposal] = useState(null);
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
+  
   // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         // Better error handling for individual requests to prevent entire page failure
-        const [statsData, kycData, projectsData, pendingBuildersData, macroData] = await Promise.allSettled([
+        const [statsData, kycData, projectsData, pendingBuildersData, macroData, governanceData] = await Promise.allSettled([
           adminService.getDashboardStats(),
           adminService.getKYCApplications('all'),
           propertyService.getProperties('all'),
           adminService.getPendingBuilders(),
-          adminService.getMacroData()
+          adminService.getMacroData(),
+          governanceService.getAllProposals()
         ]);
         
         if (statsData.status === 'fulfilled') setStats(statsData.value);
@@ -646,6 +765,7 @@ const AdminPortal = () => {
         if (projectsData.status === 'fulfilled') setProjects(projectsData.value);
         if (pendingBuildersData.status === 'fulfilled') setPendingBuilders(pendingBuildersData.value);
         if (macroData.status === 'fulfilled') setMacroList(macroData.value);
+        if (governanceData.status === 'fulfilled') setProposalsList(governanceData.value);
         
       } catch (err) {
         console.error("Admin fetch failed", err);
@@ -813,6 +933,35 @@ const AdminPortal = () => {
     }
   };
 
+  const handleProposalSave = async (formData) => {
+    try {
+      setLoading(true);
+      await governanceService.createProposal(formData);
+      const data = await governanceService.getAllProposals();
+      setProposalsList(data);
+      setIsProposalModalOpen(false);
+      alert("Proposal initialized on-chain.");
+    } catch (err) {
+      alert(err.response?.data?.detail || "Proposal creation failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProposalStatus = async (proposalId, status, resultIndex = null) => {
+    try {
+      setLoading(true);
+      await governanceService.updateProposalStatus(proposalId, status, resultIndex);
+      const data = await governanceService.getAllProposals();
+      setProposalsList(data);
+      alert(`Proposal ${status}.`);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading && !stats) return (
     <div className="flex items-center justify-center h-screen bg-black">
       <div className="w-12 h-12 border-t-2 border-white animate-spin" />
@@ -837,7 +986,7 @@ const AdminPortal = () => {
         </div>
 
         <div className="flex bg-[#111] p-1 border border-white/5 rounded-none overflow-hidden">
-          {['dashboard', 'kyc', 'builders', 'projects', 'analytics', 'users'].map((tab) => (
+          {['dashboard', 'kyc', 'builders', 'projects', 'analytics', 'governance', 'users'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1302,7 +1451,116 @@ const AdminPortal = () => {
             </Card>
           </motion.div>
         )}
+        {activeTab === 'governance' && (
+          <motion.div 
+            key="governance"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="space-y-6"
+          >
+            <Card noPadding>
+              <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold uppercase tracking-tight">Governance Protocols</h3>
+                  <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Manage Decentralized Ownership Decisions</p>
+                </div>
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  className="text-[10px] h-10 px-6 font-bold tracking-widest"
+                  onClick={() => setIsProposalModalOpen(true)}
+                >
+                  <Plus size={16} className="mr-2" /> NEW PROPOSAL
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/30">
+                      <th className="p-6 md:p-8">Asset</th>
+                      <th className="p-6 md:p-8">Proposal Title</th>
+                      <th className="p-6 md:p-8">Status</th>
+                      <th className="p-6 md:p-8">Votes (Weight)</th>
+                      <th className="p-6 md:p-8">Deadline</th>
+                      <th className="p-6 md:p-8 text-right">Control</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {proposalsList.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="p-20 text-center text-white/20 uppercase tracking-widest text-xs">No active governance proposals.</td>
+                      </tr>
+                    ) : proposalsList.map(p => {
+                        const proj = projects.find(pj => pj.id === p.project_id);
+                        return (
+                          <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.01]">
+                            <td className="p-6 md:p-8">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-white/5 border border-white/10 rounded flex items-center justify-center text-white/20">
+                                   <Building2 size={16} />
+                                </div>
+                                <span className="text-xs font-bold text-white uppercase">{proj?.title || 'Unknown'}</span>
+                              </div>
+                            </td>
+                            <td className="p-6 md:p-8">
+                              <span className="text-sm font-medium text-white">{p.title}</span>
+                            </td>
+                            <td className="p-6 md:p-8">
+                              <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest border ${
+                                p.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
+                                p.status === 'closed' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
+                                'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                              }`}>
+                                {p.status}
+                              </span>
+                            </td>
+                            <td className="p-6 md:p-8">
+                               <span className="font-mono text-sm font-bold text-white">{p.total_votes.toLocaleString()}</span>
+                            </td>
+                            <td className="p-6 md:p-8 text-xs text-white/40">
+                               {new Date(p.end_date).toLocaleString()}
+                            </td>
+                            <td className="p-6 md:p-8 text-right">
+                               {p.status === 'active' && (
+                                 <Button 
+                                   variant="outline" 
+                                   size="sm" 
+                                   className="text-[8px] h-8"
+                                   onClick={() => handleProposalStatus(p.id, 'closed')}
+                                 >
+                                   CLOSE VOTING
+                                 </Button>
+                               )}
+                               {p.status === 'closed' && (
+                                 <Button 
+                                   variant="primary" 
+                                   size="sm" 
+                                   className="text-[8px] h-8"
+                                   onClick={() => {
+                                      const winnerIndex = p.vote_distribution.indexOf(Math.max(...p.vote_distribution));
+                                      handleProposalStatus(p.id, 'executed', winnerIndex);
+                                   }}
+                                 >
+                                   EXECUTE RESULT
+                                 </Button>
+                               )}
+                            </td>
+                          </tr>
+                        );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </motion.div>
+        )}
       </AnimatePresence>
+
+      <GovernanceModal 
+        isOpen={isProposalModalOpen}
+        onClose={() => setIsProposalModalOpen(false)}
+        projects={projects.filter(p => p.ipo_status === 'completed')}
+        onSave={handleProposalSave}
+      />
 
        <BuilderReviewModal 
         isOpen={isBuilderModalOpen}

@@ -7,7 +7,115 @@ import PropertyGallery from '../components/property/PropertyGallery';
 import { Loader } from '../components/ui/Loader';
 import propertyService from '../services/propertyService';
 import exchangeService from '../services/exchangeService';
+import governanceService from '../services/governanceService';
 import Toast from '../components/ui/Toast';
+
+const GovernanceSection = ({ projectId, isHolder }) => {
+  const [proposals, setProposals] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProposals = async () => {
+    try {
+      setLoading(true);
+      const data = await governanceService.getProposals(projectId);
+      setProposals(data);
+    } catch (err) {
+      console.error("Failed to fetch proposals", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (projectId) fetchProposals();
+  }, [projectId]);
+
+  const handleVote = async (proposalId, optionIndex) => {
+    if (!isHolder) {
+      alert("Only brick holders can vote on governance proposals.");
+      return;
+    }
+    try {
+      await governanceService.castVote(proposalId, optionIndex);
+      alert("Vote cast successfully!");
+      fetchProposals();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Voting failed");
+    }
+  };
+
+  if (loading) return <div className="p-8 text-center text-xs uppercase tracking-widest text-secondary-400">Synchronizing Governance Nodes...</div>;
+  if (proposals.length === 0) return null;
+
+  return (
+    <div className="mt-12 pt-12 border-t border-secondary-100 dark:border-secondary-800">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center text-primary-600 dark:text-primary-400">
+          <Shield size={20} />
+        </div>
+        <div>
+          <h3 className="text-2xl font-bold text-secondary-900 dark:text-white font-heading uppercase tracking-tight">Governance & DAO</h3>
+          <p className="text-[10px] uppercase tracking-widest text-secondary-500">Decentralized Asset Management Protocols</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {proposals.map(p => (
+          <Card key={p.id} className="relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4">
+              <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest border ${
+                p.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-secondary-100 text-secondary-400 border-secondary-200'
+              }`}>
+                {p.status}
+              </span>
+            </div>
+            <h4 className="text-lg font-bold text-secondary-900 dark:text-white mb-2">{p.title}</h4>
+            <p className="text-sm text-secondary-500 dark:text-secondary-400 mb-6 leading-relaxed">{p.description}</p>
+            
+            <div className="space-y-4">
+              {p.options.map((opt, idx) => {
+                const totalWeight = p.total_votes || 1;
+                const weight = p.vote_distribution?.[idx] || 0;
+                const percentage = Math.round((weight / totalWeight) * 100);
+                
+                return (
+                  <div key={idx} className="space-y-2">
+                    <div className="flex items-center justify-between text-[10px] uppercase tracking-widest font-bold">
+                      <span className="text-secondary-900 dark:text-white">{opt}</span>
+                      <span className="text-secondary-400">{percentage}% ({weight.toLocaleString()} Bricks)</span>
+                    </div>
+                    <div className="relative h-2 bg-secondary-100 dark:bg-secondary-800 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percentage}%` }}
+                        className="absolute inset-y-0 left-0 bg-primary-500"
+                      />
+                    </div>
+                    {p.status === 'active' && isHolder && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full text-[8px] h-8 mt-1 border-primary-500/20 text-primary-500 hover:bg-primary-500 hover:text-white"
+                        onClick={() => handleVote(p.id, idx)}
+                      >
+                        CAST WEIGHTED VOTE
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-secondary-50 dark:border-secondary-800 flex justify-between items-center text-[8px] uppercase tracking-widest text-secondary-400">
+               <span>Ends: {new Date(p.end_date).toLocaleDateString()}</span>
+               <span>Total Voting Power: {p.total_votes.toLocaleString()} Bricks</span>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -15,13 +123,20 @@ const PropertyDetails = () => {
   const [loading, setLoading] = useState(true);
   const [isInvesting, setIsInvesting] = useState(false);
   const [buyAmount, setBuyAmount] = useState(1);
+  const [isHolder, setIsHolder] = useState(false);
   const [toast, setToast] = useState({ open: false, message: '', type: 'success' });
 
   const fetchProperty = async (silent = false) => {
     try {
       if (!silent) setLoading(true);
-      const data = await propertyService.getPropertyById(id);
-      setProperty(data);
+      const [propData, portfolioData] = await Promise.all([
+        propertyService.getPropertyById(id),
+        exchangeService.getPortfolio().catch(() => [])
+      ]);
+      
+      setProperty(propData);
+      const holding = portfolioData.find(h => h.project_id === id);
+      setIsHolder(holding && holding.quantity > 0);
     } catch (error) {
       console.error("Failed to fetch property details", error);
     } finally {
@@ -191,6 +306,8 @@ const PropertyDetails = () => {
         </div>
       </div>
       
+      <GovernanceSection projectId={id} isHolder={isHolder} />
+
       <Toast 
         isOpen={toast.open} 
         message={toast.message} 
