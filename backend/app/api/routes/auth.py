@@ -28,6 +28,15 @@ def login(user_data: UserLogin):
     """
     return AuthService.login_user(user_data)
 
+from app.schemas.auth import TokenRefreshRequest
+
+@router.post("/refresh", response_model=Token)
+def refresh_token(data: TokenRefreshRequest):
+    """
+    Refresh the access token using a valid refresh token.
+    """
+    return AuthService.refresh_user_session(data.refresh_token)
+
 @router.get("/me", response_model=User)
 def get_me(current_user: User = Depends(get_current_user)):
     """

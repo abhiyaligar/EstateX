@@ -86,6 +86,27 @@ class AuthService:
             )
 
     @staticmethod
+    def refresh_user_session(refresh_token: str) -> Token:
+        try:
+            res = supabase.auth.refresh_session(refresh_token)
+            if res.session:
+                return Token(
+                    access_token=res.session.access_token,
+                    refresh_token=res.session.refresh_token,
+                    expires_in=res.session.expires_in
+                )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token"
+            )
+        except Exception as e:
+            error_detail = getattr(e, 'message', str(e))
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=error_detail
+            )
+
+    @staticmethod
     def forgot_password(email: str, db: Session) -> str:
         # Check if user exists
         user = db.query(DBUser).filter(DBUser.email == email).first()

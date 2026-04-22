@@ -38,6 +38,11 @@ export const userService = {
       new_password: newPassword
     });
     return response.data;
+  },
+
+  refreshToken: async (refreshToken) => {
+    const response = await api.post('/auth/refresh', { refresh_token: refreshToken });
+    return response.data;
   }
 };
 
