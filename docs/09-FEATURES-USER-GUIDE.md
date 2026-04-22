@@ -77,6 +77,8 @@ Daily Transaction: Rs. 50 lakhs
 - Update project milestones
 - Manage investor communications
 - View analytics & investor breakdown
+- **My Projects Workspace**: High-density dashboard for project lifecycle management
+- **Dual Wallet System**: Separate construction funds from personal capital
 
 **Permissions**:
 ```
@@ -1376,3 +1378,21 @@ KEY NUMBERS
 ├─ Average return: 8-12% p.a.
 └─ Completion rate: 98%
 ```
+
+---
+
+## Social & Community (Upcoming)
+
+### Investor Circles
+Connect with fellow investors to discuss project performance, share market insights, and collaborate on investment strategies.
+
+### Project Discussion Groups
+Dedicated chat spaces for each project where investors can ask questions directly to builders and verify site progress with peers.
+
+### Governance Voting
+Participate in platform-wide decisions and project-specific proposals through the weighted "Brick" voting system.
+
+---
+
+**EstateX User Guide v1.5**  
+**Last Updated**: April 22, 2026

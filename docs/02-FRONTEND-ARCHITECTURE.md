@@ -253,7 +253,8 @@ estateX-frontend/
 │   ├── components/                  # Reusable components
 │   │   ├── common/                  # Shared components
 │   │   │   ├── Header.tsx
-│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Sidebar.tsx          # Professional collapsible navigation
+│   │   │   ├── SidebarItem.tsx      # Dynamic sidebar menu items
 │   │   │   ├── Footer.tsx
 │   │   │   ├── Navigation.tsx
 │   │   │   ├── Button.tsx
@@ -286,11 +287,12 @@ estateX-frontend/
 │   │   │   └── ROICalculator.tsx
 │   │   │
 │   │   ├── builder/                 # Builder-specific components
-│   │   │   ├── ProjectDashboard.tsx
-│   │   │   ├── MilestoneTracker.tsx
-│   │   │   ├── FundraisingProgress.tsx
-│   │   │   ├── InvestorList.tsx
-│   │   │   └── DocumentUpload.tsx
+│   │   │   ├── ProjectDashboard.tsx     # High-density portfolio management
+│   │   │   ├── MilestoneTracker.tsx     # Milestone progress and verification
+│   │   │   ├── FundraisingProgress.tsx  # Live IPO subscription tracking
+│   │   │   ├── BuilderWallet.tsx        # Business ledger and withdrawal UI
+│   │   │   ├── InvestorList.tsx         # Detailed cap table for projects
+│   │   │   └── DocumentUpload.tsx       # RERA and construction certificates
 │   │   │
 │   │   ├── admin/                   # Admin-specific components
 │   │   │   ├── KYCQueue.tsx
@@ -443,7 +445,8 @@ RootLayout
 
 #### 3. Feature Components (Organisms)
 - **Header**: Top navigation bar
-- **Sidebar**: Left navigation panel
+- **Sidebar**: Left navigation panel. Recently updated to be **fully collapsible** with persistence (stores state in local storage) and role-based menu generation.
+- **Secondary Market Terminal**: A specialized high-density trading interface utilizing Supabase Realtime for sub-100ms updates to orderbooks and trade history.
 - **Footer**: Bottom footer
 - **ProjectCard**: Project listing card
 - **InvestmentForm**: Multi-step investment form
@@ -558,6 +561,11 @@ Contexts:
 │   ├── /revenue
 │   ├── /settings
 │   └── /documents
+
+├── /social/ (Upcoming)
+│   ├── /circles
+│   ├── /discussions
+│   └── /chat
 │
 └── /admin/ (Protected, role-based)
     ├── /dashboard

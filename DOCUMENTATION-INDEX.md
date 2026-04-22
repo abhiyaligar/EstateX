@@ -9,9 +9,9 @@ Comprehensive Technical Documentation Suite
 
 This documentation suite provides complete technical specifications, architectural design, implementation guides, and user guides for the EstateX platform.
 
-**Total Documentation**: ~36,500 lines  
+**Total Documentation**: ~38,500 lines  
 **Last Updated**: April 22, 2026  
-**Version**: 1.3
+**Version**: 1.5
 
 ---
 
@@ -34,11 +34,27 @@ This documentation suite provides complete technical specifications, architectur
 - Problem: 92% of population excluded from premium property investment
 - Solution: Fractional tokenized ownership (Rs. 10,000 minimum)
 - Timeline: 16 weeks to MVP
-- Documentation: 9 comprehensive guides
+- Documentation: 10 comprehensive guides
 
 ---
 
 ## Recent Technical Updates (April 2026)
+
+### Builder Project Workspace (April 22)
+- **Collapsible Navigation**: Implemented a professional, toggleable sidebar across the platform to optimize screen real estate.
+- **My Projects Workspace**: Developed a dedicated high-density dashboard for builders to manage their portfolio, track IPO performance, and monitor construction milestones.
+- **Wallet Integration**: Integrated the dual-wallet logic into the builder dashboard, enabling seamless revenue tracking and bank withdrawals.
+
+### Dual Wallet System (April 21)
+- **Business Ledger Separation**: Implemented a strict separation between personal investor funds (`users.wallet_balance`) and business construction funds (`builders.wallet_balance`).
+- **Milestone Distribution Logic**: Updated the core settlement engine to credit milestone-based earnings directly to the Builder's business wallet.
+- **Withdrawal Workflow**: Developed a secure withdrawal flow for builders to extract business funds to verified bank accounts with simulated OTP verification.
+
+### DAO-Style Governance (April 22)
+- **Snapshot Voting Protocol**: Implemented a weighted voting system where power is proportional to "Brick" holdings, snapshotted at the time of vote to prevent manipulation.
+- **Admin Proposal Lifecycle**: Developed a complete management suite for administrators to initialize proposals, define multi-choice options, and execute final consensus results.
+- **Terminal Integration**: Developed a high-density "Governance" tab within the Secondary Market trading terminal, enabling investors to vote without leaving the exchange.
+- **Cross-Relational Logic**: Integrated `ProposalVote` models with `BrickHolding` snapshots to ensure immutable and fair decision-making for completed assets.
 
 ### Macro Market Intelligence (April 22)
 - **Database-Backed Analytics**: Transitioned from dummy macro-economic data to a persistent `macro_analytics` PostgreSQL system.
@@ -527,9 +543,32 @@ Admin:
 3. **Week 1-2**: Database setup (05-DATABASE-SCHEMA.md)
 4. **Week 3-4**: Smart contracts (04-BLOCKCHAIN-ARCHITECTURE.md)
 5. **Week 5-8**: Feature implementation (09-FEATURES-USER-GUIDE.md)
-6. **Week 9-12**: Security & compliance (08-SECURITY-COMPLIANCE.md)
-7. **Week 13-16**: Deployment & scaling (07-DEPLOYMENT-GUIDE.md)
+6. **Week 9-10**: Social & Community (Upcoming) - Investor circles and group discussions.
+7. **Week 11-12**:- Security & Risk Assessment: Rs. 10B exposure analysis (08-SECURITY-COMPLIANCE.md)
+- User Workflows: 15 documented user journeys (09-FEATURES-USER-GUIDE.md)
+- DAO Governance: Weighted voting & proposal management (10-GOVERNANCE-DAO.md)
 
+---
+
+### 10. **docs/10-GOVERNANCE-DAO.md** - Decentralized Governance
+**Purpose**: Snapshot voting, weighted influence, and proposal management  
+**Audience**: Investors, administrators, technical auditors  
+**Contents**:
+- Weighted voting logic & snapshot protocols
+- Governance proposal lifecycle
+- Administrator management suite
+- Investor voting interface & terminal integration
+- Security considerations for DAO systems
+- Integration with `BrickHolding` inventory
+
+**Key Features**:
+- Weighted voting (1 Brick = 1 Vote)
+- Proposal status tracking (Active, Closed, Executed)
+- Multi-choice consensus support
+- High-density terminal integration
+- Snapshot-based weight calculation
+
+---
 ### For Testing
 1. Unit tests: Each service & smart contract
 2. Integration tests: API & blockchain interaction
@@ -569,7 +608,7 @@ Admin:
 
 ---
 
-**EstateX Documentation Suite v1.0**  
+**EstateX Documentation Suite v1.5**  
 **Status**: Complete & Production Ready  
 **Total Lines**: ~35,000  
 **Documents**: 10 major files

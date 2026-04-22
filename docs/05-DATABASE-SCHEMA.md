@@ -141,6 +141,7 @@ CREATE TABLE users (
     
     -- Wallet
     wallet_address VARCHAR(66) UNIQUE, -- Ethereum wallet address
+    wallet_balance DECIMAL(18,2) DEFAULT 0.00 NOT NULL, -- Personal liquid funds
     
     -- Preferences
     notification_email BOOLEAN DEFAULT true,
@@ -300,7 +301,7 @@ CREATE TABLE wallet_transactions (
     user_id UUID NOT NULL REFERENCES users(id),
     amount DECIMAL(18,2) NOT NULL,
     transaction_type VARCHAR(50) NOT NULL, -- deposit, withdrawal, brick_purchase, brick_sale
-    is_builder_transaction BOOLEAN DEFAULT false,
+    is_builder_transaction BOOLEAN DEFAULT false, -- True if linked to Builder business wallet
     status VARCHAR(50) DEFAULT 'completed',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -576,6 +577,10 @@ secondary_market_orders (1) ──> users (seller_id)
 
 projects (1) ─────────── (1) macro_analytics (Mapped via Pincode)
 brick_holdings (N) ───── (1) projects (Direct Portfolio Relationship)
+
+Dual Wallet Structure:
+├── users.wallet_balance: Personal/Investor ledger
+└── builders.wallet_balance: Business/Construction ledger (credited via Milestones)
 ```
 
 ---
