@@ -34,6 +34,13 @@ class ProjectBase(BaseModel):
     ipo_price: float = Field(..., gt=0)
     
     rera_id: Optional[str] = None
+    rera_approved: bool = False
+    environmental_clearance: bool = False
+    insurance_coverage: bool = False
+    
+    rera_approval_url: Optional[str] = None
+    brochure_url: Optional[str] = None
+    
     expected_completion_date: Optional[datetime] = None
 
 class ProjectCreate(ProjectBase):

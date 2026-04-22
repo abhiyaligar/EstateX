@@ -12,22 +12,17 @@ class ProjectService:
         # Verify the Builder exists and is officially 'approved' by an Admin
         builder = db.query(Builder).filter(Builder.id == builder_id).first()
         
-        # --- HOTFIX FOR DEVELOPMENT: Auto-create and Auto-approve builder profiles ---
         if not builder:
-            builder = Builder(
-                id=builder_id,
-                company_name="Auto Generated Builder Co.",
-                verification_status="approved",
-                year_established=datetime.datetime.now().year
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Builder profile not found. Please complete accreditation first."
             )
-            db.add(builder)
-            db.commit()
-            db.refresh(builder)
-        elif builder.verification_status != 'approved':
-            builder.verification_status = 'approved'
-            db.commit()
-            db.refresh(builder)
-        # -----------------------------------------------------------------------------
+
+        if builder.verification_status != 'approved':
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Property listing restricted. Your builder accreditation is still pending or requires revision."
+            )
             
         # Validate milestones sum to exactly 100%
         total_percentage = sum(m.release_percentage for m in project_data.milestones)
@@ -54,7 +49,14 @@ class ProjectService:
             ipo_price=project_data.ipo_price,
             market_value=project_data.ipo_price, # Starts pegged precisely to the IPO benchmark
             
+            # Compliance
             rera_id=project_data.rera_id,
+            rera_approved=project_data.rera_approved,
+            environmental_clearance=project_data.environmental_clearance,
+            insurance_coverage=project_data.insurance_coverage,
+            rera_approval_url=project_data.rera_approval_url,
+            brochure_url=project_data.brochure_url,
+            
             expected_completion_date=project_data.expected_completion_date,
             images=image_urls or [],
             ipo_status='upcoming', 
