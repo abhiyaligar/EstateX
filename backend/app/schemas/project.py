@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional, Any
+from app.schemas.analytics import MacroDataResponse
 from datetime import datetime, date, timezone
 from uuid import UUID
 
@@ -110,6 +111,7 @@ class ProjectListResponse(BaseModel):
     ipo_status: str
     status: str
     created_at: datetime
+    macro_analytics: Optional[MacroDataResponse] = None
     
     @model_validator(mode='before')
     @classmethod
@@ -191,7 +193,8 @@ class ProjectListResponse(BaseModel):
             "view_count": get_attr("view_count", 0),
             "ipo_status": get_attr("ipo_status", "upcoming"),
             "status": get_attr("status", "draft"),
-            "created_at": get_attr("created_at")
+            "created_at": get_attr("created_at"),
+            "macro_analytics": get_attr("macro_analytics")
         }
 
     class Config:

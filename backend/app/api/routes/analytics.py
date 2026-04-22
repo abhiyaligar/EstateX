@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
-import random
+from datetime import datetime, timezone
 
 from app.schemas.auth import User
-from app.schemas.exchange import MacroDataResponse
+from app.schemas.analytics import MacroDataResponse
 from app.middleware.auth import get_current_user
 from app.core.db import get_db
+from app.models.analytics import MacroAnalytics
 
 router = APIRouter(prefix="/analytics", tags=["Advanced Analytics"])
 
@@ -17,23 +17,21 @@ def get_macroeconomic_data(
     db: Session = Depends(get_db)
 ):
     """
-    Mock endpoint for macroeconomic real estate data.
-    Designed to be easily scaled to a real-world API provider (e.g. MagicBricks/99acres/Housing API) in the future.
+    Fetch macroeconomic real estate data for a specific pincode from the database.
+    Returns 404 if no data is available for the given pincode.
     """
-    # Simulate API latency or DB lookup
+    macro_data = db.query(MacroAnalytics).filter(MacroAnalytics.pincode == pincode).first()
     
-    # Generate deterministic mock data based on the pincode string
-    seed = sum([ord(c) for c in pincode])
-    random.seed(seed)
-    
-    yoy_growth = round(random.uniform(2.5, 15.0), 2)
-    avg_rental_yield = round(random.uniform(4.0, 9.5), 2)
-    demand_score = random.randint(40, 95)
+    if not macro_data:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"No macroeconomic data available for pincode {pincode}"
+        )
     
     return MacroDataResponse(
-        pincode=pincode,
-        yoy_growth_percentage=yoy_growth,
-        avg_rental_yield=avg_rental_yield,
-        demand_score=demand_score,
-        last_updated=datetime.utcnow() - timedelta(days=random.randint(1, 5))
+        pincode=macro_data.pincode,
+        yoy_growth_percentage=macro_data.yoy_growth_percentage,
+        avg_rental_yield=macro_data.avg_rental_yield,
+        demand_score=macro_data.demand_score,
+        last_updated=macro_data.last_updated
     )

@@ -75,6 +75,14 @@ class Project(Base):
     # Relationships
     builder = relationship("Builder", back_populates="projects")
     milestones = relationship("Milestone", back_populates="project", cascade="all, delete-orphan")
+    
+    # Macro Analytics Link (Linked via Pincode)
+    macro_analytics = relationship(
+        "MacroAnalytics",
+        primaryjoin="Project.pincode == foreign(MacroAnalytics.pincode)",
+        uselist=False,
+        viewonly=True
+    )
 
 
 class Milestone(Base):

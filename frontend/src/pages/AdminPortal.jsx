@@ -19,7 +19,11 @@ import {
   TrendingUp,
   Search,
   MapPin,
-  ShieldCheck
+  ShieldCheck,
+  Plus,
+  Layers,
+  Trash,
+  Edit2
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -489,6 +493,109 @@ const BuilderReviewModal = ({ isOpen, onClose, builder, onVerify, rejectionReaso
   );
 };
 
+const MacroAnalyticsModal = ({ isOpen, onClose, data, onSave }) => {
+  const [formData, setFormData] = useState({
+    pincode: '',
+    yoy_growth_percentage: '',
+    avg_rental_yield: '',
+    demand_score: ''
+  });
+
+  useEffect(() => {
+    if (data) {
+      setFormData({
+        pincode: data.pincode,
+        yoy_growth_percentage: data.yoy_growth_percentage,
+        avg_rental_yield: data.avg_rental_yield,
+        demand_score: data.demand_score
+      });
+    } else {
+      setFormData({
+        pincode: '',
+        yoy_growth_percentage: '',
+        avg_rental_yield: '',
+        demand_score: ''
+      });
+    }
+  }, [data, isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <Card className="max-w-md w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
+        <CardHeader className="border-b border-white/5">
+          <CardTitle className="text-xl font-bold uppercase tracking-tighter">
+            {data ? 'Update Analytics Node' : 'Initialize Analytics Node'}
+          </CardTitle>
+          <CardDescription className="uppercase tracking-widest text-[8px] mt-1">Geographical Market Data Configuration</CardDescription>
+        </CardHeader>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Pincode</label>
+              <Input 
+                disabled={!!data}
+                placeholder="e.g. 400001"
+                value={formData.pincode}
+                onChange={(e) => setFormData({...formData, pincode: e.target.value})}
+                required
+                className="bg-white/5 border-white/10 font-mono"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">YoY Growth (%)</label>
+                <Input 
+                  type="number" step="0.01"
+                  placeholder="12.5"
+                  value={formData.yoy_growth_percentage}
+                  onChange={(e) => setFormData({...formData, yoy_growth_percentage: e.target.value})}
+                  required
+                  className="bg-white/5 border-white/10 font-mono"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">Rental Yield (%)</label>
+                <Input 
+                  type="number" step="0.1"
+                  placeholder="6.5"
+                  value={formData.avg_rental_yield}
+                  onChange={(e) => setFormData({...formData, avg_rental_yield: e.target.value})}
+                  required
+                  className="bg-white/5 border-white/10 font-mono"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Demand Score (0-100)</label>
+              <Input 
+                type="number"
+                placeholder="85"
+                value={formData.demand_score}
+                onChange={(e) => setFormData({...formData, demand_score: e.target.value})}
+                required
+                className="bg-white/5 border-white/10 font-mono"
+              />
+            </div>
+            <div className="flex gap-3 pt-4">
+              <Button type="button" variant="ghost" className="flex-1 uppercase tracking-widest text-[10px]" onClick={onClose}>Cancel</Button>
+              <Button type="submit" variant="primary" className="flex-1 uppercase tracking-widest text-[10px]">
+                {data ? 'Commit Update' : 'Publish Node'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 // --- Main Page ---
 
 const AdminPortal = () => {
@@ -507,6 +614,11 @@ const AdminPortal = () => {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   
+  // Macro Analytics State
+  const [macroList, setMacroList] = useState([]);
+  const [selectedMacro, setSelectedMacro] = useState(null);
+  const [isMacroModalOpen, setIsMacroModalOpen] = useState(false);
+  
   // UI State
   const [targetUserId, setTargetUserId] = useState('');
   const [walletAmount, setWalletAmount] = useState('');
@@ -521,17 +633,19 @@ const AdminPortal = () => {
       try {
         setLoading(true);
         // Better error handling for individual requests to prevent entire page failure
-        const [statsData, kycData, projectsData, pendingBuildersData] = await Promise.allSettled([
+        const [statsData, kycData, projectsData, pendingBuildersData, macroData] = await Promise.allSettled([
           adminService.getDashboardStats(),
           adminService.getKYCApplications('all'),
           propertyService.getProperties('all'),
-          adminService.getPendingBuilders()
+          adminService.getPendingBuilders(),
+          adminService.getMacroData()
         ]);
         
         if (statsData.status === 'fulfilled') setStats(statsData.value);
         if (kycData.status === 'fulfilled') setKycApps(kycData.value.items);
         if (projectsData.status === 'fulfilled') setProjects(projectsData.value);
         if (pendingBuildersData.status === 'fulfilled') setPendingBuilders(pendingBuildersData.value);
+        if (macroData.status === 'fulfilled') setMacroList(macroData.value);
         
       } catch (err) {
         console.error("Admin fetch failed", err);
@@ -666,6 +780,39 @@ const AdminPortal = () => {
     }
   };
 
+  const handleMacroSave = async (formData) => {
+    try {
+      setLoading(true);
+      if (selectedMacro) {
+        await adminService.updateMacroData(selectedMacro.pincode, formData);
+      } else {
+        await adminService.createMacroData(formData);
+      }
+      const data = await adminService.getMacroData();
+      setMacroList(data);
+      setIsMacroModalOpen(false);
+      setSelectedMacro(null);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Save failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMacroDelete = async (pincode) => {
+    if (!confirm(`Permanently delete analytics node for ${pincode}?`)) return;
+    try {
+      setLoading(true);
+      await adminService.deleteMacroData(pincode);
+      const data = await adminService.getMacroData();
+      setMacroList(data);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Delete failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading && !stats) return (
     <div className="flex items-center justify-center h-screen bg-black">
       <div className="w-12 h-12 border-t-2 border-white animate-spin" />
@@ -690,7 +837,7 @@ const AdminPortal = () => {
         </div>
 
         <div className="flex bg-[#111] p-1 border border-white/5 rounded-none overflow-hidden">
-          {['dashboard', 'kyc', 'builders', 'projects', 'users'].map((tab) => (
+          {['dashboard', 'kyc', 'builders', 'projects', 'analytics', 'users'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1068,6 +1215,92 @@ const AdminPortal = () => {
               </Card>
             </motion.div>
         )}
+
+        {activeTab === 'analytics' && (
+          <motion.div 
+            key="analytics"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="space-y-6"
+          >
+            <Card noPadding>
+              <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold uppercase tracking-tight">Macro Analytics Nodes</h3>
+                  <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Global Market Intelligence Database</p>
+                </div>
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  className="text-[10px] h-10 px-6 font-bold tracking-widest"
+                  onClick={() => { setSelectedMacro(null); setIsMacroModalOpen(true); }}
+                >
+                  <Plus size={16} className="mr-2" /> NEW NODE
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/30">
+                      <th className="p-6 md:p-8">Pincode</th>
+                      <th className="p-6 md:p-8">YoY Growth</th>
+                      <th className="p-6 md:p-8">Rental Yield</th>
+                      <th className="p-6 md:p-8">Demand</th>
+                      <th className="p-6 md:p-8">Last Updated</th>
+                      <th className="p-6 md:p-8 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {macroList.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="p-20 text-center text-white/20 uppercase tracking-widest text-xs">No analytics nodes initialized.</td>
+                      </tr>
+                    ) : macroList.map(macro => (
+                      <tr key={macro.pincode} className="border-b border-white/5 hover:bg-white/[0.01]">
+                        <td className="p-6 md:p-8">
+                          <span className="font-mono text-sm text-white font-bold">{macro.pincode}</span>
+                        </td>
+                        <td className="p-6 md:p-8">
+                          <span className="text-sm font-bold text-green-500">+{macro.yoy_growth_percentage}%</span>
+                        </td>
+                        <td className="p-6 md:p-8">
+                          <span className="text-sm font-bold text-sky-400">{macro.avg_rental_yield}%</span>
+                        </td>
+                        <td className="p-6 md:p-8">
+                          <div className="flex items-center gap-3">
+                             <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-full bg-violet-500" style={{ width: `${macro.demand_score}%` }}></div>
+                             </div>
+                             <span className="text-sm font-bold text-violet-500">{macro.demand_score}/100</span>
+                          </div>
+                        </td>
+                        <td className="p-6 md:p-8">
+                          <span className="text-xs text-white/30">{new Date(macro.last_updated).toLocaleString()}</span>
+                        </td>
+                        <td className="p-6 md:p-8 text-right space-x-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => { setSelectedMacro(macro); setIsMacroModalOpen(true); }}
+                          >
+                            <Edit2 size={14} className="text-white/40 hover:text-white" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleMacroDelete(macro.pincode)}
+                          >
+                            <Trash size={14} className="text-red-500/40 hover:text-red-500" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </motion.div>
       </AnimatePresence>
 
        <BuilderReviewModal 
@@ -1099,6 +1332,13 @@ const AdminPortal = () => {
         onClose={() => setIsMilestoneModalOpen(false)}
         project={selectedMilestoneProject}
         onVerify={handleVerifyMilestone}
+      />
+      
+      <MacroAnalyticsModal 
+        isOpen={isMacroModalOpen} 
+        onClose={() => { setIsMacroModalOpen(false); setSelectedMacro(null); }}
+        data={selectedMacro}
+        onSave={handleMacroSave}
       />
     </div>
   );

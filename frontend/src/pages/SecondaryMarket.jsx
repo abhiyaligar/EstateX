@@ -29,6 +29,7 @@ import { Input } from '../components/ui/Input';
 import exchangeService from '../services/exchangeService';
 import propertyService from '../services/propertyService';
 import { supabase } from '../utils/supabaseClient';
+import { Loader } from '../components/ui/Loader';
 
 // --- Sub-Components ---
 
@@ -168,27 +169,31 @@ const SecondaryMarket = () => {
   const refreshLiveData = async () => {
     if (!selectedProject) return;
     try {
-      const [history, orders, book, ohlcv] = await Promise.all([
+      setLoading(true);
+      const [project, history, ohlc, orders, book] = await Promise.all([
+        propertyService.getPropertyById(selectedProject.id),
         exchangeService.getTradeHistory(selectedProject.id),
-        exchangeService.getOpenOrders('open'),
-        exchangeService.getPublicOrderBook(selectedProject.id),
-        exchangeService.getOHLCV(selectedProject.id, timeframe)
+        exchangeService.getOHLCV(selectedProject.id, timeframe),
+        exchangeService.getOpenOrders(),
+        exchangeService.getPublicOrderBook(selectedProject.id)
       ]);
+
+      setSelectedProject(project);
       setTradeHistory(history);
       setOpenOrders(orders);
       setPublicOrderBook(book);
-      setOhlcvData(ohlcv);
-
-      // Fetch Macro data based on pincode if project has it
-      if (selectedProject.pincode) {
-         const macro = await exchangeService.getMacroAnalytics(selectedProject.pincode);
-         setMacroData(macro);
+      setOhlcvData(ohlc);
+      
+      // Macro data is now automatically mapped to the project relationship
+      if (project.macro_analytics) {
+         setMacroData(project.macro_analytics);
       } else {
-         const macro = await exchangeService.getMacroAnalytics("400001"); // Default fallback
-         setMacroData(macro);
+         setMacroData(null);
       }
     } catch (error) {
       console.error("Live data fetch failed", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -448,13 +453,18 @@ const SecondaryMarket = () => {
                </Card>
 
                {/* Macro Economic Panel */}
-               {macroData && (
-                   <Card noPadding>
-                       <div className="p-4 border-b border-white/5 flex items-center gap-2">
-                           <Layers size={14} className="text-violet-500" />
-                           <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold">Macro Analytics</h3>
-                           <span className="ml-auto text-[8px] text-white/30 uppercase tracking-widest bg-white/5 px-2 py-1 rounded-full">Pincode: {macroData.pincode}</span>
+               <Card noPadding>
+                   <div className="p-4 border-b border-white/5 flex items-center gap-2">
+                       <Layers size={14} className="text-violet-500" />
+                       <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold">Macro Analytics</h3>
+                       {macroData && <span className="ml-auto text-[8px] text-white/30 uppercase tracking-widest bg-white/5 px-2 py-1 rounded-full">Pincode: {macroData.pincode}</span>}
+                   </div>
+                   
+                   {!macroData ? (
+                       <div className="p-8 text-center">
+                           <p className="text-[9px] uppercase tracking-widest text-white/40">No macroeconomic data available for this region</p>
                        </div>
+                   ) : (
                        <div className="grid grid-cols-3 divide-x divide-white/5">
                            <div className="p-4 text-center">
                                <p className="text-[9px] uppercase tracking-widest text-white/40 mb-2">YoY Growth</p>
@@ -469,8 +479,8 @@ const SecondaryMarket = () => {
                                <p className="text-lg font-mono font-bold text-violet-500">{macroData.demand_score}/100</p>
                            </div>
                        </div>
-                   </Card>
-               )}
+                   )}
+               </Card>
             </div>
 
             {!isExpanded && (

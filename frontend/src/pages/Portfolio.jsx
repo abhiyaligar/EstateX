@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { exchangeService } from '../services/exchangeService';
-import { Building, TrendingUp, ArrowUpRight, ArrowDownRight, ArrowRight, Loader2 } from 'lucide-react';
+import { Building, TrendingUp, ArrowUpRight, ArrowDownRight, ArrowRight, Loader2, PieChart as PieChartIcon } from 'lucide-react';
 import { Loader } from '../components/ui/Loader';
 import { Link } from 'react-router-dom';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const Portfolio = () => {
   const [loading, setLoading] = useState(true);
@@ -25,9 +26,32 @@ const Portfolio = () => {
     fetchHoldings();
   }, []);
 
-  if (loading) return <div className="py-24"><Loader size={48} text="Loading your assets..." /></div>;
-
   const totalValue = holdings.reduce((acc, curr) => acc + (curr.quantity * (curr.project?.financial?.market_value || 0)), 0);
+
+  // Asset Allocation Calculations
+  const cityAllocation = React.useMemo(() => {
+    const data = {};
+    holdings.forEach(h => {
+       const city = h.project?.location?.city || 'Unknown';
+       const val = h.quantity * (h.project?.financial?.market_value || 0);
+       data[city] = (data[city] || 0) + val;
+    });
+    return Object.keys(data).map(key => ({ name: key, value: data[key] }));
+  }, [holdings]);
+
+  const typeAllocation = React.useMemo(() => {
+    const data = {};
+    holdings.forEach(h => {
+       const type = h.project?.property_type || 'Unknown';
+       const val = h.quantity * (h.project?.financial?.market_value || 0);
+       data[type] = (data[type] || 0) + val;
+    });
+    return Object.keys(data).map(key => ({ name: key, value: data[key] }));
+  }, [holdings]);
+
+  const COLORS = ['#8b5cf6', '#38bdf8', '#22c55e', '#f59e0b', '#ec4899'];
+
+  if (loading) return <div className="py-24"><Loader size={48} text="Loading your assets..." /></div>;
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -52,6 +76,62 @@ const Portfolio = () => {
            </div>
         </div>
       </div>
+
+      {holdings.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+             <Card>
+                <div className="p-4 border-b border-secondary-100 dark:border-secondary-800 flex items-center gap-2">
+                   <PieChartIcon size={16} className="text-primary-500" />
+                   <h3 className="text-sm font-bold uppercase tracking-wider text-secondary-900 dark:text-white">Exposure by City</h3>
+                </div>
+                <div className="h-[250px] p-4">
+                   <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                         <Pie
+                           data={cityAllocation}
+                           innerRadius={60}
+                           outerRadius={80}
+                           paddingAngle={5}
+                           dataKey="value"
+                         >
+                           {cityAllocation.map((entry, index) => (
+                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                           ))}
+                         </Pie>
+                         <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                         <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                      </PieChart>
+                   </ResponsiveContainer>
+                </div>
+             </Card>
+
+             <Card>
+                <div className="p-4 border-b border-secondary-100 dark:border-secondary-800 flex items-center gap-2">
+                   <Building size={16} className="text-sky-500" />
+                   <h3 className="text-sm font-bold uppercase tracking-wider text-secondary-900 dark:text-white">Exposure by Property Type</h3>
+                </div>
+                <div className="h-[250px] p-4">
+                   <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                         <Pie
+                           data={typeAllocation}
+                           innerRadius={60}
+                           outerRadius={80}
+                           paddingAngle={5}
+                           dataKey="value"
+                         >
+                           {typeAllocation.map((entry, index) => (
+                             <Cell key={`cell-${index}`} fill={COLORS[(index + 1) % COLORS.length]} />
+                           ))}
+                         </Pie>
+                         <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                         <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                      </PieChart>
+                   </ResponsiveContainer>
+                </div>
+             </Card>
+          </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6">
         {holdings.length > 0 ? (
