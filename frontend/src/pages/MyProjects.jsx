@@ -18,6 +18,8 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import propertyService from '../services/propertyService';
+import revenueService from '../services/revenueService';
+import { Input } from '../components/ui/Input';
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <Card className="relative overflow-hidden group">
@@ -75,6 +77,34 @@ const MyProjects = () => {
     };
     fetchProjects();
   }, []);
+
+  const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [revenueForm, setRevenueForm] = useState({
+    amount: '',
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear()
+  });
+
+  const handleDepositRevenue = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      await revenueService.depositRental({
+        project_id: selectedProject.id,
+        amount: parseFloat(revenueForm.amount),
+        month: parseInt(revenueForm.month),
+        year: parseInt(revenueForm.year)
+      });
+      alert("Rental deposit initiated. Pending Admin approval.");
+      setIsRevenueModalOpen(false);
+      setRevenueForm({ ...revenueForm, amount: '' });
+    } catch (err) {
+      alert(err.response?.data?.detail || "Deposit failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -209,7 +239,7 @@ const MyProjects = () => {
                            </div>
                        </div>
 
-                       <div className="flex flex-wrap gap-2 justify-end w-full">
+                        <div className="flex flex-wrap gap-2 justify-end w-full">
                           <Button 
                             variant="outline" 
                             className="text-[10px] h-10 px-4 tracking-widest rounded-none border-white/5 hover:bg-white/5"
@@ -221,6 +251,13 @@ const MyProjects = () => {
                           <Button 
                             variant="primary" 
                             className="text-[10px] h-10 px-4 tracking-widest rounded-none"
+                            onClick={() => { setSelectedProject(project); setIsRevenueModalOpen(true); }}
+                          >
+                            DEPOSIT RENTAL
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            className="text-[10px] h-10 px-4 tracking-widest rounded-none border-blue-500/20 text-blue-400"
                             onClick={() => navigate(`/dashboard/builder-wallet`)}
                           >
                             PROJECT ESCROW
@@ -235,6 +272,56 @@ const MyProjects = () => {
           )}
         </div>
       </div>
+
+      {/* Revenue Deposit Modal */}
+      {isRevenueModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+           <Card className="max-w-md w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
+              <CardHeader className="border-b border-white/5">
+                <CardTitle className="text-xl font-bold uppercase tracking-tighter">Deposit Rental Income</CardTitle>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 mt-1">Project: {selectedProject?.title}</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <form onSubmit={handleDepositRevenue} className="space-y-6">
+                   <Input 
+                     label="Amount (INR)" 
+                     placeholder="e.g. 50000" 
+                     type="number"
+                     required
+                     value={revenueForm.amount}
+                     onChange={(e) => setRevenueForm({...revenueForm, amount: e.target.value})}
+                   />
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                         <label className="text-[10px] uppercase tracking-widest text-white/40">Month</label>
+                         <select 
+                           className="w-full bg-white/5 border border-white/10 p-3 text-sm text-white focus:border-primary-500 outline-none"
+                           value={revenueForm.month}
+                           onChange={(e) => setRevenueForm({...revenueForm, month: e.target.value})}
+                         >
+                            {Array.from({length: 12}, (_, i) => (
+                              <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>
+                            ))}
+                         </select>
+                      </div>
+                      <div className="space-y-2">
+                         <label className="text-[10px] uppercase tracking-widest text-white/40">Year</label>
+                         <Input 
+                           type="number"
+                           value={revenueForm.year}
+                           onChange={(e) => setRevenueForm({...revenueForm, year: e.target.value})}
+                         />
+                      </div>
+                   </div>
+                   <div className="flex gap-3 pt-4">
+                      <Button type="button" variant="ghost" className="flex-1 uppercase tracking-widest text-[10px]" onClick={() => setIsRevenueModalOpen(false)}>Cancel</Button>
+                      <Button type="submit" variant="primary" className="flex-1 uppercase tracking-widest text-[10px]">Initiate Deposit</Button>
+                   </div>
+                </form>
+              </CardContent>
+           </Card>
+        </div>
+      )}
     </div>
   );
 };

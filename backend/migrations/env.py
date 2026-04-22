@@ -31,6 +31,7 @@ from app.models.exchange import Order, Trade
 from app.models.otp import OTPRecord
 from app.models.analytics import MacroAnalytics
 from app.models.governance import GovernanceProposal, ProposalVote
+from app.models.revenue import RentalCycle, RentalPayout
 
 target_metadata = Base.metadata
 

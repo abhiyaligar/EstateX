@@ -23,7 +23,8 @@ import {
   Plus,
   Layers,
   Trash,
-  Edit2
+  Edit2,
+  X
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -33,6 +34,7 @@ import { Input } from '../components/ui/Input';
 import adminService from '../services/adminService';
 import propertyService from '../services/propertyService';
 import governanceService from '../services/governanceService';
+import revenueService from '../services/revenueService';
 
 // --- Sub-Components ---
 
@@ -744,6 +746,18 @@ const AdminPortal = () => {
   const [proposalsList, setProposalsList] = useState([]);
   const [selectedProposal, setSelectedProposal] = useState(null);
   const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
+
+  // Revenue State
+  const [pendingSettlements, setPendingSettlements] = useState([]);
+  const [settlementResult, setSettlementResult] = useState(null);
+  const [isSettlementModalOpen, setIsSettlementModalOpen] = useState(false);
+  const [isInfuseModalOpen, setIsInfuseModalOpen] = useState(false);
+  const [infuseForm, setInfuseForm] = useState({
+    project_id: '',
+    amount: '',
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear()
+  });
   
   // Fetch initial data
   useEffect(() => {
@@ -751,13 +765,14 @@ const AdminPortal = () => {
       try {
         setLoading(true);
         // Better error handling for individual requests to prevent entire page failure
-        const [statsData, kycData, projectsData, pendingBuildersData, macroData, governanceData] = await Promise.allSettled([
+        const [statsData, kycData, projectsData, pendingBuildersData, macroData, governanceData, revenueData] = await Promise.allSettled([
           adminService.getDashboardStats(),
           adminService.getKYCApplications('all'),
           propertyService.getProperties('all'),
           adminService.getPendingBuilders(),
           adminService.getMacroData(),
-          governanceService.getAllProposals()
+          governanceService.getAllProposals(),
+          revenueService.getPendingSettlements()
         ]);
         
         if (statsData.status === 'fulfilled') setStats(statsData.value);
@@ -766,6 +781,7 @@ const AdminPortal = () => {
         if (pendingBuildersData.status === 'fulfilled') setPendingBuilders(pendingBuildersData.value);
         if (macroData.status === 'fulfilled') setMacroList(macroData.value);
         if (governanceData.status === 'fulfilled') setProposalsList(governanceData.value);
+        if (revenueData.status === 'fulfilled') setPendingSettlements(revenueData.value);
         
       } catch (err) {
         console.error("Admin fetch failed", err);
@@ -962,6 +978,55 @@ const AdminPortal = () => {
     }
   };
 
+  const handleSettleRevenue = async (cycleId) => {
+    if (!confirm("Finalize this revenue distribution? This will debit the builder and credit all eligible investors based on the 30-day maturity rule.")) return;
+    try {
+      setLoading(true);
+      const response = await revenueService.settleCycle(cycleId);
+      setSettlementResult(response);
+      setIsSettlementModalOpen(true);
+      
+      const data = await revenueService.getPendingSettlements();
+      setPendingSettlements(data);
+      await refreshStats();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Settlement failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectSettlement = async (cycleId) => {
+    if (!confirm("Are you sure you want to reject this settlement request?")) return;
+    try {
+      setLoading(true);
+      await revenueService.rejectCycle(cycleId);
+      const data = await revenueService.getPendingSettlements();
+      setPendingSettlements(data);
+      alert("Settlement request rejected.");
+    } catch (err) {
+      alert(err.response?.data?.detail || "Rejection failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInfuseRevenue = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      await revenueService.depositRental(infuseForm);
+      alert("Revenue infusion successful. It is now awaiting approval in the settlement list.");
+      setIsInfuseModalOpen(false);
+      const data = await revenueService.getPendingSettlements();
+      setPendingSettlements(data);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Infusion failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading && !stats) return (
     <div className="flex items-center justify-center h-screen bg-black">
       <div className="w-12 h-12 border-t-2 border-white animate-spin" />
@@ -985,12 +1050,12 @@ const AdminPortal = () => {
           </p>
         </div>
 
-        <div className="flex bg-[#111] p-1 border border-white/5 rounded-none overflow-hidden">
-          {['dashboard', 'kyc', 'builders', 'projects', 'analytics', 'governance', 'users'].map((tab) => (
+        <div className="flex bg-[#111] p-1 border border-white/5 rounded-none overflow-x-auto scrollbar-hide whitespace-nowrap">
+          {['dashboard', 'kyc', 'builders', 'projects', 'revenue', 'analytics', 'governance', 'users'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 text-[10px] uppercase tracking-widest transition-all duration-300 ${
+              className={`px-6 py-3 text-[10px] uppercase tracking-widest transition-all duration-300 flex-shrink-0 ${
                 activeTab === tab 
                 ? 'bg-white text-black font-bold' 
                 : 'text-white/30 hover:text-white hover:bg-white/5'
@@ -1553,7 +1618,133 @@ const AdminPortal = () => {
             </Card>
           </motion.div>
         )}
+        {activeTab === 'revenue' && (
+          <motion.div 
+            key="revenue"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <Card noPadding>
+              <div className="p-8 border-b border-white/5 flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-bold uppercase tracking-tight">Revenue Settlement Center</h3>
+                  <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Approve monthly rental distributions & manage 1% platform fees</p>
+                </div>
+                <Button variant="outline" className="text-[10px] h-10 px-6 font-bold tracking-widest border-green-500/20 text-green-500" onClick={() => setIsInfuseModalOpen(true)}>INFUSE MANUALLY</Button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/30">
+                      <th className="p-6 md:p-8">Asset & Period</th>
+                      <th className="p-6 md:p-8">Gross Deposit</th>
+                      <th className="p-6 md:p-8">Platform Fee (1%)</th>
+                      <th className="p-6 md:p-8">Net Distribution</th>
+                      <th className="p-6 md:p-8">Status</th>
+                      <th className="p-6 md:p-8 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingSettlements.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="p-20 text-center text-white/20 uppercase tracking-widest text-xs">No pending revenue cycles awaiting settlement.</td>
+                      </tr>
+                    ) : (
+                      pendingSettlements.map(cycle => (
+                        <tr key={cycle.id} className="border-b border-white/5 hover:bg-white/[0.01]">
+                          <td className="p-6 md:p-8">
+                            <span className="block font-bold text-white uppercase text-xs">{projects.find(p => p.id === cycle.project_id)?.title || 'PROJECT'}</span>
+                            <span className="text-[10px] text-white/40 uppercase tracking-widest">{new Date(cycle.year, cycle.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
+                          </td>
+                          <td className="p-6 md:p-8 font-mono text-sm">₹{parseFloat(cycle.gross_amount).toLocaleString()}</td>
+                          <td className="p-6 md:p-8 font-mono text-sm text-amber-500">₹{parseFloat(cycle.fee_amount).toLocaleString()}</td>
+                          <td className="p-6 md:p-8 font-mono text-sm text-green-500">₹{parseFloat(cycle.net_amount).toLocaleString()}</td>
+                          <td className="p-6 md:p-8">
+                            <span className="px-2 py-1 text-[8px] font-bold uppercase tracking-widest bg-amber-500/10 text-amber-500 border border-amber-500/20">AWAITING APPROVAL</span>
+                          </td>
+                          <td className="p-6 md:p-8 text-right">
+                             <div className="flex justify-end gap-2">
+                                <Button size="sm" variant="outline" className="text-[10px] h-9 px-6 font-bold tracking-widest border-red-500/20 text-red-500 hover:bg-red-500/5" onClick={() => handleRejectSettlement(cycle.id)}>REJECT</Button>
+                                <Button size="sm" variant="primary" className="text-[10px] h-9 px-6 font-bold tracking-widest" onClick={() => handleSettleRevenue(cycle.id)}>APPROVE & SETTLE</Button>
+                             </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </motion.div>
+        )}
       </AnimatePresence>
+
+      {/* Settlement Success Modal */}
+      {isSettlementModalOpen && settlementResult && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+           <motion.div 
+             initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+             className="max-w-2xl w-full bg-[#0a0a0a] border border-green-500/20 shadow-[0_0_50px_-12px_rgba(34,197,94,0.3)]"
+           >
+              <div className="p-8 border-b border-white/5 flex justify-between items-center bg-green-500/5">
+                 <div>
+                    <div className="flex items-center gap-2 text-green-500 mb-1">
+                       <CheckCircle2 size={18} />
+                       <h3 className="text-xl font-bold uppercase tracking-tighter">Settlement Successful</h3>
+                    </div>
+                    <p className="text-[10px] uppercase tracking-widest text-white/40">Distribution cycle executed across node network</p>
+                 </div>
+                 <button onClick={() => setIsSettlementModalOpen(false)} className="text-white/20 hover:text-white"><X size={20}/></button>
+              </div>
+              <div className="p-8 space-y-6">
+                 <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 bg-white/5 border border-white/5">
+                       <p className="text-[8px] uppercase tracking-widest text-white/30 mb-1">Gross Yield</p>
+                       <p className="text-lg font-mono font-bold text-white">₹{parseFloat(settlementResult.cycle.gross_amount).toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 bg-white/5 border border-white/5">
+                       <p className="text-[8px] uppercase tracking-widest text-white/30 mb-1">Platform Fee (1%)</p>
+                       <p className="text-lg font-mono font-bold text-amber-500">₹{parseFloat(settlementResult.cycle.fee_amount).toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 bg-white/5 border border-white/5">
+                       <p className="text-[8px] uppercase tracking-widest text-white/30 mb-1">Total Payouts</p>
+                       <p className="text-lg font-mono font-bold text-green-500">{settlementResult.payouts.length}</p>
+                    </div>
+                 </div>
+
+                 <div>
+                    <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/30 mb-4">Credited Investors (Mature Holdings Only)</h4>
+                    <div className="max-h-[300px] overflow-y-auto border border-white/5">
+                       <table className="w-full text-left text-[10px]">
+                          <thead className="bg-white/5 sticky top-0">
+                             <tr className="uppercase tracking-widest text-white/40 border-b border-white/5">
+                                <th className="p-4">Investor</th>
+                                <th className="p-4">Mature Bricks</th>
+                                <th className="p-4 text-right">Amount Credited</th>
+                             </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                             {settlementResult.payouts.map((p, i) => (
+                               <tr key={i} className="hover:bg-white/[0.02]">
+                                  <td className="p-4">
+                                     <span className="block font-bold text-white uppercase">{p[1]} {p[2]}</span>
+                                     <span className="text-white/30 lowercase">{p[3]}</span>
+                                  </td>
+                                  <td className="p-4 font-mono">{p[0].eligible_quantity} BK</td>
+                                  <td className="p-4 text-right font-bold text-green-500 font-mono">₹{parseFloat(p[0].amount_paid).toLocaleString()}</td>
+                               </tr>
+                             ))}
+                          </tbody>
+                       </table>
+                    </div>
+                 </div>
+              </div>
+              <div className="p-8 pt-0">
+                 <Button variant="primary" className="w-full h-12 uppercase tracking-widest text-[10px] font-bold" onClick={() => setIsSettlementModalOpen(false)}>CLOSE REPORT</Button>
+              </div>
+           </motion.div>
+        </div>
+      )}
 
       <GovernanceModal 
         isOpen={isProposalModalOpen}
@@ -1599,6 +1790,68 @@ const AdminPortal = () => {
         data={selectedMacro}
         onSave={handleMacroSave}
       />
+
+      {/* Infuse Revenue Modal */}
+      {isInfuseModalOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+           <Card className="max-w-md w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
+              <CardHeader className="border-b border-white/5">
+                <CardTitle className="text-xl font-bold uppercase tracking-tighter">Admin: Infuse Rental Yield</CardTitle>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 mt-1">Directly inject rental income into the settlement queue</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <form onSubmit={handleInfuseRevenue} className="space-y-6">
+                   <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Target Project</label>
+                      <select 
+                        className="w-full bg-white/5 border border-white/10 p-3 text-sm text-white focus:border-primary-500 outline-none"
+                        value={infuseForm.project_id}
+                        onChange={(e) => setInfuseForm({...infuseForm, project_id: e.target.value})}
+                        required
+                      >
+                         <option value="">Select Asset...</option>
+                         {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                      </select>
+                   </div>
+                   <Input 
+                     label="Infusion Amount (INR)" 
+                     placeholder="e.g. 50000" 
+                     type="number"
+                     required
+                     value={infuseForm.amount}
+                     onChange={(e) => setInfuseForm({...infuseForm, amount: e.target.value})}
+                   />
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                         <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Month</label>
+                         <select 
+                           className="w-full bg-white/5 border border-white/10 p-3 text-sm text-white focus:border-primary-500 outline-none"
+                           value={infuseForm.month}
+                           onChange={(e) => setInfuseForm({...infuseForm, month: e.target.value})}
+                         >
+                            {Array.from({length: 12}, (_, i) => (
+                              <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>
+                            ))}
+                         </select>
+                      </div>
+                      <div className="space-y-2">
+                         <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Year</label>
+                         <Input 
+                           type="number"
+                           value={infuseForm.year}
+                           onChange={(e) => setInfuseForm({...infuseForm, year: e.target.value})}
+                         />
+                      </div>
+                   </div>
+                   <div className="flex gap-3 pt-4">
+                      <Button type="button" variant="ghost" className="flex-1 uppercase tracking-widest text-[10px]" onClick={() => setIsInfuseModalOpen(false)}>Cancel</Button>
+                      <Button type="submit" variant="primary" className="flex-1 uppercase tracking-widest text-[10px]">Execute Infusion</Button>
+                   </div>
+                </form>
+              </CardContent>
+           </Card>
+        </div>
+      )}
     </div>
   );
 };

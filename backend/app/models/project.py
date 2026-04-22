@@ -60,6 +60,8 @@ class Project(Base):
     # Arbitrary Legacy Financials
     funding_target = Column(DECIMAL(18, 2), nullable=True)
     min_investment = Column(DECIMAL(18, 2), nullable=True)
+    security_deposit = Column(DECIMAL(18, 2), default=0.00)
+    estimated_monthly_rental = Column(DECIMAL(18, 2), default=0.00)
     
     # Metrics
     investor_count = Column(Integer, default=0)
