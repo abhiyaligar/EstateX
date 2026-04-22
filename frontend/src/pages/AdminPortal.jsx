@@ -160,6 +160,7 @@ const AdminPortal = () => {
   const [stats, setStats] = useState(null);
   const [kycApps, setKycApps] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [pendingBuilders, setPendingBuilders] = useState([]);
   
   // UI State
   const [targetUserId, setTargetUserId] = useState('');
@@ -174,14 +175,19 @@ const AdminPortal = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [statsData, kycData, projectsData] = await Promise.all([
+        // Better error handling for individual requests to prevent entire page failure
+        const [statsData, kycData, projectsData, pendingBuildersData] = await Promise.allSettled([
           adminService.getDashboardStats(),
           adminService.getKYCApplications('all'),
-          propertyService.getProperties('all')
+          propertyService.getProperties('all'),
+          adminService.getPendingBuilders()
         ]);
-        setStats(statsData);
-        setKycApps(kycData.items);
-        setProjects(projectsData);
+        
+        if (statsData.status === 'fulfilled') setStats(statsData.value);
+        if (kycData.status === 'fulfilled') setKycApps(kycData.value.items);
+        if (projectsData.status === 'fulfilled') setProjects(projectsData.value);
+        if (pendingBuildersData.status === 'fulfilled') setPendingBuilders(pendingBuildersData.value);
+        
       } catch (err) {
         console.error("Admin fetch failed", err);
       } finally {
@@ -216,6 +222,19 @@ const AdminPortal = () => {
       await adminService.reviewKYC(id, { status, rejection_reason: reason });
       refreshKYC();
     } catch (err) { alert(err.response?.data?.detail || "Review failed"); }
+  };
+
+  const handleVerifyBuilder = async (id, status) => {
+    const reason = status === 'rejected' ? prompt("Enter rejection reason for builder:") : null;
+    if (status === 'rejected' && !reason) return;
+
+    try {
+      await adminService.verifyBuilder(id, { status, rejection_reason: reason });
+      // Update pending list and stats
+      const builders = await adminService.getPendingBuilders();
+      setPendingBuilders(builders);
+      refreshStats();
+    } catch (err) { alert(err.response?.data?.detail || "Verification failed"); }
   };
 
   const handleWalletAdjust = async (e) => {
@@ -317,7 +336,7 @@ const AdminPortal = () => {
         </div>
 
         <div className="flex bg-[#111] p-1 border border-white/5 rounded-none overflow-hidden">
-          {['dashboard', 'kyc', 'projects', 'users'].map((tab) => (
+          {['dashboard', 'kyc', 'builders', 'projects', 'users'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -516,7 +535,8 @@ const AdminPortal = () => {
                             <span className="text-[10px] text-white/40">ID: {p.id?.substring(0,8) || 'N/A'}</span>
                           </td>
                           <td className="p-6 md:p-8">
-                            <span className="text-xs text-white/60">ID: {p.builder_id?.substring(0,8) || 'N/A'}...</span>
+                            <span className="block text-sm font-bold text-white uppercase">{p.builder?.company_name || 'UNKNOWN'}</span>
+                            <span className="text-[10px] text-white/40">ID: {p.builder_id?.substring(0,8) || 'N/A'}...</span>
                           </td>
                           <td className="p-6 md:p-8">
                             <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest rounded-none border ${
@@ -528,7 +548,7 @@ const AdminPortal = () => {
                             </span>
                           </td>
                           <td className="p-6 md:p-8">
-                            <span className="text-xs font-bold text-white">₹{(p.total_escrow_held || 0).toLocaleString()}</span>
+                            <span className="text-xs font-bold text-white">₹{(p.financial?.total_escrow_held || 0).toLocaleString()}</span>
                           </td>
                           <td className="p-6 md:p-8">
                             <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest rounded-none border ${
@@ -563,11 +583,72 @@ const AdminPortal = () => {
           </motion.div>
         )}
 
+        {activeTab === 'builders' && (
+          <motion.div 
+            key="builders"
+            initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
+            className="space-y-6"
+          >
+             <Card noPadding>
+                <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold uppercase tracking-tighter">Builder Verification Wall</h3>
+                    <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Review and approve business credentials</p>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 px-4 py-2 text-[10px] uppercase tracking-widest font-bold">
+                    Pending: {pendingBuilders.length}
+                  </div>
+                </div>
+                
+                <div className="p-8">
+                   {pendingBuilders.length === 0 ? (
+                      <div className="py-24 text-center border-2 border-dashed border-white/5">
+                         <Building2 className="mx-auto mb-4 text-white/10" size={48} />
+                         <p className="text-xs text-white/20 uppercase tracking-[0.3em]">No builders currently awaiting verification</p>
+                      </div>
+                   ) : (
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {pendingBuilders.map(b => (
+                          <div key={b.id} className="bg-white/[0.02] border border-white/10 p-6 flex flex-col justify-between group hover:border-white/20 transition-colors">
+                             <div className="mb-6">
+                               <div className="flex items-start justify-between mb-2">
+                                 <h4 className="text-xl font-bold uppercase tracking-tight">{b.company_name}</h4>
+                                 <span className="text-[10px] font-mono text-white/30">REF: {b.id.substring(0,8)}</span>
+                               </div>
+                               <div className="space-y-2">
+                                 <div className="flex text-[10px] uppercase tracking-widest gap-2">
+                                   <span className="text-white/30">REG NO:</span>
+                                   <span className="text-white/60 font-mono">{b.company_registration_number || 'NOT PROVIDED'}</span>
+                                 </div>
+                                 <div className="flex text-[10px] uppercase tracking-widest gap-2">
+                                   <span className="text-white/30">RERA:</span>
+                                   <span className="text-white/60 font-mono">{b.rera_registration_number || 'NOT PROVIDED'}</span>
+                                 </div>
+                                 <div className="flex text-[10px] uppercase tracking-widest gap-2">
+                                   <span className="text-white/30">BANK:</span>
+                                   <span className="text-white/60 font-mono">{b.bank_name || 'PENDING'} - {b.bank_account_number || 'PENDING'}</span>
+                                 </div>
+                               </div>
+                             </div>
+                             
+                             <div className="flex gap-4 pt-6 border-t border-white/5">
+                                <Button variant="danger" className="flex-1 text-[10px] font-bold tracking-widest" onClick={() => handleVerifyBuilder(b.id, 'rejected')}>REJECT PROFILE</Button>
+                                <Button variant="primary" className="flex-1 text-[10px] font-bold tracking-widest" onClick={() => handleVerifyBuilder(b.id, 'approved')}>APPROVE ACCESS</Button>
+                             </div>
+                          </div>
+                        ))}
+                     </div>
+                   )}
+                </div>
+             </Card>
+          </motion.div>
+        )}
+
         {activeTab === 'users' && (
            <motion.div 
             key="users"
             initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+            className="grid grid-cols-1 gap-6"
            >
               <Card>
                  <div className="flex items-center gap-4 mb-8">
@@ -616,16 +697,7 @@ const AdminPortal = () => {
                     </div>
                  </form>
               </Card>
-
-              <Card className="flex flex-col items-center justify-center border-dashed border-white/10 bg-white/[0.02]">
-                 <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 text-white/20">
-                   <Building2 size={40} />
-                 </div>
-                 <h3 className="text-xl font-bold uppercase tracking-tight mb-2">Builder Verification</h3>
-                 <p className="text-xs text-secondary-500 uppercase tracking-widest mb-8">Pending Profile Reviews: 0</p>
-                 <Button variant="outline" disabled className="w-full max-w-xs">Enter Review Chamber</Button>
-              </Card>
-           </motion.div>
+            </motion.div>
         )}
       </AnimatePresence>
 

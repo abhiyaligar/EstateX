@@ -31,6 +31,11 @@ export const adminService = {
     return response.data;
   },
 
+  getPendingBuilders: async () => {
+    const response = await api.get('/admin/builders/pending');
+    return response.data;
+  },
+
   verifyMilestone: async (projectId, milestoneId, reviewData) => {
     const response = await api.post(`/admin/projects/${projectId}/milestones/${milestoneId}/verify`, reviewData);
     return response.data;

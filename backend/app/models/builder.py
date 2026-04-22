@@ -38,10 +38,16 @@ class Builder(Base):
     total_construction_cost = Column(Float, default=0.0)
     wallet_balance = Column(DECIMAL(18, 2), default=0.00, nullable=False) # Liquid business capital
     
+    # Registered Bank Account for Withdrawals
+    bank_account_name = Column(String(255))
+    bank_name = Column(String(255))
+    bank_account_number = Column(String(100))
+    bank_ifsc_code = Column(String(20))
+    
     # Verification System
     document_verified = Column(Boolean, default=False)
     documents_verified_date = Column(DateTime(timezone=True))
-    verification_status = Column(String(50), default='pending') # pending, approved, rejected
+    verification_status = Column(String(50), default='details_required') # details_required, pending, approved, rejected
     rejection_reason = Column(String(500))
     
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)

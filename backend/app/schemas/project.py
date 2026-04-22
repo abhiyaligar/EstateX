@@ -64,6 +64,7 @@ class ProjectFinancialResponse(BaseModel):
     ipo_price: float
     market_value: Optional[float]
     previous_close_price: Optional[float]
+    total_escrow_held: float # Funds in admin control
 
 class ProjectTimelineResponse(BaseModel):
     launch_date: Optional[date]
@@ -150,7 +151,8 @@ class ProjectListResponse(BaseModel):
                 "face_value": get_attr("face_value", 0),
                 "ipo_price": get_attr("ipo_price", 0),
                 "market_value": get_attr("market_value"),
-                "previous_close_price": get_attr("previous_close_price")
+                "previous_close_price": get_attr("previous_close_price"),
+                "total_escrow_held": get_attr("total_escrow_held", 0)
             },
             "timeline": {
                 "launch_date": get_attr("launch_date"),

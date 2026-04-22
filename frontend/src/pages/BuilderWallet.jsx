@@ -6,6 +6,7 @@ import { Building, ArrowUpRight, ArrowDownRight, Clock, Loader2, Minus, Shield, 
 import { Loader } from '../components/ui/Loader';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
+import builderService from '../services/builderService';
 
 const BuilderWallet = () => {
     const [loading, setLoading] = useState(true);
@@ -14,12 +15,32 @@ const BuilderWallet = () => {
     const [withdrawAmount, setWithdrawAmount] = useState('');
     const [otp, setOtp] = useState('');
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [bankDetails, setBankDetails] = useState({
+        company_name: '',
+        bank_account_name: '',
+        bank_name: '',
+        bank_account_number: '',
+        bank_ifsc_code: ''
+    });
+    const [isSavingBank, setIsSavingBank] = useState(false);
 
     const fetchData = async (silent = false) => {
         try {
             if (!silent) setLoading(true);
             const data = await walletService.getBuilderWalletContext();
             setWalletData(data);
+            // Also fetch builder profile for bank details
+            const profile = await builderService.getProfile().catch(() => null);
+            if (profile) {
+                setBankDetails({
+                    company_name: profile.company_name || '',
+                    bank_account_name: profile.bank_account_name || '',
+                    bank_name: profile.bank_name || '',
+                    bank_account_number: profile.bank_account_number || '',
+                    bank_ifsc_code: profile.bank_ifsc_code || ''
+                });
+            }
         } catch (error) {
             console.error("Failed to fetch builder wallet data", error);
         } finally {
@@ -49,6 +70,21 @@ const BuilderWallet = () => {
             alert(msg);
         } finally {
             setIsWithdrawing(false);
+        }
+    };
+
+    const handleRegisterBank = async (e) => {
+        e.preventDefault();
+        setIsSavingBank(true);
+        try {
+            await builderService.updateBankAccount(bankDetails);
+            alert("Bank account details registered successfully!");
+            setShowRegisterModal(false);
+            await fetchData(true);
+        } catch (error) {
+            alert(error.response?.data?.detail || "Failed to register bank account.");
+        } finally {
+            setIsSavingBank(false);
         }
     };
 
@@ -185,8 +221,11 @@ const BuilderWallet = () => {
                                     Transfer to Bank via OTP
                                 </li>
                             </ul>
-                            <Button className="w-full bg-white text-indigo-600 hover:bg-primary-50 border-none font-bold h-12 rounded-xl">
-                                Register New Account
+                            <Button 
+                                className="w-full bg-white text-indigo-600 hover:bg-primary-50 border-none font-bold h-12 rounded-xl"
+                                onClick={() => setShowRegisterModal(true)}
+                            >
+                                {bankDetails.bank_account_number ? 'Update Bank Account' : 'Register New Account'}
                             </Button>
                         </CardContent>
                         <div className="absolute -right-12 -bottom-12 opacity-10">
@@ -249,12 +288,65 @@ const BuilderWallet = () => {
 
                     <div className="py-2">
                         <p className="text-[10px] text-secondary-500 text-center uppercase font-bold tracking-widest">Payout Destination</p>
-                        <p className="text-sm text-secondary-900 dark:text-white text-center font-medium mt-1">Verified Business Bank Account (Primary)</p>
+                        <p className="text-sm text-secondary-900 dark:text-white text-center font-medium mt-1">
+                            {bankDetails.bank_account_number ? `${bankDetails.bank_name} - ${bankDetails.bank_account_number}` : 'No verified account registered'}
+                        </p>
                     </div>
 
                     <Button className="w-full h-14 text-lg font-bold bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20" type="submit" isLoading={isWithdrawing}>
                         Execute Payout
                     </Button>
+                </form>
+            </Modal>
+
+            {/* Register Bank Modal */}
+            <Modal
+                isOpen={showRegisterModal}
+                onClose={() => setShowRegisterModal(false)}
+                title="Register Business Bank Account"
+            >
+                <form onSubmit={handleRegisterBank} className="space-y-4 pt-2">
+                    <Input
+                        label="Official Company Name"
+                        value={bankDetails.company_name}
+                        onChange={(e) => setBankDetails({ ...bankDetails, company_name: e.target.value })}
+                        required
+                        placeholder="e.g. Acme Constructions Ltd"
+                    />
+                    <Input
+                        label="Account Holder Name"
+                        value={bankDetails.bank_account_name}
+                        onChange={(e) => setBankDetails({ ...bankDetails, bank_account_name: e.target.value })}
+                        required
+                        placeholder="Official Bank Account Name"
+                    />
+                    <Input
+                        label="Bank Name"
+                        value={bankDetails.bank_name}
+                        onChange={(e) => setBankDetails({ ...bankDetails, bank_name: e.target.value })}
+                        required
+                        placeholder="e.g. HDFC Bank"
+                    />
+                    <Input
+                        label="Account Number"
+                        value={bankDetails.bank_account_number}
+                        onChange={(e) => setBankDetails({ ...bankDetails, bank_account_number: e.target.value })}
+                        required
+                        placeholder="0000000000000000"
+                    />
+                    <Input
+                        label="IFSC Code"
+                        value={bankDetails.bank_ifsc_code}
+                        onChange={(e) => setBankDetails({ ...bankDetails, bank_ifsc_code: e.target.value.toUpperCase() })}
+                        required
+                        placeholder="HDFC0001234"
+                    />
+                    
+                    <div className="pt-4">
+                        <Button className="w-full h-14 text-lg font-bold" type="submit" isLoading={isSavingBank}>
+                            Save Bank Details
+                        </Button>
+                    </div>
                 </form>
             </Modal>
         </div>

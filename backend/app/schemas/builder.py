@@ -30,6 +30,13 @@ class BuilderResponse(BuilderBase):
     total_construction_cost: float
     verification_status: str
     rejection_reason: Optional[str] = None
+    
+    # Bank Account
+    bank_account_name: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_account_number: Optional[str] = None
+    bank_ifsc_code: Optional[str] = None
+    
     created_at: datetime
 
     class Config:
@@ -38,3 +45,10 @@ class BuilderResponse(BuilderBase):
 class BuilderVerificationUpdate(BaseModel):
     status: str = Field(..., description="Must be 'approved' or 'rejected'")
     rejection_reason: Optional[str] = None
+
+class BuilderBankAccountUpdate(BaseModel):
+    company_name: str
+    bank_account_name: str
+    bank_name: str
+    bank_account_number: str
+    bank_ifsc_code: str

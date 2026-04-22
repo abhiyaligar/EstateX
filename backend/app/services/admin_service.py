@@ -26,6 +26,9 @@ class AdminService:
             if hasattr(KYCRecord, 'status') else True
         ).scalar() or 0
 
+        from app.models.builder import Builder
+        pending_builders = db.query(func.count(Builder.id)).filter(Builder.verification_status == 'pending').scalar() or 0
+
         # Live Project Stats
         projects_active = db.query(func.count(Project.id)).filter(Project.status == 'approved').scalar() or 0
         projects_completed = db.query(func.count(Project.id)).filter(Project.ipo_status == 'completed').scalar() or 0
@@ -38,6 +41,7 @@ class AdminService:
             total_builders=role_counts.get('builder', 0),
             total_admins=role_counts.get('admin', 0),
             kyc_pending_approvals=pending_kyc,
+            builder_pending_approvals=pending_builders,
             projects_active=projects_active,
             projects_completed=projects_completed,
             total_investments_locked_inr=float(total_investments_locked_inr),

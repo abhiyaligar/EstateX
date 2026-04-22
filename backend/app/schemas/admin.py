@@ -9,6 +9,7 @@ class DashboardStatsResponse(BaseModel):
     total_builders: int
     total_admins: int
     kyc_pending_approvals: int
+    builder_pending_approvals: int
     total_investments_locked_inr: float
     projects_active: int
     projects_completed: int

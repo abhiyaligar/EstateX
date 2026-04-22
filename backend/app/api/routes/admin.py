@@ -71,6 +71,16 @@ def verify_builder_profile(
 ):
     return BuilderService.verify_builder(str(builder_id), verification_data, db)
 
+@router.get("/builders/pending", response_model=List[BuilderResponse])
+def list_pending_builders(
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns a list of all Builder profiles currently in 'pending' status awaiting verification.
+    """
+    return BuilderService.get_pending_builders(db)
+
 @router.post("/projects/{project_id}/milestones/{milestone_id}/verify")
 def verify_project_milestone(
     project_id: UUID,

@@ -5,7 +5,7 @@ from uuid import UUID
 import json
 from app.schemas.auth import User
 from app.schemas.project import ProjectCreate, ProjectListResponse, ProjectDetailResponse
-from app.middleware.auth import get_builder_user
+from app.middleware.auth import get_approved_builder_user
 from app.services.project_service import ProjectService
 from app.utils.storage import upload_file_to_s3
 from app.core.db import get_db
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/projects", tags=["Real Estate Projects"])
 async def create_project(
     project_data: str = Form(...),
     images: List[UploadFile] = File(...),
-    current_builder: User = Depends(get_builder_user),
+    current_builder: User = Depends(get_approved_builder_user),
     db: Session = Depends(get_db)
 ):
     """

@@ -76,6 +76,30 @@ def get_builder_user(current_user: User = Depends(get_current_user)) -> User:
         )
     return current_user
 
+def get_approved_builder_user(
+    current_builder: User = Depends(get_builder_user),
+    db: Session = Depends(get_db)
+) -> User:
+    """
+    Strict dependency: Ensures builder is not only authenticated but also ADMIN APPROVED.
+    """
+    from app.models.builder import Builder
+    builder = db.query(Builder).filter(Builder.id == current_builder.id).first()
+    
+    if not builder:
+         raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Builder profile not set up."
+        )
+        
+    if builder.verification_status != 'approved':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Your builder profile status is '{builder.verification_status}'. You must be 'approved' by an Admin before you can post properties or manage projects."
+        )
+        
+    return current_builder
+
 def get_investor_user(current_user: User = Depends(get_current_user)) -> User:
     """
     Dependency that ensures the authenticated user has the 'investor' (or 'admin') role.
