@@ -9,9 +9,9 @@ Comprehensive Technical Documentation Suite
 
 This documentation suite provides complete technical specifications, architectural design, implementation guides, and user guides for the EstateX platform.
 
-**Total Documentation**: ~35,000 lines  
-**Last Updated**: April 17, 2026  
-**Version**: 1.2
+**Total Documentation**: ~36,500 lines  
+**Last Updated**: April 22, 2026  
+**Version**: 1.3
 
 ---
 
@@ -40,7 +40,18 @@ This documentation suite provides complete technical specifications, architectur
 
 ## Recent Technical Updates (April 2026)
 
-### S3 Storage Resilience
+### Macro Market Intelligence (April 22)
+- **Database-Backed Analytics**: Transitioned from dummy macro-economic data to a persistent `macro_analytics` PostgreSQL system.
+- **Geographical Mapping**: Implemented 1:1 relationship mapping between Real Estate Projects and Regional Macro Indicators via Pincodes.
+- **Admin Management Console**: Developed a full CRUD suite in the Admin Portal to manage regional YoY growth, rental yields, and demand scores.
+- **Terminal Integration**: Simplified frontend state management by eager-loading regional intelligence directly into the property object.
+
+### Advanced Portfolio Visualizations (April 22)
+- **Asset Allocation Logic**: Integrated `recharts` to provide real-time exposure breakdown by **City** and **Property Type**.
+- **Relational Deep-Dives**: Mapped `BrickHolding` to `Project` models, enabling complex portfolio analytics and cross-relational data fetching.
+- **UI Performance**: Optimized React hook ordering and memoization to handle large portfolios without re-render performance hits.
+
+### S3 Storage Resilience (April 17)
 - **Path-Style Addressing**: Configured `boto3` to use `addressing_style='path'` to ensure compatibility with Supabase S3 endpoints.
 - **Auto-Bucket Creation**: Implemented logic to automatically detect and create missing storage buckets (`NoSuchBucket`) during the upload process.
 - **Filename Sanitization**: Enhanced storage utility to handle special characters in filenames, preventing `InvalidKey` errors.

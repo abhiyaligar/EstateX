@@ -833,6 +833,69 @@ Get market-wide analytics.
 
 ---
 
+## Admin Analytics Endpoints (Restricted to Admins)
+
+### GET /admin/analytics/macro
+
+Fetch all regional macro-economic nodes.
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "pincode": "400001",
+      "yoy_growth_percentage": 12.5,
+      "avg_rental_yield": 6.5,
+      "demand_score": 85,
+      "last_updated": "2026-04-22T10:00:00Z"
+    }
+  ]
+}
+```
+
+### POST /admin/analytics/macro
+
+Initialize a new regional intelligence node.
+
+**Request**:
+```json
+{
+  "pincode": "400001",
+  "yoy_growth_percentage": 12.5,
+  "avg_rental_yield": 6.5,
+  "demand_score": 85
+}
+```
+
+### PUT /admin/analytics/macro/{pincode}
+
+Update existing regional indicators.
+
+**Request**:
+```json
+{
+  "yoy_growth_percentage": 13.2,
+  "avg_rental_yield": 6.8,
+  "demand_score": 90
+}
+```
+
+### DELETE /admin/analytics/macro/{pincode}
+
+Permanently remove a regional intelligence node.
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "message": "Macro analytics node deleted successfully"
+}
+```
+
+---
+
 ## Webhooks
 
 ### Payment Webhook
@@ -877,6 +940,6 @@ Get market-wide analytics.
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: March 6, 2026  
-**Status**: Complete
+**Document Version**: 1.1  
+**Last Updated**: April 22, 2026  
+**Status**: Complete (Admin Intelligence Update)

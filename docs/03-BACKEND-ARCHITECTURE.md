@@ -195,6 +195,7 @@ estateX-backend/
 │   │   ├── payment.py               # Payment record model
 │   │   ├── kyc.py                   # KYC record model
 │   │   ├── audit.py                 # Audit log model
+│   │   ├── analytics.py             # MacroAnalytics model
 │   │   └── base.py                  # Base model class
 │   │
 │   ├── services/                    # Business logic layer
@@ -462,6 +463,8 @@ estateX-backend/
 - execute_buy_order(buyer_wallet, seller_wallet, amount) → TransactionHash
 - distribute_revenue(project_id, amount) → TransactionHash
 - get_transaction_status(tx_hash) → Status
+- get_regional_intelligence(pincode) → MacroData (Relationship Mapped)
+- update_macro_indicators(pincode, data) → MacroData
 ```
 
 #### 10. Revenue Distribution Service

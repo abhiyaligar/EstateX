@@ -86,11 +86,22 @@
           │            │      trades      │
           └────────────┤ id (PK)          │
                        │ project_id (FK)  │
-                       │ buyer_id (FK)    │
-                       │ seller_id (FK)   │
                        │ price            │
                        │ quantity         │
                        └──────────────────┘
+
+┌─────────────────────┐
+│  macro_analytics    │
+├─────────────────────┤
+│ pincode (PK)        │
+│ yoy_growth          │
+│ rental_yield        │
+│ demand_score        │
+└─────────▲───────────┘
+          │ (Linked via Pincode)
+┌─────────┴───────────┐
+│      projects       │
+└─────────────────────┘
 ```
 
 ---
@@ -513,6 +524,22 @@ CREATE INDEX idx_audit_user_id ON audit_logs(user_id);
 CREATE INDEX idx_audit_entity ON audit_logs(entity_type, entity_id);
 CREATE INDEX idx_audit_action ON audit_logs(action);
 CREATE INDEX idx_audit_created_at ON audit_logs(created_at DESC);
+
+### 11. macro_analytics Table
+
+Stores regional macro-economic indicators for property valuation and investor intelligence.
+
+```sql
+CREATE TABLE macro_analytics (
+    pincode VARCHAR(10) PRIMARY KEY,
+    yoy_growth_percentage DECIMAL(5,2) NOT NULL,
+    avg_rental_yield DECIMAL(5,2) NOT NULL,
+    demand_score INTEGER CHECK (demand_score BETWEEN 0 AND 100),
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_macro_pincode ON macro_analytics(pincode);
+```
 ```
 
 ---
@@ -546,6 +573,9 @@ investments (1) ──────────── (N) distributions
 
 secondary_market_orders (1) ──> users (seller_id)
                           └──> users (buyer_id)
+
+projects (1) ─────────── (1) macro_analytics (Mapped via Pincode)
+brick_holdings (N) ───── (1) projects (Direct Portfolio Relationship)
 ```
 
 ---
@@ -771,6 +801,6 @@ ORDER BY completion_percentage DESC;
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: April 17, 2026  
-**Status**: Complete (High Performance Update)
+**Document Version**: 1.1  
+**Last Updated**: April 22, 2026  
+**Status**: Complete (Regional Intelligence & Relational Update)

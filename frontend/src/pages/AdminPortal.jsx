@@ -1301,6 +1301,7 @@ const AdminPortal = () => {
               </div>
             </Card>
           </motion.div>
+        )}
       </AnimatePresence>
 
        <BuilderReviewModal 

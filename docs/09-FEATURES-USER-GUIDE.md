@@ -420,7 +420,11 @@ Summary Card shows:
 ├── Current portfolio value
 ├── Unrealized gains (%)
 ├── Expected monthly income
-└── Performance vs market
+├── Performance vs market
+└── Asset Allocation (New):
+    ├── Exposure by City (Pie Chart)
+    ├── Exposure by Property Type (Residential, Commercial, Industrial)
+    └── Relationship-backed project metadata (Real-time fetching)
 ```
 
 **Monitor Milestones**
@@ -848,6 +852,33 @@ Admin Dashboard → Disputes:
 │   ├── Investor info & complaint details
 │   ├── Project & investment amount
 │   ├── Timeline & conversation history
+│   └── Suggested resolution
+├── Toolset:
+│   ├── Access user transaction history
+│   ├── View immutable project logs
+│   ├── Contact builder/investor directly
+│   └── Implement resolution (refunds, credits, etc.)
+└── Close: Mark as resolved, log for compliance.
+
+### 5. Macro Analytics Management
+
+**Global Market Intelligence Database**
+```
+Admin Dashboard → Analytics Tab:
+├── Market Intelligence Grid:
+│   ├── View all regional macro nodes by Pincode
+│   ├── Real-time indicators:
+│   │   ├── YoY Growth (%)
+│   │   ├── Avg. Rental Yield (%)
+│   │   └── Demand Score (0-100)
+│   └── Last update timestamp tracking
+├── Node Lifecycle Management:
+│   ├── NEW NODE: Initialize regional intelligence for new geographical areas
+│   ├── UPDATE: Adjust indicators as market cycles shift
+│   └── DELETE: Remove deprecated or incorrect regional data
+└── System Integrity:
+    └── Direct database relationship mapping between Pincodes and active Projects.
+```
 │   ├── Attached evidence/documents
 │   └── Category (payment issue, milestone delay, etc.)
 ├── Resolution process:
@@ -1314,9 +1345,9 @@ A: Platform fee structure:
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: March 6, 2026  
-**Status**: Complete
+**Document Version**: 1.1  
+**Last Updated**: April 22, 2026  
+**Status**: Complete (Analytics & Visualizations Update)
 
 ### Quick Reference Card
 

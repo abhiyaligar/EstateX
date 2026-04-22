@@ -118,6 +118,7 @@ const SecondaryMarket = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('marketplace'); // marketplace, holdings
+  const activeProjectId = React.useRef(null);
   
   // Data State
   const [projects, setProjects] = useState([]);
@@ -165,6 +166,11 @@ const SecondaryMarket = () => {
     initFetch();
   }, []);
 
+  // Update active project ref
+  useEffect(() => {
+    activeProjectId.current = selectedProject?.id;
+  }, [selectedProject?.id]);
+
   // Fetch Live Data
   const refreshLiveData = async () => {
     if (!selectedProject) return;
@@ -177,6 +183,9 @@ const SecondaryMarket = () => {
         exchangeService.getOpenOrders(),
         exchangeService.getPublicOrderBook(selectedProject.id)
       ]);
+
+      // Atomic guard: only update if this is still the selected project
+      if (selectedProject.id !== activeProjectId.current) return;
 
       setSelectedProject(project);
       setTradeHistory(history);
@@ -200,7 +209,7 @@ const SecondaryMarket = () => {
   // Initialize Data
   useEffect(() => {
     refreshLiveData();
-  }, [selectedProject, timeframe]);
+  }, [selectedProject?.id, timeframe]);
 
   // Real-time Subscriptions
   useEffect(() => {
@@ -248,7 +257,7 @@ const SecondaryMarket = () => {
       supabase.removeChannel(tradeChannel);
       supabase.removeChannel(orderChannel);
     };
-  }, [selectedProject]);
+  }, [selectedProject?.id]);
 
   const buyOrders = useMemo(() => publicOrderBook.filter(o => o.order_type === 'buy').slice(0, 15), [publicOrderBook]);
   const sellOrders = useMemo(() => publicOrderBook.filter(o => o.order_type === 'sell').sort((a,b) => a.price_per_brick - b.price_per_brick).slice(0, 15), [publicOrderBook]);
@@ -320,7 +329,7 @@ const SecondaryMarket = () => {
   if (loading && projects.length === 0) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
-        <div className="w-12 h-12 border-2 border-white/5 border-t-white animate-spin" />
+        <Loader size={48} text="Synchronizing Exchange Data..." />
       </div>
     );
   }
@@ -462,7 +471,7 @@ const SecondaryMarket = () => {
                    
                    {!macroData ? (
                        <div className="p-8 text-center">
-                           <p className="text-[9px] uppercase tracking-widest text-white/40">No macroeconomic data available for this region</p>
+                           {loading ? <Loader size={20} /> : <p className="text-[9px] uppercase tracking-widest text-white/40">No macroeconomic data available for this region</p>}
                        </div>
                    ) : (
                        <div className="grid grid-cols-3 divide-x divide-white/5">
