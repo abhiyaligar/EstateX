@@ -1,7 +1,15 @@
 import axios from 'axios';
 
 // Update with backend URL or use environment variable
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://estate-x-nine-orcin.vercel.app/api/v1';
+const getBaseUrl = () => {
+    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:8000/api/v1';
+    }
+    return 'https://estate-x-nine-orcin.vercel.app/api/v1';
+};
+
+const BASE_URL = getBaseUrl();
 
 export const api = axios.create({
   baseURL: BASE_URL,

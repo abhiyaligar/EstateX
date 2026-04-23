@@ -71,7 +71,7 @@ const ProjectSelector = ({ projects, selectedProject, onSelect }) => {
     <div className="relative">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-4 bg-zinc-900 border border-white/5 px-6 py-4 rounded-[var(--radius)] hover:border-white/20 transition-all group"
+        className="flex items-center gap-4 bg-zinc-900 border border-white/5 px-4 md:px-6 py-4 rounded-[var(--radius)] hover:border-white/20 transition-all group w-full md:w-auto"
       >
         <div className="h-8 w-8 bg-white flex items-center justify-center rounded-[var(--radius)]">
           <Layers size={16} className="text-black" />
@@ -243,32 +243,32 @@ const TradingRoom = () => {
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans overflow-hidden">
         {/* Header Bar */}
-        <header className="h-20 border-b border-white/5 px-6 flex items-center justify-between bg-black/50 backdrop-blur-xl shrink-0 z-30">
-            <div className="flex items-center gap-12">
+        <header className="h-auto md:h-20 border-b border-white/5 px-4 md:px-6 py-4 md:py-0 flex flex-col md:flex-row items-center justify-between gap-4 bg-black/50 backdrop-blur-xl shrink-0 z-30">
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-12 w-full md:w-auto">
                 <ProjectSelector 
                     projects={projects} 
                     selectedProject={selectedProject} 
                     onSelect={setSelectedProject} 
                 />
                 
-                <div className="flex gap-12 border-l border-white/5 pl-12">
-                    <div className="space-y-1">
+                <div className="flex gap-6 md:gap-12 border-l border-white/5 pl-6 w-full md:w-auto overflow-x-auto">
+                    <div className="space-y-1 shrink-0">
                         <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-bold">Mark Price</p>
                         <div className="flex items-center gap-2">
-                             <span className="text-lg font-mono font-bold tracking-tighter">₹{latestPrice.toLocaleString()}</span>
+                             <span className="text-base md:text-lg font-mono font-bold tracking-tighter">₹{latestPrice.toLocaleString()}</span>
                              <span className={`text-[10px] font-bold ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                                 {parseFloat(priceChange) >= 0 ? '+' : ''}{priceChange}%
                              </span>
                         </div>
                     </div>
-                    <div className="space-y-1 hidden lg:block">
+                    <div className="space-y-1 shrink-0">
                         <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-bold">24h Vol</p>
                         <span className="text-sm font-mono font-medium text-zinc-300">1,248.50 BK</span>
                     </div>
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 w-full md:w-auto justify-end">
                 <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-white/5 rounded-full">
                     <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
                     <span className="text-[9px] uppercase tracking-[0.2em] text-zinc-400 font-bold">Market Live</span>
@@ -278,9 +278,9 @@ const TradingRoom = () => {
         </header>
 
         {/* Main Terminal Layout */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden">
             {/* Left Column: Charts */}
-            <div className="flex-1 flex flex-col border-r border-white/5 overflow-hidden">
+            <div className="w-full md:flex-1 flex flex-col border-b md:border-b-0 md:border-r border-white/5 overflow-hidden min-h-[400px]">
                 {/* Price Chart Section */}
                 <div className="flex-1 flex flex-col min-h-0 bg-black/20">
                     <div className="h-12 border-b border-white/5 px-6 flex items-center justify-between shrink-0">
@@ -357,7 +357,7 @@ const TradingRoom = () => {
             </div>
 
             {/* Middle Column: Orderbook */}
-            <div className="w-80 flex flex-col border-r border-white/5 bg-black/40 shrink-0">
+            <div className="w-full md:w-80 flex flex-col border-b md:border-b-0 md:border-r border-white/5 bg-black/40 shrink-0 min-h-[300px]">
                 <div className="h-12 border-b border-white/5 px-6 flex items-center shrink-0">
                     <h3 className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center gap-2">
                         <BarChart3 size={12} className="text-zinc-600" />
@@ -408,7 +408,7 @@ const TradingRoom = () => {
             </div>
 
             {/* Right Column: Trade Input & Recent Trades */}
-            <div className="w-96 flex flex-col bg-black shrink-0">
+            <div className="w-full md:w-96 flex flex-col bg-black shrink-0 min-h-[500px]">
                 {/* Trade Form */}
                 <div className="p-8 border-b border-white/5">
                     <div className="flex bg-zinc-900 p-1 rounded-lg border border-white/5 mb-8">

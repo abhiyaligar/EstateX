@@ -45,7 +45,7 @@ const Home = () => {
             System Status: 01 // Wealth Synchronization
           </div>
           
-          <h1 className="text-7xl md:text-9xl font-bold text-white leading-[0.9] tracking-tighter uppercase font-heading">
+          <h1 className="text-4xl sm:text-7xl md:text-9xl font-bold text-white leading-tight md:leading-[0.9] tracking-tighter uppercase font-heading">
             Architect your <br />
             <span className="italic opacity-20">Attention.</span>
           </h1>
