@@ -500,17 +500,12 @@ const TradingRoom = () => {
                     onSelect={setSelectedProject} 
                 />
                 
-<<<<<<< HEAD
-                <div className="flex gap-12 border-l border-white/5 pl-12 hidden md:flex">
+                <div className="flex gap-6 md:gap-12 border-l border-white/5 pl-6 md:pl-12 w-full md:w-auto overflow-x-auto">
                     <div className="space-y-1 hidden lg:block">
                         <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-bold">24h Vol</p>
                         <span className="text-sm font-mono font-medium text-zinc-300">{volume24h.toLocaleString()} BK</span>
                     </div>
-                    <div className="space-y-1">
-=======
-                <div className="flex gap-6 md:gap-12 border-l border-white/5 pl-6 w-full md:w-auto overflow-x-auto">
                     <div className="space-y-1 shrink-0">
->>>>>>> 66cba4dbb093076162097a09f3b9af895f856572
                         <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-bold">Mark Price</p>
                         <div className="flex items-center gap-2">
                              <span className="text-base md:text-lg font-mono font-bold tracking-tighter">₹{latestPrice.toLocaleString()}</span>
@@ -519,7 +514,6 @@ const TradingRoom = () => {
                              </span>
                         </div>
                     </div>
-<<<<<<< HEAD
                 </div>
             </div>
 
@@ -537,24 +531,10 @@ const TradingRoom = () => {
                 <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-white/5 rounded-full hidden lg:flex">
                     <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
                     <span className="text-[9px] uppercase tracking-[0.2em] text-zinc-400 font-bold">Live</span>
-=======
-                    <div className="space-y-1 shrink-0">
-                        <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-bold">24h Vol</p>
-                        <span className="text-sm font-mono font-medium text-zinc-300">1,248.50 BK</span>
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex items-center gap-4 w-full md:w-auto justify-end">
-                <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-white/5 rounded-full">
-                    <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-[9px] uppercase tracking-[0.2em] text-zinc-400 font-bold">Market Live</span>
->>>>>>> 66cba4dbb093076162097a09f3b9af895f856572
                 </div>
             </div>
         </header>
 
-<<<<<<< HEAD
         {/* Main Layout Area */}
         <div className="flex-1 overflow-hidden relative">
             <AnimatePresence mode="wait">
@@ -611,171 +591,6 @@ const TradingRoom = () => {
                                     <div ref={volChartContainerRef} className="absolute inset-0 px-6 py-4 [&_a]:hidden" />
                                 </div>
                             </div>
-=======
-        {/* Main Terminal Layout */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden">
-            {/* Left Column: Charts */}
-            <div className="w-full md:flex-1 flex flex-col border-b md:border-b-0 md:border-r border-white/5 overflow-hidden min-h-[400px]">
-                {/* Price Chart Section */}
-                <div className="flex-1 flex flex-col min-h-0 bg-black/20">
-                    <div className="h-12 border-b border-white/5 px-6 flex items-center justify-between shrink-0">
-                        <div className="flex gap-1">
-                            {['1M', '5M', '1H', '1D', '1W'].map(tf => (
-                                <button 
-                                    key={tf}
-                                    onClick={() => setChartTimeframe(tf)}
-                                    className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-md transition-all ${chartTimeframe === tf ? 'bg-white text-black' : 'text-zinc-600 hover:text-white'}`}
-                                >
-                                    {tf}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="flex items-center gap-4">
-                             <button className="text-zinc-600 hover:text-white transition-colors"><Maximize2 size={14} /></button>
-                        </div>
-                    </div>
-                    <div className="flex-1 p-6 relative">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData}>
-                                <defs>
-                                    <linearGradient id="tradingGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#ffffff" stopOpacity={0.05}/>
-                                        <stop offset="95%" stopColor="#ffffff" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.02)" />
-                                <XAxis 
-                                    dataKey="time" 
-                                    axisLine={false} 
-                                    tickLine={false} 
-                                    tick={{fill: '#3f3f46', fontSize: 9, fontWeight: 600}} 
-                                    minTickGap={30}
-                                />
-                                <YAxis 
-                                    domain={['auto', 'auto']} 
-                                    axisLine={false} 
-                                    tickLine={false} 
-                                    tick={{fill: '#3f3f46', fontSize: 9, fontWeight: 600}}
-                                    orientation="right"
-                                />
-                                <Tooltip 
-                                    contentStyle={{ backgroundColor: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0', fontSize: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
-                                    itemStyle={{ color: '#fff', fontWeight: 'bold' || 700 }}
-                                />
-                                <Area 
-                                    type="stepAfter" 
-                                    dataKey="price" 
-                                    stroke="#fff" 
-                                    strokeWidth={1.5} 
-                                    fillOpacity={1} 
-                                    fill="url(#tradingGradient)" 
-                                    animationDuration={500}
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                {/* Volume Section */}
-                <div className="h-40 border-t border-white/5 bg-black/40 shrink-0">
-                    <div className="h-8 px-6 flex items-center border-b border-white/5">
-                        <p className="text-[8px] uppercase tracking-[0.3em] text-zinc-700 font-bold">Transaction Volume</p>
-                    </div>
-                    <div className="h-full w-full px-6 py-4">
-                        <ResponsiveContainer width="100%" height="80%">
-                            <BarChart data={chartData}>
-                                <Bar dataKey="vol" fill="#18181b" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
-
-            {/* Middle Column: Orderbook */}
-            <div className="w-full md:w-80 flex flex-col border-b md:border-b-0 md:border-r border-white/5 bg-black/40 shrink-0 min-h-[300px]">
-                <div className="h-12 border-b border-white/5 px-6 flex items-center shrink-0">
-                    <h3 className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center gap-2">
-                        <BarChart3 size={12} className="text-zinc-600" />
-                        Orderbook
-                    </h3>
-                </div>
-                
-                <div className="flex-1 flex flex-col overflow-hidden">
-                    <OrderBookRow isHeader />
-                    
-                    {/* Sell Orders (Asks) - Red */}
-                    <div className="overflow-hidden flex flex-col-reverse justify-end">
-                        {sellOrders.map((o, i) => (
-                            <OrderBookRow 
-                                key={i} 
-                                price={o.price_per_brick} 
-                                quantity={o.unfilled_quantity} 
-                                type="sell" 
-                                total={o.cumulativeTotal}
-                                maxTotal={maxDepth}
-                            />
-                        ))}
-                    </div>
-
-                    {/* Spread Section */}
-                    <div className="py-4 my-2 border-y border-white/5 bg-black/60 flex flex-col items-center justify-center">
-                        <div className="flex items-center gap-3">
-                            <span className="text-xl font-mono font-bold tracking-tighter text-white">₹{latestPrice.toLocaleString()}</span>
-                            <div className={`h-2 w-2 rounded-full ${parseFloat(priceChange) >= 0 ? 'bg-green-500 animate-pulse' : 'bg-red-500 animate-pulse'}`} />
-                        </div>
-                        <p className="text-[9px] uppercase tracking-widest text-zinc-600 font-bold mt-1">Real-time Matcher Spread</p>
-                    </div>
-
-                    {/* Buy Orders (Bids) - Green */}
-                    <div className="overflow-hidden">
-                         {buyOrders.map((o, i) => (
-                            <OrderBookRow 
-                                key={i} 
-                                price={o.price_per_brick} 
-                                quantity={o.unfilled_quantity} 
-                                type="buy" 
-                                total={o.cumulativeTotal}
-                                maxTotal={maxDepth}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Right Column: Trade Input & Recent Trades */}
-            <div className="w-full md:w-96 flex flex-col bg-black shrink-0 min-h-[500px]">
-                {/* Trade Form */}
-                <div className="p-8 border-b border-white/5">
-                    <div className="flex bg-zinc-900 p-1 rounded-lg border border-white/5 mb-8">
-                        <button 
-                            onClick={() => setOrderType('buy')} 
-                            className={`flex-1 py-4 text-[10px] font-bold uppercase rounded-md tracking-[0.2em] transition-all ${orderType === 'buy' ? 'bg-white text-black shadow-2xl' : 'text-zinc-500 hover:text-zinc-300'}`}
-                        >
-                            BUY BRICK
-                        </button>
-                        <button 
-                            onClick={() => setOrderType('sell')} 
-                            className={`flex-1 py-4 text-[10px] font-bold uppercase rounded-md tracking-[0.2em] transition-all ${orderType === 'sell' ? 'bg-red-500 text-white shadow-2xl' : 'text-zinc-500 hover:text-zinc-300'}`}
-                        >
-                            SELL BRICK
-                        </button>
-                    </div>
-
-                    <form onSubmit={handlePlaceOrder} className="space-y-6">
-                        <div className="space-y-2">
-                             <div className="flex justify-between">
-                                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest">Price Limit</label>
-                                <span className="text-[10px] font-mono text-zinc-700">₹ INR</span>
-                             </div>
-                             <input 
-                                type="number" 
-                                step="0.01" 
-                                value={price} 
-                                onChange={(e) => setPrice(e.target.value)}
-                                className="w-full bg-[#111] border border-white/5 h-14 px-6 text-base font-mono focus:border-white/20 transition-all focus:outline-none"
-                                placeholder="0.00"
-                             />
->>>>>>> 66cba4dbb093076162097a09f3b9af895f856572
                         </div>
 
                         {/* Middle Column: Orderbook */}
