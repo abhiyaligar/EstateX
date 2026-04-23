@@ -19,6 +19,7 @@ import Wallet from '../pages/Wallet';
 import KYC from '../pages/KYC';
 import Portfolio from '../pages/Portfolio';
 import SecondaryMarket from '../pages/SecondaryMarket';
+import TradingRoom from '../pages/TradingRoom';
 import AdminPortal from '../pages/AdminPortal';
 
 import ForgotPassword from '../pages/ForgotPassword';
@@ -57,6 +58,13 @@ const AppRoutes = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/unauthorized" element={<div className="p-20 text-center">Unauthorized Access</div>} />
           </Route>
+
+          {/* Full Screen Protected Routes (No shared layout) */}
+          <Route path="/trade" element={
+            <ProtectedRoute>
+              <TradingRoom />
+            </ProtectedRoute>
+          } />
 
           {/* Protected Routes with Dashboard Layout */}
           <Route path="/dashboard" element={
