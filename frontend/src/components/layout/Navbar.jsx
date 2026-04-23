@@ -17,7 +17,6 @@ const Navbar = () => {
     { name: 'Properties', path: '/properties' },
     { name: 'Trade', path: '/trade' },
     { name: 'About', path: '/about' },
-    ...(isAuthenticated ? [{ name: 'Exchange', path: '/dashboard/exchange' }] : []),
   ];
 
   const dashboardLinks = [
