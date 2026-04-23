@@ -92,7 +92,7 @@ const Dashboard = () => {
     <div className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
       <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-white font-heading uppercase">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter text-white font-heading uppercase">
             Sovereign <span className="opacity-30 italic">Session</span>
           </h1>
           <p className="mt-4 text-sm text-zinc-500 font-medium tracking-wide uppercase">
@@ -180,7 +180,7 @@ const Dashboard = () => {
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <Card key={i} className="flex flex-col p-8 bg-white/[0.02] border-white/5 backdrop-blur-3xl rounded-[var(--radius)]">
+            <Card key={i} className="flex flex-col p-6 md:p-8 bg-white/[0.02] border-white/5 backdrop-blur-3xl rounded-[var(--radius)]">
               <div className="flex items-center justify-between mb-8">
                 <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-zinc-500">{stat.title}</span>
                 <div className="flex h-12 w-12 items-center justify-center rounded-[var(--radius)] bg-white/5 text-white border border-white/10">
