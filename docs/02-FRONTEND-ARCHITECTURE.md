@@ -117,6 +117,11 @@ SWR 2.0 (Alternative)
 ├── Real-time data
 ├── Focus refetch
 └── Suspense support
+
+Supabase Client SDK
+├── Real-time presence & listeners
+├── Push-based data flow
+└── Zero-polling architecture
 ```
 
 ### Form Management
@@ -248,7 +253,8 @@ estateX-frontend/
 │   ├── components/                  # Reusable components
 │   │   ├── common/                  # Shared components
 │   │   │   ├── Header.tsx
-│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Sidebar.tsx          # Professional collapsible navigation
+│   │   │   ├── SidebarItem.tsx      # Dynamic sidebar menu items
 │   │   │   ├── Footer.tsx
 │   │   │   ├── Navigation.tsx
 │   │   │   ├── Button.tsx
@@ -281,11 +287,12 @@ estateX-frontend/
 │   │   │   └── ROICalculator.tsx
 │   │   │
 │   │   ├── builder/                 # Builder-specific components
-│   │   │   ├── ProjectDashboard.tsx
-│   │   │   ├── MilestoneTracker.tsx
-│   │   │   ├── FundraisingProgress.tsx
-│   │   │   ├── InvestorList.tsx
-│   │   │   └── DocumentUpload.tsx
+│   │   │   ├── ProjectDashboard.tsx     # High-density portfolio management
+│   │   │   ├── MilestoneTracker.tsx     # Milestone progress and verification
+│   │   │   ├── FundraisingProgress.tsx  # Live IPO subscription tracking
+│   │   │   ├── BuilderWallet.tsx        # Business ledger and withdrawal UI
+│   │   │   ├── InvestorList.tsx         # Detailed cap table for projects
+│   │   │   └── DocumentUpload.tsx       # RERA and construction certificates
 │   │   │
 │   │   ├── admin/                   # Admin-specific components
 │   │   │   ├── KYCQueue.tsx
@@ -365,7 +372,8 @@ estateX-frontend/
 │   │   ├── theme.ts                 # Tailwind theme
 │   │   ├── env.ts                   # Environment variables
 │   │   ├── api-config.ts            # API configuration
-│   │   └── blockchain-config.ts     # Web3 configuration
+│   │   ├── blockchain-config.ts     # Web3 configuration
+│   │   └── supabaseClient.js        # Supabase Realtime setup
 │   │
 │   ├── styles/                      # Global styles
 │   │   ├── globals.css
@@ -437,7 +445,8 @@ RootLayout
 
 #### 3. Feature Components (Organisms)
 - **Header**: Top navigation bar
-- **Sidebar**: Left navigation panel
+- **Sidebar**: Left navigation panel. Recently updated to be **fully collapsible** with persistence (stores state in local storage) and role-based menu generation.
+- **Secondary Market Terminal**: A specialized high-density trading interface utilizing Supabase Realtime for sub-100ms updates to orderbooks and trade history.
 - **Footer**: Bottom footer
 - **ProjectCard**: Project listing card
 - **InvestmentForm**: Multi-step investment form
@@ -552,6 +561,11 @@ Contexts:
 │   ├── /revenue
 │   ├── /settings
 │   └── /documents
+
+├── /social/ (Upcoming)
+│   ├── /circles
+│   ├── /discussions
+│   └── /chat
 │
 └── /admin/ (Protected, role-based)
     ├── /dashboard
@@ -1025,9 +1039,9 @@ async function safeApiCall(fn) {
 | Cumulative Layout Shift (CLS) | < 0.1 |
 | Time to Interactive (TTI) | < 3 seconds |
 | Bundle Size | < 200 KB (gzipped) |
+| Transaction Feedback | < 100 ms (Optimistic/Async) |
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: March 6, 2026  
-**Status**: Complete
+**Last Updated**: April 17, 2026  
+**Status**: Complete (High-Performance Real-time Update)

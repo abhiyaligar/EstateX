@@ -33,6 +33,7 @@
 - Daily automated backups (30-day retention)
 - Point-in-time recovery (PITR) enabled
 - Monitoring via AWS CloudWatch
+- **Realtime Replication**: Enabled via Supabase/Postgres Wal2json for `trades` and `orders` tables
 
 ---
 
@@ -85,11 +86,22 @@
           │            │      trades      │
           └────────────┤ id (PK)          │
                        │ project_id (FK)  │
-                       │ buyer_id (FK)    │
-                       │ seller_id (FK)   │
                        │ price            │
                        │ quantity         │
                        └──────────────────┘
+
+┌─────────────────────┐
+│  macro_analytics    │
+├─────────────────────┤
+│ pincode (PK)        │
+│ yoy_growth          │
+│ rental_yield        │
+│ demand_score        │
+└─────────▲───────────┘
+          │ (Linked via Pincode)
+┌─────────┴───────────┐
+│      projects       │
+└─────────────────────┘
 ```
 
 ---
@@ -129,6 +141,7 @@ CREATE TABLE users (
     
     -- Wallet
     wallet_address VARCHAR(66) UNIQUE, -- Ethereum wallet address
+    wallet_balance DECIMAL(18,2) DEFAULT 0.00 NOT NULL, -- Personal liquid funds
     
     -- Preferences
     notification_email BOOLEAN DEFAULT true,
@@ -163,6 +176,7 @@ CREATE TABLE builders (
     id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     company_name VARCHAR(255) NOT NULL,
     company_registration_number VARCHAR(100) UNIQUE,
+    business_type VARCHAR(100),
     rera_registration_number VARCHAR(100) UNIQUE,
     rera_approved BOOLEAN DEFAULT false,
     rera_approved_date TIMESTAMP,
@@ -187,6 +201,13 @@ CREATE TABLE builders (
     -- Financial
     total_funding_raised DECIMAL(18,2) DEFAULT 0,
     total_construction_cost DECIMAL(18,2) DEFAULT 0,
+    wallet_balance DECIMAL(18,2) DEFAULT 0.00 NOT NULL,
+    
+    -- Bank Details
+    bank_account_name VARCHAR(255),
+    bank_name VARCHAR(255),
+    bank_account_number VARCHAR(100),
+    bank_ifsc_code VARCHAR(20),
     
     -- Verification
     document_verified BOOLEAN DEFAULT false,
@@ -280,6 +301,7 @@ CREATE TABLE wallet_transactions (
     user_id UUID NOT NULL REFERENCES users(id),
     amount DECIMAL(18,2) NOT NULL,
     transaction_type VARCHAR(50) NOT NULL, -- deposit, withdrawal, brick_purchase, brick_sale
+    is_builder_transaction BOOLEAN DEFAULT false, -- True if linked to Builder business wallet
     status VARCHAR(50) DEFAULT 'completed',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -410,6 +432,9 @@ CREATE TABLE trades (
     executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_trades_project ON trades(project_id);
+
+> [!IMPORTANT]
+> **Supabase Realtime**: The `orders` and `trades` tables MUST have REPLICA IDENTITY FULL or at least Realtime Publication enabled in the Supabase Dashboard to support the sub-100ms UI updates.
 ```
 
 ### 9. kyc_records Table
@@ -500,6 +525,22 @@ CREATE INDEX idx_audit_user_id ON audit_logs(user_id);
 CREATE INDEX idx_audit_entity ON audit_logs(entity_type, entity_id);
 CREATE INDEX idx_audit_action ON audit_logs(action);
 CREATE INDEX idx_audit_created_at ON audit_logs(created_at DESC);
+
+### 11. macro_analytics Table
+
+Stores regional macro-economic indicators for property valuation and investor intelligence.
+
+```sql
+CREATE TABLE macro_analytics (
+    pincode VARCHAR(10) PRIMARY KEY,
+    yoy_growth_percentage DECIMAL(5,2) NOT NULL,
+    avg_rental_yield DECIMAL(5,2) NOT NULL,
+    demand_score INTEGER CHECK (demand_score BETWEEN 0 AND 100),
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_macro_pincode ON macro_analytics(pincode);
+```
 ```
 
 ---
@@ -533,6 +574,13 @@ investments (1) ──────────── (N) distributions
 
 secondary_market_orders (1) ──> users (seller_id)
                           └──> users (buyer_id)
+
+projects (1) ─────────── (1) macro_analytics (Mapped via Pincode)
+brick_holdings (N) ───── (1) projects (Direct Portfolio Relationship)
+
+Dual Wallet Structure:
+├── users.wallet_balance: Personal/Investor ledger
+└── builders.wallet_balance: Business/Construction ledger (credited via Milestones)
 ```
 
 ---
@@ -758,6 +806,6 @@ ORDER BY completion_percentage DESC;
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: March 6, 2026  
-**Status**: Complete
+**Document Version**: 1.1  
+**Last Updated**: April 22, 2026  
+**Status**: Complete (Regional Intelligence & Relational Update)

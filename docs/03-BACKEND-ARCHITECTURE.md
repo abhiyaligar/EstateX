@@ -195,6 +195,7 @@ estateX-backend/
 │   │   ├── payment.py               # Payment record model
 │   │   ├── kyc.py                   # KYC record model
 │   │   ├── audit.py                 # Audit log model
+│   │   ├── analytics.py             # MacroAnalytics model
 │   │   └── base.py                  # Base model class
 │   │
 │   ├── services/                    # Business logic layer
@@ -205,13 +206,15 @@ estateX-backend/
 │   │   ├── project.py               # Project service
 │   │   ├── investment.py            # Investment service
 │   │   ├── portfolio.py             # Portfolio calculation
-│   │   ├── payment.py               # Payment processing
-│   │   ├── revenue.py               # Revenue distribution
+│   │   ├── wallet.py                # Wallet & Transaction service (Dual Ledger)
+│   │   ├── payment.py               # Payment gateway integration (Razorpay)
+│   │   ├── revenue.py               # Revenue distribution engine
 │   │   ├── kyc.py                   # KYC verification
 │   │   ├── compliance.py            # Compliance checking
 │   │   ├── blockchain.py            # Smart contract interaction
 │   │   ├── analytics.py             # Analytics calculations
 │   │   ├── notification.py          # Notification sending
+│   │   ├── milestone.py             # Milestone verification & fund release
 │   │   └── document.py              # Document management
 │   │
 │   ├── repositories/                # Data access layer
@@ -434,13 +437,20 @@ estateX-backend/
 - project_roi(user_id, months) → float
 ```
 
-#### 7. Payment Service
+#### 7. Wallet Service (Dual Ledger)
+```python
+- get_wallet_balance(user_id) → float (Personal)
+- get_builder_wallet_balance(builder_id) → float (Business)
+- deposit_funds(user_id, amount) → Transaction
+- withdraw_funds(user_id, amount, bank_id) → Transaction
+- builder_withdraw(builder_id, amount, bank_id) → Transaction
+- credit_milestone_payment(builder_id, project_id, amount) → Transaction
+```
+
+#### 8. Payment Service (Gateway)
 ```python
 - create_order(amount, email, phone) → Order
 - verify_payment(razorpay_id, signature) → bool
-- get_payment_status(payment_id) → Status
-- process_refund(payment_id, amount) → bool
-- get_transaction_history(user_id) → List[Transaction]
 ```
 
 #### 8. KYC Service
@@ -462,6 +472,8 @@ estateX-backend/
 - execute_buy_order(buyer_wallet, seller_wallet, amount) → TransactionHash
 - distribute_revenue(project_id, amount) → TransactionHash
 - get_transaction_status(tx_hash) → Status
+- get_regional_intelligence(pincode) → MacroData (Relationship Mapped)
+- update_macro_indicators(pincode, data) → MacroData
 ```
 
 #### 10. Revenue Distribution Service
@@ -469,8 +481,22 @@ estateX-backend/
 - collect_monthly_revenue(project_id, amount) → bool
 - calculate_distribution(project_id) → List[Distribution]
 - execute_distribution(project_id) → List[TransactionHash]
-- get_distribution_status(distribution_id) → Status
 - get_investor_share(investment_id, month) → Amount
+```
+
+#### 11. Milestone Service
+```python
+- add_milestone(project_id, data) → Milestone
+- submit_milestone_proof(milestone_id, doc_url) → Milestone
+- verify_milestone(milestone_id, admin_id) → Milestone
+- trigger_fund_release(milestone_id) → Transaction (Credits Builder Wallet)
+```
+
+#### 12. Exchange Service
+```python
+- place_order(user_id, order_data) → Order
+- run_matching_engine(order_id) → None (Background Task)
+- cancel_order(user_id, order_id) → bool
 ```
 
 ---

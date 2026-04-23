@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 const DashboardLayout = () => {
   const { isAuthenticated, loading } = useAuth();
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white">Loading Dashboard...</div>;
@@ -20,7 +21,7 @@ const DashboardLayout = () => {
       <Navbar />
       <div className="flex flex-1 pt-16 overflow-hidden">
         {/* Sidebar for Desktop */}
-         <Sidebar />
+         <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
         
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto w-full">

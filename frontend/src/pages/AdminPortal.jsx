@@ -17,7 +17,14 @@ import {
   Zap,
   ChevronRight,
   TrendingUp,
-  Search
+  Search,
+  MapPin,
+  ShieldCheck,
+  Plus,
+  Layers,
+  Trash,
+  Edit2,
+  X
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +33,8 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import adminService from '../services/adminService';
 import propertyService from '../services/propertyService';
+import governanceService from '../services/governanceService';
+import revenueService from '../services/revenueService';
 
 // --- Sub-Components ---
 
@@ -54,6 +63,77 @@ const StatCard = ({ title, value, icon: Icon, color = "blue" }) => {
   );
 };
 
+const MilestonesModal = ({ isOpen, onClose, project, onVerify }) => {
+  if (!isOpen || !project) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 md:p-10 animate-in fade-in duration-300">
+      <div className="absolute top-6 right-6 z-[110]">
+        <Button variant="outline" size="sm" onClick={onClose}>CLOSE ESC</Button>
+      </div>
+      <Card className="max-w-4xl w-full bg-[#0a0a0a] border-white/10 max-h-[90vh] overflow-hidden flex flex-col p-0">
+        <CardHeader className="border-b border-white/5 p-8">
+          <CardTitle className="text-3xl font-bold uppercase tracking-tighter">{project.title}</CardTitle>
+          <CardDescription className="uppercase tracking-widest text-[10px] mt-2">Construction Progress & Milestone Verification</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-y-auto p-0">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/30">
+                 <th className="p-6 md:p-8">#</th>
+                 <th className="p-6 md:p-8">Description</th>
+                 <th className="p-6 md:p-8">Release %</th>
+                 <th className="p-6 md:p-8">Target Date</th>
+                 <th className="p-6 md:p-8">Status</th>
+                 <th className="p-6 md:p-8 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+               {project.milestones?.sort((a,b) => a.milestone_number - b.milestone_number).map((m) => (
+                 <tr key={m.id} className="border-b border-white/5 hover:bg-white/[0.01]">
+                    <td className="p-6 md:p-8 font-mono text-xs text-white/40">{m.milestone_number}</td>
+                    <td className="p-6 md:p-8">
+                       <span className="text-sm text-white font-medium block max-w-sm">{m.description}</span>
+                    </td>
+                    <td className="p-6 md:p-8">
+                       <span className="text-sm font-bold text-white bg-white/5 px-2 py-1 border border-white/10">{m.release_percentage}%</span>
+                    </td>
+                    <td className="p-6 md:p-8">
+                       <span className="text-xs text-white/40">{m.target_date ? new Date(m.target_date).toLocaleDateString() : 'TBD'}</span>
+                    </td>
+                    <td className="p-6 md:p-8">
+                       <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest rounded-none border ${
+                         m.status === 'completed' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
+                         m.status === 'in_progress' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 
+                         'bg-white/10 text-white/30 border-white/10'
+                       }`}>
+                         {m.status}
+                       </span>
+                    </td>
+                    <td className="p-6 md:p-8 text-right">
+                       {m.status !== 'completed' && (
+                         <div className="flex flex-col items-end gap-2">
+                           <span className="text-[10px] text-white/40 font-mono">PAYOUT: ₹{((m.release_percentage / 100) * (project.funding_raised || 0)).toLocaleString()}</span>
+                           <Button 
+                             size="sm" 
+                             variant="primary" 
+                             className="text-[10px] h-9 px-4 tracking-widest"
+                             onClick={() => onVerify(project.id, m.id)}
+                           >
+                             VERIFY
+                           </Button>
+                         </div>
+                       )}
+                    </td>
+                 </tr>
+               ))}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 const ImageModal = ({ isOpen, onClose, imageUrl, title }) => {
   if (!isOpen) return null;
   return (
@@ -77,6 +157,559 @@ const ImageModal = ({ isOpen, onClose, imageUrl, title }) => {
     </div>
   );
 };
+const ProjectReviewModal = ({ isOpen, onClose, project, onIPOAction, onHaltAction }) => {
+  if (!isOpen || !project) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 md:p-10 animate-in fade-in duration-300">
+      <div className="absolute top-6 right-6 z-[110]">
+        <Button variant="outline" size="sm" onClick={onClose}>CLOSE ESC</Button>
+      </div>
+      <Card className="max-w-5xl w-full bg-[#0a0a0a] border-white/10 max-h-[90vh] overflow-hidden flex flex-col p-0 shadow-[0_0_50px_rgba(255,255,255,0.05)]">
+        <CardHeader className="border-b border-white/5 p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <CardTitle className="text-3xl font-bold uppercase tracking-tighter">{project.title}</CardTitle>
+            <div className="flex gap-4 mt-2">
+                <span className="uppercase tracking-[0.2em] text-[10px] text-white/40">Project ID: {project.id}</span>
+                <span className={`px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest rounded-none border ${
+                    project.ipo_status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
+                    project.ipo_status === 'upcoming' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
+                    'bg-white/10 text-white/40 border-white/10'
+                    }`}>
+                    {project.ipo_status}
+                </span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+             {project.ipo_status === 'upcoming' && (
+               <Button size="sm" className="bg-white text-black hover:bg-white/90 text-[10px] h-10 px-6 font-bold tracking-widest" onClick={() => onIPOAction(project.id, 'approve')}>APPROVE IPO</Button>
+             )}
+             {project.ipo_status === 'active' && (
+               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-10 px-6 font-bold tracking-widest" onClick={() => onIPOAction(project.id, 'complete')}>COMPLETE IPO</Button>
+             )}
+             <Button 
+                size="sm" 
+                variant={project.status === 'halted' ? 'primary' : 'danger'} 
+                className="text-[10px] h-10 px-6 font-bold tracking-widest" 
+                onClick={() => onHaltAction(project.id, project.status)}
+             >
+                {project.status === 'halted' ? 'RESUME TRADING' : 'HALT PROJECT'}
+             </Button>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="overflow-y-auto p-8 space-y-10">
+          {/* Main Grid: Identity + Financials */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            {/* Identity Column */}
+            <div className="lg:col-span-7 space-y-8">
+              <div>
+                <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold border-b border-white/10 pb-2 mb-4">Asset Identification</h4>
+                <p className="text-sm text-white/70 leading-relaxed mb-6">{project.description}</p>
+                <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                        <span className="text-[10px] uppercase tracking-widest text-white/20">Category</span>
+                        <span className="block text-white font-bold uppercase">{project.property_type || 'Apartment'}</span>
+                    </div>
+                    <div className="space-y-1">
+                        <span className="text-[10px] uppercase tracking-widest text-white/20">Dimensions</span>
+                        <span className="block text-white font-bold uppercase">
+                            {project.location?.area_sqft || 'N/A'} SQ. FT.
+                            {project.bedrooms && ` • ${project.bedrooms} BHK`}
+                        </span>
+                    </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold border-b border-white/10 pb-2 mb-4">Geographical Node</h4>
+                <div className="p-4 bg-white/[0.02] border border-white/5 space-y-3">
+                    <div className="flex items-center gap-3">
+                        <MapPin size={16} className="text-white/20" />
+                        <span className="text-sm text-white/80">{project.location?.address}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 text-[10px] uppercase tracking-widest pt-3 border-t border-white/5">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-white/20">City</span>
+                            <span className="text-white font-bold">{project.location?.city}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-white/20">State</span>
+                            <span className="text-white font-bold">{project.location?.state}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-white/20">Pincode</span>
+                            <span className="text-white font-bold font-mono">{project.location?.pincode}</span>
+                        </div>
+                    </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold border-b border-white/10 pb-2 mb-4">Compliance Checklist</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {[
+                        { label: 'RERA APPROVAL', status: project.compliance?.rera_approved },
+                        { label: 'ENV CLEARANCE', status: project.compliance?.environmental_clearance },
+                        { label: 'ASSET INSURANCE', status: project.compliance?.insurance_coverage }
+                    ].map(item => (
+                        <div key={item.label} className={`p-4 border ${item.status ? 'bg-green-500/5 border-green-500/20 text-green-500' : 'bg-white/[0.02] border-white/5 text-white/20'}`}>
+                            <div className="flex items-center gap-3">
+                                {item.status ? <ShieldCheck size={18} /> : <AlertTriangle size={18} />}
+                                <span className="text-[9px] uppercase tracking-widest font-bold">{item.label}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Financial Column */}
+            <div className="lg:col-span-5 space-y-8">
+              <div className="p-6 bg-white/[0.03] border border-white/10 space-y-6">
+                <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold border-b border-white/5 pb-2">Financial Node</h4>
+                
+                <div className="space-y-4">
+                    <div className="flex justify-between items-end">
+                        <span className="text-[10px] uppercase tracking-widest text-white/20">Market Valuation</span>
+                        <span className="text-2xl font-bold tracking-tighter text-white">₹{project.financial?.total_budget?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-white/5 overflow-hidden">
+                        <div 
+                            className="h-full bg-green-500" 
+                            style={{ width: `${(project.financial?.funding_raised / project.financial?.total_budget) * 100}%` }}
+                        ></div>
+                    </div>
+                    <div className="flex justify-between text-[9px] uppercase tracking-widest">
+                        <span className="text-green-500 font-bold">RAISED: ₹{project.financial?.funding_raised?.toLocaleString() || 0}</span>
+                        <span className="text-white/20">TARGET: 100%</span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/5">
+                    <div className="space-y-1">
+                        <span className="text-[10px] uppercase tracking-widest text-white/20">Brick Supply</span>
+                        <span className="block text-white font-bold font-mono">{project.financial?.total_bricks?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="space-y-1">
+                        <span className="text-[10px] uppercase tracking-widest text-white/20">Escrow Held</span>
+                        <span className="block text-white font-bold font-mono text-amber-500">₹{project.financial?.total_escrow_held?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="space-y-1">
+                        <span className="text-[10px] uppercase tracking-widest text-white/20">Face Value</span>
+                        <span className="block text-white font-bold font-mono">₹{project.financial?.face_value || 0}</span>
+                    </div>
+                    <div className="space-y-1">
+                        <span className="text-[10px] uppercase tracking-widest text-white/20">IPO Price</span>
+                        <span className="block text-white font-bold font-mono text-green-500">₹{project.financial?.ipo_price || 0}</span>
+                    </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold border-b border-white/10 pb-2 mb-4">Node Origin</h4>
+                <div className="flex items-center gap-4 bg-white/[0.02] border border-white/5 p-4 group cursor-pointer hover:bg-white/[0.04] transition-colors">
+                    <div className="w-10 h-10 bg-white/5 border border-white/10 flex items-center justify-center text-white/40">
+                        <Building2 size={24} />
+                    </div>
+                    <div>
+                        <span className="text-xs font-bold text-white uppercase block">{project.builder?.company_name}</span>
+                        <span className="text-[9px] uppercase tracking-widest text-white/20">Verified Builder Node</span>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Media Board */}
+          <div>
+            <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold border-b border-white/10 pb-2 mb-6">Asset Visual Board</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {project.images?.length > 0 ? (
+                    project.images.map((img, idx) => (
+                        <div key={idx} className="aspect-video bg-white/5 border border-white/10 group overflow-hidden relative">
+                             <div className="absolute inset-0 bg-white/10 flex items-center justify-center text-[10px] uppercase tracking-widest text-white/20">IMAGE {idx + 1}</div>
+                             {/* In a real app, img would be a URL */}
+                        </div>
+                    ))
+                ) : (
+                    <div className="col-span-full py-12 text-center border-2 border-dashed border-white/5">
+                        <p className="text-[10px] uppercase tracking-widest text-white/20">No images provided for this asset</p>
+                    </div>
+                )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+const BuilderReviewModal = ({ isOpen, onClose, builder, onVerify, rejectionReason, setRejectionReason }) => {
+  if (!isOpen || !builder) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 md:p-10 animate-in fade-in duration-300">
+      <div className="absolute top-6 right-6 z-[110]">
+        <Button variant="outline" size="sm" onClick={onClose}>CLOSE ESC</Button>
+      </div>
+      <Card className="max-w-4xl w-full bg-[#0a0a0a] border-white/10 max-h-[90vh] overflow-hidden flex flex-col p-0">
+        <CardHeader className="border-b border-white/5 p-8">
+          <CardTitle className="text-3xl font-bold uppercase tracking-tighter">{builder.company_name}</CardTitle>
+          <CardDescription className="uppercase tracking-widest text-[10px] mt-2">Accreditation Node Review: {builder.id}</CardDescription>
+        </CardHeader>
+        
+        <CardContent className="overflow-y-auto p-8 space-y-8">
+          {/* Company Profile Area */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold border-b border-white/5 pb-2">Business Identity</h4>
+              <div className="space-y-3">
+                {[
+                  { label: 'Type', value: builder.business_type },
+                  { label: 'CIN', value: builder.company_registration_number },
+                  { label: 'PAN', value: builder.pan_number },
+                  { label: 'GST', value: builder.gst_number },
+                  { label: 'Established', value: builder.year_established },
+                ].map(item => (
+                  <div key={item.label} className="flex justify-between text-xs">
+                    <span className="text-white/20 uppercase">{item.label}</span>
+                    <span className="font-mono text-white/80">{item.value || 'N/A'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold border-b border-white/5 pb-2">Compliance Matrix</h4>
+              <div className="space-y-3">
+                {[
+                  { label: 'RERA ID', value: builder.rera_registration_number },
+                  { label: 'City', value: builder.headquarters_city },
+                  { label: 'State', value: builder.headquarters_state },
+                  { label: 'Pincode', value: builder.headquarters_pincode },
+                ].map(item => (
+                  <div key={item.label} className="flex justify-between text-xs">
+                    <span className="text-white/20 uppercase">{item.label}</span>
+                    <span className="font-mono text-white/80">{item.value || 'N/A'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Document Evidence Area */}
+          <div className="space-y-4">
+            <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold border-b border-white/5 pb-2">Digital Asset Board</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { label: 'Reg Certificate', url: builder.reg_cert_url },
+                { label: 'RERA Cert', url: builder.rera_cert_url },
+                { label: 'Balance Sheet', url: builder.balance_sheet_url },
+                { label: 'IT Returns', url: builder.it_returns_url },
+                { label: 'Bank Stmts', url: builder.bank_statements_url },
+              ].map(doc => (
+                <div key={doc.label} className="p-4 bg-white/[0.02] border border-white/5 flex flex-col justify-between">
+                  <span className="text-[9px] uppercase tracking-widest text-white/40 mb-3">{doc.label}</span>
+                  {doc.url ? (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full text-[9px] h-8 border border-white/10"
+                      onClick={() => window.open(doc.url, '_blank')}
+                    >
+                      VIEW RAW ASSET
+                    </Button>
+                  ) : (
+                    <span className="text-[9px] text-white/10 uppercase italic">Not Provided</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Financial Node Area */}
+          <div className="p-6 bg-white/[0.02] border border-white/10">
+            <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-4">Financial Settlement Node</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] uppercase tracking-widest">
+              <div>
+                <span className="block text-white/20 mb-1">Bank</span>
+                <span className="text-white font-bold">{builder.bank_name || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="block text-white/20 mb-1">Account</span>
+                <span className="text-white font-bold font-mono">{builder.bank_account_number || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="block text-white/20 mb-1">Beneficiary</span>
+                <span className="text-white font-bold">{builder.bank_account_name || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="block text-white/20 mb-1">IFSC</span>
+                <span className="text-white font-bold font-mono">{builder.bank_ifsc_code || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Decision Matrix */}
+          <div className="pt-8 border-t border-white/5 space-y-6">
+            <div className="space-y-3">
+              <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/40">Audit Comments / Rejection Reasoning</label>
+              <textarea 
+                className="w-full bg-[#050505] border border-white/10 p-4 text-xs font-mono text-white focus:border-primary-500 outline-none min-h-[100px]"
+                placeholder="Required for 'Rejection' or 'Revision Request'..."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+              />
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <Button 
+                variant="danger" 
+                className="h-14 text-[10px] tracking-widest"
+                onClick={() => onVerify(builder.id, 'rejected')}
+                disabled={!rejectionReason}
+              >
+                SUSPEND (REJECT)
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-14 text-[10px] tracking-widest border-blue-500/50 text-blue-400"
+                onClick={() => onVerify(builder.id, 'revision_required')}
+                disabled={!rejectionReason}
+              >
+                REQUEST REVISION
+              </Button>
+              <Button 
+                variant="primary" 
+                className="h-14 text-[10px] tracking-widest"
+                onClick={() => onVerify(builder.id, 'approved')}
+              >
+                ACCREDIT NODE (APPROVE)
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+const GovernanceModal = ({ isOpen, onClose, projects, onSave }) => {
+  const [formData, setFormData] = useState({
+    project_id: '',
+    title: '',
+    description: '',
+    options: ['Yes', 'No'],
+    end_date: ''
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  const handleOptionChange = (index, value) => {
+    const newOptions = [...formData.options];
+    newOptions[index] = value;
+    setFormData({ ...formData, options: newOptions });
+  };
+
+  const addOption = () => setFormData({ ...formData, options: [...formData.options, ''] });
+  const removeOption = (index) => {
+    if (formData.options.length <= 2) return;
+    setFormData({ ...formData, options: formData.options.filter((_, i) => i !== index) });
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <Card className="max-w-xl w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
+        <CardHeader className="border-b border-white/5">
+          <CardTitle className="text-xl font-bold uppercase tracking-tighter">Initialize Governance Proposal</CardTitle>
+          <CardDescription className="uppercase tracking-widest text-[8px] mt-1">On-chain consensus protocol generation</CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 max-h-[70vh] overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Select Asset</label>
+              <select 
+                className="w-full bg-white/5 border border-white/10 p-3 text-sm font-mono text-white outline-none focus:border-primary-500"
+                value={formData.project_id}
+                onChange={(e) => setFormData({...formData, project_id: e.target.value})}
+                required
+              >
+                <option value="">-- Choose Project --</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.title} ({p.city})</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Proposal Title</label>
+              <Input 
+                placeholder="e.g. Asset Liquidation Offer"
+                value={formData.title}
+                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Description & Rationale</label>
+              <textarea 
+                className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-primary-500 outline-none min-h-[100px]"
+                placeholder="Detailed explanation of the decision required..."
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">Voting Options</label>
+                <Button type="button" variant="ghost" size="sm" className="text-[8px]" onClick={addOption}>+ ADD OPTION</Button>
+              </div>
+              {formData.options.map((opt, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input 
+                    placeholder={`Option ${i+1}`}
+                    value={opt}
+                    onChange={(e) => handleOptionChange(i, e.target.value)}
+                    required
+                  />
+                  <Button type="button" variant="ghost" className="px-2" onClick={() => removeOption(i)}><Trash size={14}/></Button>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Voting Deadline</label>
+              <Input 
+                type="datetime-local"
+                value={formData.end_date}
+                onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button type="button" variant="ghost" className="flex-1 uppercase tracking-widest text-[10px]" onClick={onClose}>Cancel</Button>
+              <Button type="submit" variant="primary" className="flex-1 uppercase tracking-widest text-[10px]">Publish Proposal</Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+const MacroAnalyticsModal = ({ isOpen, onClose, data, onSave }) => {
+  const [formData, setFormData] = useState({
+    pincode: '',
+    yoy_growth_percentage: '',
+    avg_rental_yield: '',
+    demand_score: ''
+  });
+
+  useEffect(() => {
+    if (data) {
+      setFormData({
+        pincode: data.pincode,
+        yoy_growth_percentage: data.yoy_growth_percentage,
+        avg_rental_yield: data.avg_rental_yield,
+        demand_score: data.demand_score
+      });
+    } else {
+      setFormData({
+        pincode: '',
+        yoy_growth_percentage: '',
+        avg_rental_yield: '',
+        demand_score: ''
+      });
+    }
+  }, [data, isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <Card className="max-w-md w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
+        <CardHeader className="border-b border-white/5">
+          <CardTitle className="text-xl font-bold uppercase tracking-tighter">
+            {data ? 'Update Analytics Node' : 'Initialize Analytics Node'}
+          </CardTitle>
+          <CardDescription className="uppercase tracking-widest text-[8px] mt-1">Geographical Market Data Configuration</CardDescription>
+        </CardHeader>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Pincode</label>
+              <Input 
+                disabled={!!data}
+                placeholder="e.g. 400001"
+                value={formData.pincode}
+                onChange={(e) => setFormData({...formData, pincode: e.target.value})}
+                required
+                className="bg-white/5 border-white/10 font-mono"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">YoY Growth (%)</label>
+                <Input 
+                  type="number" step="0.01"
+                  placeholder="12.5"
+                  value={formData.yoy_growth_percentage}
+                  onChange={(e) => setFormData({...formData, yoy_growth_percentage: e.target.value})}
+                  required
+                  className="bg-white/5 border-white/10 font-mono"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">Rental Yield (%)</label>
+                <Input 
+                  type="number" step="0.1"
+                  placeholder="6.5"
+                  value={formData.avg_rental_yield}
+                  onChange={(e) => setFormData({...formData, avg_rental_yield: e.target.value})}
+                  required
+                  className="bg-white/5 border-white/10 font-mono"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-white/40">Demand Score (0-100)</label>
+              <Input 
+                type="number"
+                placeholder="85"
+                value={formData.demand_score}
+                onChange={(e) => setFormData({...formData, demand_score: e.target.value})}
+                required
+                className="bg-white/5 border-white/10 font-mono"
+              />
+            </div>
+            <div className="flex gap-3 pt-4">
+              <Button type="button" variant="ghost" className="flex-1 uppercase tracking-widest text-[10px]" onClick={onClose}>Cancel</Button>
+              <Button type="submit" variant="primary" className="flex-1 uppercase tracking-widest text-[10px]">
+                {data ? 'Commit Update' : 'Publish Node'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 // --- Main Page ---
 
@@ -89,26 +722,67 @@ const AdminPortal = () => {
   const [stats, setStats] = useState(null);
   const [kycApps, setKycApps] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [pendingBuilders, setPendingBuilders] = useState([]);
+  const [selectedBuilder, setSelectedBuilder] = useState(null);
+  const [isBuilderModalOpen, setIsBuilderModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  
+  // Macro Analytics State
+  const [macroList, setMacroList] = useState([]);
+  const [selectedMacro, setSelectedMacro] = useState(null);
+  const [isMacroModalOpen, setIsMacroModalOpen] = useState(false);
   
   // UI State
   const [targetUserId, setTargetUserId] = useState('');
   const [walletAmount, setWalletAmount] = useState('');
   const [walletReason, setWalletReason] = useState('');
   const [modalImage, setModalImage] = useState({ open: false, url: '', title: '' });
+  const [selectedMilestoneProject, setSelectedMilestoneProject] = useState(null);
+  const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
+  
+  // Governance State
+  const [proposalsList, setProposalsList] = useState([]);
+  const [selectedProposal, setSelectedProposal] = useState(null);
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
+
+  // Revenue State
+  const [pendingSettlements, setPendingSettlements] = useState([]);
+  const [settlementResult, setSettlementResult] = useState(null);
+  const [isSettlementModalOpen, setIsSettlementModalOpen] = useState(false);
+  const [isInfuseModalOpen, setIsInfuseModalOpen] = useState(false);
+  const [infuseForm, setInfuseForm] = useState({
+    project_id: '',
+    amount: '',
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear()
+  });
   
   // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [statsData, kycData, projectsData] = await Promise.all([
+        // Better error handling for individual requests to prevent entire page failure
+        const [statsData, kycData, projectsData, pendingBuildersData, macroData, governanceData, revenueData] = await Promise.allSettled([
           adminService.getDashboardStats(),
           adminService.getKYCApplications('all'),
-          propertyService.getProperties('all')
+          propertyService.getProperties('all'),
+          adminService.getPendingBuilders(),
+          adminService.getMacroData(),
+          governanceService.getAllProposals(),
+          revenueService.getPendingSettlements()
         ]);
-        setStats(statsData);
-        setKycApps(kycData.items);
-        setProjects(projectsData);
+        
+        if (statsData.status === 'fulfilled') setStats(statsData.value);
+        if (kycData.status === 'fulfilled') setKycApps(kycData.value.items);
+        if (projectsData.status === 'fulfilled') setProjects(projectsData.value);
+        if (pendingBuildersData.status === 'fulfilled') setPendingBuilders(pendingBuildersData.value);
+        if (macroData.status === 'fulfilled') setMacroList(macroData.value);
+        if (governanceData.status === 'fulfilled') setProposalsList(governanceData.value);
+        if (revenueData.status === 'fulfilled') setPendingSettlements(revenueData.value);
+        
       } catch (err) {
         console.error("Admin fetch failed", err);
       } finally {
@@ -144,6 +818,7 @@ const AdminPortal = () => {
       refreshKYC();
     } catch (err) { alert(err.response?.data?.detail || "Review failed"); }
   };
+
 
   const handleWalletAdjust = async (e) => {
     e.preventDefault();
@@ -195,6 +870,163 @@ const AdminPortal = () => {
     } catch (err) { alert(err.response?.data?.detail || "Status update failed"); }
   };
 
+  const handleBuilderVerification = async (builderId, status) => {
+    try {
+      setLoading(true);
+      await adminService.verifyBuilder(builderId, {
+        status: status,
+        rejection_reason: (status === 'rejected' || status === 'revision_required') ? rejectionReason : null
+      });
+      const builders = await adminService.getPendingBuilders();
+      setPendingBuilders(builders);
+      await refreshStats();
+      setIsBuilderModalOpen(false);
+      setRejectionReason("");
+      alert(`Builder node ${status === 'approved' ? 'accredited' : status === 'rejected' ? 'suspended' : 'revision requested'}.`);
+    } catch (error) {
+      console.error("Verification failed", error);
+      alert("Accreditation update failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenMilestones = async (project) => {
+    try {
+      setLoading(true);
+      const detailedProject = await propertyService.getPropertyById(project.id);
+      setSelectedMilestoneProject(detailedProject);
+      setIsMilestoneModalOpen(true);
+    } catch (err) {
+      alert("Failed to fetch project details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyMilestone = async (projectId, milestoneId) => {
+    if (!confirm("Officially mark this milestone as COMPLETED? This action will update project records and potentially unlock locked capital.")) return;
+    try {
+      await adminService.verifyMilestone(projectId, milestoneId, { status: 'completed' });
+      // Refresh the detailed view
+      const detailedProject = await propertyService.getPropertyById(projectId);
+      setSelectedMilestoneProject(detailedProject);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Verification failed");
+    }
+  };
+
+  const handleMacroSave = async (formData) => {
+    try {
+      setLoading(true);
+      if (selectedMacro) {
+        await adminService.updateMacroData(selectedMacro.pincode, formData);
+      } else {
+        await adminService.createMacroData(formData);
+      }
+      const data = await adminService.getMacroData();
+      setMacroList(data);
+      setIsMacroModalOpen(false);
+      setSelectedMacro(null);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Save failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMacroDelete = async (pincode) => {
+    if (!confirm(`Permanently delete analytics node for ${pincode}?`)) return;
+    try {
+      setLoading(true);
+      await adminService.deleteMacroData(pincode);
+      const data = await adminService.getMacroData();
+      setMacroList(data);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Delete failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProposalSave = async (formData) => {
+    try {
+      setLoading(true);
+      await governanceService.createProposal(formData);
+      const data = await governanceService.getAllProposals();
+      setProposalsList(data);
+      setIsProposalModalOpen(false);
+      alert("Proposal initialized on-chain.");
+    } catch (err) {
+      alert(err.response?.data?.detail || "Proposal creation failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProposalStatus = async (proposalId, status, resultIndex = null) => {
+    try {
+      setLoading(true);
+      await governanceService.updateProposalStatus(proposalId, status, resultIndex);
+      const data = await governanceService.getAllProposals();
+      setProposalsList(data);
+      alert(`Proposal ${status}.`);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSettleRevenue = async (cycleId) => {
+    if (!confirm("Finalize this revenue distribution? This will debit the builder and credit all eligible investors based on the 30-day maturity rule.")) return;
+    try {
+      setLoading(true);
+      const response = await revenueService.settleCycle(cycleId);
+      setSettlementResult(response);
+      setIsSettlementModalOpen(true);
+      
+      const data = await revenueService.getPendingSettlements();
+      setPendingSettlements(data);
+      await refreshStats();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Settlement failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectSettlement = async (cycleId) => {
+    if (!confirm("Are you sure you want to reject this settlement request?")) return;
+    try {
+      setLoading(true);
+      await revenueService.rejectCycle(cycleId);
+      const data = await revenueService.getPendingSettlements();
+      setPendingSettlements(data);
+      alert("Settlement request rejected.");
+    } catch (err) {
+      alert(err.response?.data?.detail || "Rejection failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInfuseRevenue = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      await revenueService.depositRental(infuseForm);
+      alert("Revenue infusion successful. It is now awaiting approval in the settlement list.");
+      setIsInfuseModalOpen(false);
+      const data = await revenueService.getPendingSettlements();
+      setPendingSettlements(data);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Infusion failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading && !stats) return (
     <div className="flex items-center justify-center h-screen bg-black">
       <div className="w-12 h-12 border-t-2 border-white animate-spin" />
@@ -218,12 +1050,12 @@ const AdminPortal = () => {
           </p>
         </div>
 
-        <div className="flex bg-[#111] p-1 border border-white/5 rounded-none overflow-hidden">
-          {['dashboard', 'kyc', 'projects', 'users'].map((tab) => (
+        <div className="flex bg-[#111] p-1 border border-white/5 rounded-none overflow-x-auto scrollbar-hide whitespace-nowrap">
+          {['dashboard', 'kyc', 'builders', 'projects', 'revenue', 'analytics', 'governance', 'users'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 text-[10px] uppercase tracking-widest transition-all duration-300 ${
+              className={`px-6 py-3 text-[10px] uppercase tracking-widest transition-all duration-300 flex-shrink-0 ${
                 activeTab === tab 
                 ? 'bg-white text-black font-bold' 
                 : 'text-white/30 hover:text-white hover:bg-white/5'
@@ -243,11 +1075,12 @@ const AdminPortal = () => {
             className="space-y-10"
           >
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <StatCard title="Total Users" value={stats?.total_users || 0} icon={Users} color="blue" />
               <StatCard title="Active Builders" value={stats?.total_builders || 0} icon={Building2} color="purple" />
               <StatCard title="Pending KYC" value={stats?.kyc_pending_approvals || 0} icon={Clock} color="amber" />
-              <StatCard title="Locked Assets (INR)" value={`₹${(stats?.total_investments_locked_inr || 0).toLocaleString()}`} icon={Lock} color="green" />
+              <StatCard title="Platform Escrow" value={`₹${(stats?.total_platform_escrow || 0).toLocaleString()}`} icon={Shield} color="red" />
+              <StatCard title="Locked Assets" value={`₹${(stats?.total_investments_locked_inr || 0).toLocaleString()}`} icon={Lock} color="green" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -309,6 +1142,7 @@ const AdminPortal = () => {
                   <thead>
                     <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/30">
                       <th className="p-6 md:p-8">Subject</th>
+                      <th className="p-6 md:p-8">Full Name</th>
                       <th className="p-6 md:p-8">Identifiers</th>
                       <th className="p-6 md:p-8">Documents</th>
                       <th className="p-6 md:p-8">Assignment</th>
@@ -323,8 +1157,11 @@ const AdminPortal = () => {
                     ) : kycApps.map(app => (
                       <tr key={app.id} className="border-b border-white/5 hover:bg-white/[0.01]">
                         <td className="p-6 md:p-8">
-                          <span className="block font-bold text-white uppercase text-sm mb-1">{app.user_id}</span>
+                          <span className="block font-bold text-white uppercase text-sm mb-1">{app.user_id.substring(0, 8)}...</span>
                           <span className="text-[10px] text-white/30 font-mono block">REF: {app.id.substring(0,8)}</span>
+                        </td>
+                        <td className="p-6 md:p-8">
+                          <span className="block font-bold text-white uppercase text-sm">{app.full_name || 'N/A'}</span>
                         </td>
                         <td className="p-6 md:p-8">
                            <div className="space-y-1">
@@ -395,7 +1232,7 @@ const AdminPortal = () => {
                       <th className="p-6 md:p-8">Project Name</th>
                       <th className="p-6 md:p-8">Builder</th>
                       <th className="p-6 md:p-8">IPO Status</th>
-                      <th className="p-6 md:p-8">Lifecycle</th>
+                      <th className="p-6 md:p-8">Escrow Balance</th>
                       <th className="p-6 md:p-8">Market Control</th>
                       <th className="p-6 md:p-8 text-right">Operational Actions</th>
                     </tr>
@@ -407,13 +1244,24 @@ const AdminPortal = () => {
                       </tr>
                     ) : (
                       projects.map(p => (
-                        <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.01]">
+                        <tr 
+                          key={p.id} 
+                          className="border-b border-white/5 hover:bg-white/[0.01] cursor-pointer"
+                          onClick={() => { setSelectedProject(p); setIsProjectModalOpen(true); }}
+                        >
                           <td className="p-6 md:p-8">
-                            <span className="block font-bold text-white uppercase text-sm mb-1">{p.title}</span>
-                            <span className="text-[10px] text-white/40">ID: {p.id?.substring(0,8) || 'N/A'}</span>
+                            <div className="flex flex-col gap-1">
+                                <span className="block font-bold text-white uppercase text-xs">{p.title}</span>
+                                <div className="flex gap-2">
+                                    <span className={`text-[8px] uppercase font-bold tracking-widest ${p.compliance?.rera_approved ? 'text-green-500' : 'text-white/20'}`}>RERA</span>
+                                    <span className={`text-[8px] uppercase font-bold tracking-widest ${p.compliance?.environmental_clearance ? 'text-green-500' : 'text-white/20'}`}>ENV</span>
+                                    <span className={`text-[8px] uppercase font-bold tracking-widest ${p.compliance?.insurance_coverage ? 'text-green-500' : 'text-white/20'}`}>INS</span>
+                                </div>
+                            </div>
                           </td>
                           <td className="p-6 md:p-8">
-                            <span className="text-xs text-white/60">ID: {p.builder_id?.substring(0,8) || 'N/A'}...</span>
+                            <span className="block text-sm font-bold text-white uppercase">{p.builder?.company_name || 'UNKNOWN'}</span>
+                            <span className="text-[10px] text-white/40">ID: {p.builder_id?.substring(0,8) || 'N/A'}...</span>
                           </td>
                           <td className="p-6 md:p-8">
                             <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest rounded-none border ${
@@ -425,7 +1273,7 @@ const AdminPortal = () => {
                             </span>
                           </td>
                           <td className="p-6 md:p-8">
-                            <span className="text-xs text-white/60 uppercase">{p.lifecycle_status}</span>
+                            <span className="text-xs font-bold text-white">₹{(p.financial?.total_escrow_held || 0).toLocaleString()}</span>
                           </td>
                           <td className="p-6 md:p-8">
                             <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest rounded-none border ${
@@ -435,20 +1283,20 @@ const AdminPortal = () => {
                             </span>
                           </td>
                           <td className="p-6 md:p-8 text-right">
-                             <div className="flex justify-end gap-2">
-                               {p.ipo_status === 'upcoming' && (
-                                 <Button size="sm" variant="primary" className="text-[10px] h-9" onClick={() => handleIPOAction(p.id, 'approve')}>APPROVE IPO</Button>
-                               )}
-                               {p.ipo_status === 'active' && (
-                                 <Button size="sm" className="text-[10px] h-9 bg-blue-600 hover:bg-blue-700" onClick={() => handleIPOAction(p.id, 'complete')}>COMPLETE IPO</Button>
-                               )}
-                               {p.status === 'halted' ? (
-                                 <Button size="sm" variant="primary" className="text-[10px] h-9 bg-green-600 hover:bg-green-700" onClick={() => handleProjectHalt(p.id, p.status)}>RESUME</Button>
-                               ) : (
-                                 <Button size="sm" variant="danger" className="text-[10px] h-9" onClick={() => handleProjectHalt(p.id, p.status)}>HALT</Button>
-                               )}
-                               <Button size="sm" variant="outline" className="text-[10px] h-9" onClick={() => alert("Milestone verification view not implemented yet")}>MILESTONES</Button>
-                             </div>
+                              <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                {p.ipo_status === 'upcoming' && (
+                                  <Button size="sm" variant="primary" className="text-[10px] h-9" onClick={() => handleIPOAction(p.id, 'approve')}>APPROVE IPO</Button>
+                                )}
+                                {p.ipo_status === 'active' && (
+                                  <Button size="sm" className="text-[10px] h-9 bg-blue-600 hover:bg-blue-700" onClick={() => handleIPOAction(p.id, 'complete')}>COMPLETE IPO</Button>
+                                )}
+                                {p.status === 'halted' ? (
+                                  <Button size="sm" variant="primary" className="text-[10px] h-9 bg-green-600 hover:bg-green-700" onClick={() => handleProjectHalt(p.id, p.status)}>RESUME</Button>
+                                ) : (
+                                  <Button size="sm" variant="danger" className="text-[10px] h-9" onClick={() => handleProjectHalt(p.id, p.status)}>HALT</Button>
+                                )}
+                                <Button size="sm" variant="outline" className="text-[10px] h-9" onClick={() => handleOpenMilestones(p)}>MILESTONES</Button>
+                              </div>
                           </td>
                         </tr>
                       ))
@@ -460,11 +1308,77 @@ const AdminPortal = () => {
           </motion.div>
         )}
 
+        {activeTab === 'builders' && (
+          <motion.div 
+            key="builders"
+            initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
+            className="space-y-6"
+          >
+             <Card noPadding>
+                <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold uppercase tracking-tighter">Builder Verification Wall</h3>
+                    <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Review and approve business credentials</p>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 px-4 py-2 text-[10px] uppercase tracking-widest font-bold">
+                    Pending: {pendingBuilders.length}
+                  </div>
+                </div>
+                
+                <div className="p-8">
+                   {pendingBuilders.length === 0 ? (
+                      <div className="py-24 text-center border-2 border-dashed border-white/5">
+                         <Building2 className="mx-auto mb-4 text-white/10" size={48} />
+                         <p className="text-xs text-white/20 uppercase tracking-[0.3em]">No builders currently awaiting verification</p>
+                      </div>
+                   ) : (
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {pendingBuilders.map(b => (
+                          <div key={b.id} className="bg-white/[0.02] border border-white/10 p-6 flex flex-col justify-between group hover:border-white/20 transition-colors">
+                             <div className="mb-6">
+                               <div className="flex items-start justify-between mb-2">
+                                 <h4 className="text-xl font-bold uppercase tracking-tight">{b.company_name}</h4>
+                                 <span className="text-[10px] font-mono text-white/30">REF: {b.id.substring(0,8)}</span>
+                               </div>
+                               <div className="space-y-2">
+                                 <div className="flex text-[10px] uppercase tracking-widest gap-2">
+                                   <span className="text-white/30">REG NO:</span>
+                                   <span className="text-white/60 font-mono">{b.company_registration_number || 'NOT PROVIDED'}</span>
+                                 </div>
+                                 <div className="flex text-[10px] uppercase tracking-widest gap-2">
+                                   <span className="text-white/30">RERA:</span>
+                                   <span className="text-white/60 font-mono">{b.rera_registration_number || 'NOT PROVIDED'}</span>
+                                 </div>
+                                 <div className="flex text-[10px] uppercase tracking-widest gap-2">
+                                   <span className="text-white/30">BANK:</span>
+                                   <span className="text-white/60 font-mono">{b.bank_name || 'PENDING'} - {b.bank_account_number || 'PENDING'}</span>
+                                 </div>
+                               </div>
+                             </div>
+                             
+                             <div className="flex gap-4 pt-6 border-t border-white/5">
+                                <Button 
+                                  variant="outline" 
+                                  className="w-full h-12 text-[10px] font-bold tracking-widest"
+                                  onClick={() => { setSelectedBuilder(b); setIsBuilderModalOpen(true); }}
+                                >
+                                  AUDIT ASSETS
+                                </Button>
+                             </div>
+                          </div>
+                        ))}
+                     </div>
+                   )}
+                </div>
+             </Card>
+          </motion.div>
+        )}
+
         {activeTab === 'users' && (
            <motion.div 
             key="users"
             initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+            className="grid grid-cols-1 gap-6"
            >
               <Card>
                  <div className="flex items-center gap-4 mb-8">
@@ -513,18 +1427,348 @@ const AdminPortal = () => {
                     </div>
                  </form>
               </Card>
+            </motion.div>
+        )}
 
-              <Card className="flex flex-col items-center justify-center border-dashed border-white/10 bg-white/[0.02]">
-                 <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 text-white/20">
-                   <Building2 size={40} />
-                 </div>
-                 <h3 className="text-xl font-bold uppercase tracking-tight mb-2">Builder Verification</h3>
-                 <p className="text-xs text-secondary-500 uppercase tracking-widest mb-8">Pending Profile Reviews: 0</p>
-                 <Button variant="outline" disabled className="w-full max-w-xs">Enter Review Chamber</Button>
-              </Card>
-           </motion.div>
+        {activeTab === 'analytics' && (
+          <motion.div 
+            key="analytics"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="space-y-6"
+          >
+            <Card noPadding>
+              <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold uppercase tracking-tight">Macro Analytics Nodes</h3>
+                  <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Global Market Intelligence Database</p>
+                </div>
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  className="text-[10px] h-10 px-6 font-bold tracking-widest"
+                  onClick={() => { setSelectedMacro(null); setIsMacroModalOpen(true); }}
+                >
+                  <Plus size={16} className="mr-2" /> NEW NODE
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/30">
+                      <th className="p-6 md:p-8">Pincode</th>
+                      <th className="p-6 md:p-8">YoY Growth</th>
+                      <th className="p-6 md:p-8">Rental Yield</th>
+                      <th className="p-6 md:p-8">Demand</th>
+                      <th className="p-6 md:p-8">Last Updated</th>
+                      <th className="p-6 md:p-8 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {macroList.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="p-20 text-center text-white/20 uppercase tracking-widest text-xs">No analytics nodes initialized.</td>
+                      </tr>
+                    ) : macroList.map(macro => (
+                      <tr key={macro.pincode} className="border-b border-white/5 hover:bg-white/[0.01]">
+                        <td className="p-6 md:p-8">
+                          <span className="font-mono text-sm text-white font-bold">{macro.pincode}</span>
+                        </td>
+                        <td className="p-6 md:p-8">
+                          <span className="text-sm font-bold text-green-500">+{macro.yoy_growth_percentage}%</span>
+                        </td>
+                        <td className="p-6 md:p-8">
+                          <span className="text-sm font-bold text-sky-400">{macro.avg_rental_yield}%</span>
+                        </td>
+                        <td className="p-6 md:p-8">
+                          <div className="flex items-center gap-3">
+                             <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-full bg-violet-500" style={{ width: `${macro.demand_score}%` }}></div>
+                             </div>
+                             <span className="text-sm font-bold text-violet-500">{macro.demand_score}/100</span>
+                          </div>
+                        </td>
+                        <td className="p-6 md:p-8">
+                          <span className="text-xs text-white/30">{new Date(macro.last_updated).toLocaleString()}</span>
+                        </td>
+                        <td className="p-6 md:p-8 text-right space-x-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => { setSelectedMacro(macro); setIsMacroModalOpen(true); }}
+                          >
+                            <Edit2 size={14} className="text-white/40 hover:text-white" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleMacroDelete(macro.pincode)}
+                          >
+                            <Trash size={14} className="text-red-500/40 hover:text-red-500" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+        {activeTab === 'governance' && (
+          <motion.div 
+            key="governance"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="space-y-6"
+          >
+            <Card noPadding>
+              <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold uppercase tracking-tight">Governance Protocols</h3>
+                  <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Manage Decentralized Ownership Decisions</p>
+                </div>
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  className="text-[10px] h-10 px-6 font-bold tracking-widest"
+                  onClick={() => setIsProposalModalOpen(true)}
+                >
+                  <Plus size={16} className="mr-2" /> NEW PROPOSAL
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/30">
+                      <th className="p-6 md:p-8">Asset</th>
+                      <th className="p-6 md:p-8">Proposal Title</th>
+                      <th className="p-6 md:p-8">Status</th>
+                      <th className="p-6 md:p-8">Votes (Weight)</th>
+                      <th className="p-6 md:p-8">Deadline</th>
+                      <th className="p-6 md:p-8 text-right">Control</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {proposalsList.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="p-20 text-center text-white/20 uppercase tracking-widest text-xs">No active governance proposals.</td>
+                      </tr>
+                    ) : proposalsList.map(p => {
+                        const proj = projects.find(pj => pj.id === p.project_id);
+                        return (
+                          <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.01]">
+                            <td className="p-6 md:p-8">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-white/5 border border-white/10 rounded flex items-center justify-center text-white/20">
+                                   <Building2 size={16} />
+                                </div>
+                                <span className="text-xs font-bold text-white uppercase">{proj?.title || 'Unknown'}</span>
+                              </div>
+                            </td>
+                            <td className="p-6 md:p-8">
+                              <span className="text-sm font-medium text-white">{p.title}</span>
+                            </td>
+                            <td className="p-6 md:p-8">
+                              <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest border ${
+                                p.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
+                                p.status === 'closed' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
+                                'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                              }`}>
+                                {p.status}
+                              </span>
+                            </td>
+                            <td className="p-6 md:p-8">
+                               <span className="font-mono text-sm font-bold text-white">{p.total_votes.toLocaleString()}</span>
+                            </td>
+                            <td className="p-6 md:p-8 text-xs text-white/40">
+                               {new Date(p.end_date).toLocaleString()}
+                            </td>
+                            <td className="p-6 md:p-8 text-right">
+                               {p.status === 'active' && (
+                                 <Button 
+                                   variant="outline" 
+                                   size="sm" 
+                                   className="text-[8px] h-8"
+                                   onClick={() => handleProposalStatus(p.id, 'closed')}
+                                 >
+                                   CLOSE VOTING
+                                 </Button>
+                               )}
+                               {p.status === 'closed' && (
+                                 <Button 
+                                   variant="primary" 
+                                   size="sm" 
+                                   className="text-[8px] h-8"
+                                   onClick={() => {
+                                      const winnerIndex = p.vote_distribution.indexOf(Math.max(...p.vote_distribution));
+                                      handleProposalStatus(p.id, 'executed', winnerIndex);
+                                   }}
+                                 >
+                                   EXECUTE RESULT
+                                 </Button>
+                               )}
+                            </td>
+                          </tr>
+                        );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+        {activeTab === 'revenue' && (
+          <motion.div 
+            key="revenue"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <Card noPadding>
+              <div className="p-8 border-b border-white/5 flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-bold uppercase tracking-tight">Revenue Settlement Center</h3>
+                  <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Approve monthly rental distributions & manage 1% platform fees</p>
+                </div>
+                <Button variant="outline" className="text-[10px] h-10 px-6 font-bold tracking-widest border-green-500/20 text-green-500" onClick={() => setIsInfuseModalOpen(true)}>INFUSE MANUALLY</Button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/30">
+                      <th className="p-6 md:p-8">Asset & Period</th>
+                      <th className="p-6 md:p-8">Gross Deposit</th>
+                      <th className="p-6 md:p-8">Platform Fee (1%)</th>
+                      <th className="p-6 md:p-8">Net Distribution</th>
+                      <th className="p-6 md:p-8">Status</th>
+                      <th className="p-6 md:p-8 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingSettlements.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="p-20 text-center text-white/20 uppercase tracking-widest text-xs">No pending revenue cycles awaiting settlement.</td>
+                      </tr>
+                    ) : (
+                      pendingSettlements.map(cycle => (
+                        <tr key={cycle.id} className="border-b border-white/5 hover:bg-white/[0.01]">
+                          <td className="p-6 md:p-8">
+                            <span className="block font-bold text-white uppercase text-xs">{projects.find(p => p.id === cycle.project_id)?.title || 'PROJECT'}</span>
+                            <span className="text-[10px] text-white/40 uppercase tracking-widest">{new Date(cycle.year, cycle.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
+                          </td>
+                          <td className="p-6 md:p-8 font-mono text-sm">₹{parseFloat(cycle.gross_amount).toLocaleString()}</td>
+                          <td className="p-6 md:p-8 font-mono text-sm text-amber-500">₹{parseFloat(cycle.fee_amount).toLocaleString()}</td>
+                          <td className="p-6 md:p-8 font-mono text-sm text-green-500">₹{parseFloat(cycle.net_amount).toLocaleString()}</td>
+                          <td className="p-6 md:p-8">
+                            <span className="px-2 py-1 text-[8px] font-bold uppercase tracking-widest bg-amber-500/10 text-amber-500 border border-amber-500/20">AWAITING APPROVAL</span>
+                          </td>
+                          <td className="p-6 md:p-8 text-right">
+                             <div className="flex justify-end gap-2">
+                                <Button size="sm" variant="outline" className="text-[10px] h-9 px-6 font-bold tracking-widest border-red-500/20 text-red-500 hover:bg-red-500/5" onClick={() => handleRejectSettlement(cycle.id)}>REJECT</Button>
+                                <Button size="sm" variant="primary" className="text-[10px] h-9 px-6 font-bold tracking-widest" onClick={() => handleSettleRevenue(cycle.id)}>APPROVE & SETTLE</Button>
+                             </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Settlement Success Modal */}
+      {isSettlementModalOpen && settlementResult && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+           <motion.div 
+             initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+             className="max-w-2xl w-full bg-[#0a0a0a] border border-green-500/20 shadow-[0_0_50px_-12px_rgba(34,197,94,0.3)]"
+           >
+              <div className="p-8 border-b border-white/5 flex justify-between items-center bg-green-500/5">
+                 <div>
+                    <div className="flex items-center gap-2 text-green-500 mb-1">
+                       <CheckCircle2 size={18} />
+                       <h3 className="text-xl font-bold uppercase tracking-tighter">Settlement Successful</h3>
+                    </div>
+                    <p className="text-[10px] uppercase tracking-widest text-white/40">Distribution cycle executed across node network</p>
+                 </div>
+                 <button onClick={() => setIsSettlementModalOpen(false)} className="text-white/20 hover:text-white"><X size={20}/></button>
+              </div>
+              <div className="p-8 space-y-6">
+                 <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 bg-white/5 border border-white/5">
+                       <p className="text-[8px] uppercase tracking-widest text-white/30 mb-1">Gross Yield</p>
+                       <p className="text-lg font-mono font-bold text-white">₹{parseFloat(settlementResult.cycle.gross_amount).toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 bg-white/5 border border-white/5">
+                       <p className="text-[8px] uppercase tracking-widest text-white/30 mb-1">Platform Fee (1%)</p>
+                       <p className="text-lg font-mono font-bold text-amber-500">₹{parseFloat(settlementResult.cycle.fee_amount).toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 bg-white/5 border border-white/5">
+                       <p className="text-[8px] uppercase tracking-widest text-white/30 mb-1">Total Payouts</p>
+                       <p className="text-lg font-mono font-bold text-green-500">{settlementResult.payouts.length}</p>
+                    </div>
+                 </div>
+
+                 <div>
+                    <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/30 mb-4">Credited Investors (Mature Holdings Only)</h4>
+                    <div className="max-h-[300px] overflow-y-auto border border-white/5">
+                       <table className="w-full text-left text-[10px]">
+                          <thead className="bg-white/5 sticky top-0">
+                             <tr className="uppercase tracking-widest text-white/40 border-b border-white/5">
+                                <th className="p-4">Investor</th>
+                                <th className="p-4">Mature Bricks</th>
+                                <th className="p-4 text-right">Amount Credited</th>
+                             </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                             {settlementResult.payouts.map((p, i) => (
+                               <tr key={i} className="hover:bg-white/[0.02]">
+                                  <td className="p-4">
+                                     <span className="block font-bold text-white uppercase">{p[1]} {p[2]}</span>
+                                     <span className="text-white/30 lowercase">{p[3]}</span>
+                                  </td>
+                                  <td className="p-4 font-mono">{p[0].eligible_quantity} BK</td>
+                                  <td className="p-4 text-right font-bold text-green-500 font-mono">₹{parseFloat(p[0].amount_paid).toLocaleString()}</td>
+                               </tr>
+                             ))}
+                          </tbody>
+                       </table>
+                    </div>
+                 </div>
+              </div>
+              <div className="p-8 pt-0">
+                 <Button variant="primary" className="w-full h-12 uppercase tracking-widest text-[10px] font-bold" onClick={() => setIsSettlementModalOpen(false)}>CLOSE REPORT</Button>
+              </div>
+           </motion.div>
+        </div>
+      )}
+
+      <GovernanceModal 
+        isOpen={isProposalModalOpen}
+        onClose={() => setIsProposalModalOpen(false)}
+        projects={projects.filter(p => p.ipo_status === 'completed')}
+        onSave={handleProposalSave}
+      />
+
+       <BuilderReviewModal 
+        isOpen={isBuilderModalOpen}
+        onClose={() => setIsBuilderModalOpen(false)}
+        builder={selectedBuilder}
+        onVerify={handleBuilderVerification}
+        rejectionReason={rejectionReason}
+        setRejectionReason={setRejectionReason}
+      />
+
+      <ProjectReviewModal 
+        isOpen={isProjectModalOpen} 
+        onClose={() => setIsProjectModalOpen(false)} 
+        project={selectedProject}
+        onIPOAction={handleIPOAction}
+        onHaltAction={handleProjectHalt}
+      />
 
       <ImageModal 
         isOpen={modalImage.open} 
@@ -532,6 +1776,82 @@ const AdminPortal = () => {
         imageUrl={modalImage.url} 
         title={modalImage.title} 
       />
+
+      <MilestonesModal
+        isOpen={isMilestoneModalOpen}
+        onClose={() => setIsMilestoneModalOpen(false)}
+        project={selectedMilestoneProject}
+        onVerify={handleVerifyMilestone}
+      />
+      
+      <MacroAnalyticsModal 
+        isOpen={isMacroModalOpen} 
+        onClose={() => { setIsMacroModalOpen(false); setSelectedMacro(null); }}
+        data={selectedMacro}
+        onSave={handleMacroSave}
+      />
+
+      {/* Infuse Revenue Modal */}
+      {isInfuseModalOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+           <Card className="max-w-md w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
+              <CardHeader className="border-b border-white/5">
+                <CardTitle className="text-xl font-bold uppercase tracking-tighter">Admin: Infuse Rental Yield</CardTitle>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 mt-1">Directly inject rental income into the settlement queue</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <form onSubmit={handleInfuseRevenue} className="space-y-6">
+                   <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Target Project</label>
+                      <select 
+                        className="w-full bg-white/5 border border-white/10 p-3 text-sm text-white focus:border-primary-500 outline-none"
+                        value={infuseForm.project_id}
+                        onChange={(e) => setInfuseForm({...infuseForm, project_id: e.target.value})}
+                        required
+                      >
+                         <option value="">Select Asset...</option>
+                         {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                      </select>
+                   </div>
+                   <Input 
+                     label="Infusion Amount (INR)" 
+                     placeholder="e.g. 50000" 
+                     type="number"
+                     required
+                     value={infuseForm.amount}
+                     onChange={(e) => setInfuseForm({...infuseForm, amount: e.target.value})}
+                   />
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                         <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Month</label>
+                         <select 
+                           className="w-full bg-white/5 border border-white/10 p-3 text-sm text-white focus:border-primary-500 outline-none"
+                           value={infuseForm.month}
+                           onChange={(e) => setInfuseForm({...infuseForm, month: e.target.value})}
+                         >
+                            {Array.from({length: 12}, (_, i) => (
+                              <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>
+                            ))}
+                         </select>
+                      </div>
+                      <div className="space-y-2">
+                         <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Year</label>
+                         <Input 
+                           type="number"
+                           value={infuseForm.year}
+                           onChange={(e) => setInfuseForm({...infuseForm, year: e.target.value})}
+                         />
+                      </div>
+                   </div>
+                   <div className="flex gap-3 pt-4">
+                      <Button type="button" variant="ghost" className="flex-1 uppercase tracking-widest text-[10px]" onClick={() => setIsInfuseModalOpen(false)}>Cancel</Button>
+                      <Button type="submit" variant="primary" className="flex-1 uppercase tracking-widest text-[10px]">Execute Infusion</Button>
+                   </div>
+                </form>
+              </CardContent>
+           </Card>
+        </div>
+      )}
     </div>
   );
 };

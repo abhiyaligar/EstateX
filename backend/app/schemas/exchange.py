@@ -2,6 +2,8 @@ from pydantic import BaseModel, condecimal, Field
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
+from app.schemas.project import ProjectListResponse
+from app.schemas.analytics import MacroDataResponse, OHLCVResponse
 
 class BrickHoldingResponse(BaseModel):
     id: UUID
@@ -9,6 +11,7 @@ class BrickHoldingResponse(BaseModel):
     project_id: UUID
     quantity: int
     created_at: datetime
+    project: Optional[ProjectListResponse] = None
     
     class Config:
         from_attributes = True

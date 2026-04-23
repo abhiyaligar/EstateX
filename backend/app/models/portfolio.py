@@ -20,4 +20,7 @@ class BrickHolding(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
+    # Relationships
+    project = relationship("Project")
+
     # Note: For massive scalability, we forgo back_populates on the master User model since it heavily buffers relational cache.

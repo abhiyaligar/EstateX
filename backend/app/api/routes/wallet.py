@@ -33,3 +33,20 @@ def withdraw_funds(
 ):
     """Securely extract internal Fiat back to your external bank accounts."""
     return WalletService.process_withdrawal(current_user.id, withdraw_data, db)
+
+@router.get("/builder", response_model=WalletBalanceResponse)
+def get_builder_wallet(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Fetch builder-specific business balance and recent construction earnings."""
+    return WalletService.get_builder_wallet_context(current_user.id, db)
+
+@router.post("/builder/withdraw", response_model=TransactionBase)
+def withdraw_builder_funds(
+    withdraw_data: WalletWithdrawRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Securely extract construction revenue from business wallet."""
+    return WalletService.process_builder_withdrawal(current_user.id, withdraw_data, db)

@@ -1,11 +1,12 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Home, Wallet, TrendingUp, ArrowUpRight, Clock } from 'lucide-react';
+import { Home, Wallet, TrendingUp, ArrowUpRight, Clock, AlertCircle, CheckCircle2, Shield, Briefcase } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Card, CardContent } from '../components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Link } from 'react-router-dom';
 import dashboardService from '../services/dashboardService';
+import builderService from '../services/builderService';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -15,20 +16,34 @@ const Dashboard = () => {
     portfolio: []
   });
 
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      const data = await dashboardService.getDashboardData(user?.role === 'builder');
+      setDashboardData(data);
+    } catch (error) {
+      console.error("Failed to fetch dashboard data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   React.useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        setLoading(true);
-        const data = await dashboardService.getDashboardData();
-        setDashboardData(data);
-      } catch (error) {
-        console.error("Failed to fetch dashboard data", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchDashboard();
   }, []);
+
+  const handleSubmitForReview = async () => {
+    try {
+      setLoading(true);
+      await builderService.submitForReview();
+      await fetchDashboard();
+      alert("Profile submitted for Admin review successfully!");
+    } catch (error) {
+      alert(error.response?.data?.detail || "Failed to submit for review. Ensure all details are complete.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const chartData = [
     { name: 'Jan', value: 400000 },
@@ -48,10 +63,12 @@ const Dashboard = () => {
       isPositive: true 
     },
     { 
-      title: 'Properties Owned', 
-      value: loading ? '...' : (dashboardData?.portfolio?.length || 0).toString(), 
-      icon: Home, 
-      change: (dashboardData?.portfolio?.length || 0) > 0 ? '+1 recently' : 'No assets', 
+      title: user?.role === 'builder' ? 'Construction Revenue' : 'Properties Owned', 
+      value: loading ? '...' : (user?.role === 'builder' 
+        ? `₹${(dashboardData?.builder_wallet?.balance || 0).toLocaleString()}` 
+        : (dashboardData?.portfolio?.length || 0).toString()), 
+      icon: user?.role === 'builder' ? Briefcase : Home, 
+      change: user?.role === 'builder' ? 'Business Balance' : ((dashboardData?.portfolio?.length || 0) > 0 ? '+1 recently' : 'No assets'), 
       isPositive: true 
     },
     { 
@@ -87,12 +104,76 @@ const Dashboard = () => {
              <Button variant="outline" className="px-8 border-white/10 hover:bg-white/5">Markets</Button>
            </Link>
            {user?.role === 'builder' && (
-             <Link to="/dashboard/add-property">
-               <Button className="px-8 shadow-2xl shadow-white/10">Deploy Asset</Button>
-             </Link>
+             <div className="flex gap-4">
+                <Link to="/wallet">
+                  <Button variant="outline" className="px-8 border-white/10 hover:bg-white/5">Builder Wallet</Button>
+                </Link>
+                <Link to="/dashboard/add-property">
+                  <Button 
+                    className="px-8 shadow-2xl shadow-white/10" 
+                    disabled={dashboardData?.builder_profile?.verification_status !== 'approved'}
+                  >
+                    Deploy Asset
+                  </Button>
+                </Link>
+             </div>
            )}
         </div>
       </div>
+
+      {/* Builder Verification Status Bar */}
+      {user?.role === 'builder' && (
+        <div className={`mb-8 border-l-4 p-6 ${
+          !dashboardData?.builder_profile ? 'bg-indigo-500/10 border-indigo-500' :
+          dashboardData.builder_profile.verification_status === 'approved' ? 'bg-green-500/10 border-green-500' :
+          dashboardData.builder_profile.verification_status === 'pending' ? 'bg-amber-500/10 border-amber-500' :
+          dashboardData.builder_profile.verification_status === 'rejected' ? 'bg-red-500/10 border-red-500' :
+          dashboardData.builder_profile.verification_status === 'revision_required' ? 'bg-blue-500/10 border-blue-500' :
+          'bg-indigo-500/10 border-indigo-500'
+        }`}>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className={`p-3 rounded-xl ${
+                !dashboardData?.builder_profile ? 'bg-indigo-500/20 text-indigo-500' :
+                dashboardData.builder_profile.verification_status === 'approved' ? 'bg-green-500/20 text-green-500' :
+                dashboardData.builder_profile.verification_status === 'pending' ? 'bg-amber-500/20 text-amber-500' :
+                dashboardData.builder_profile.verification_status === 'rejected' ? 'bg-red-500/20 text-red-500' :
+                dashboardData.builder_profile.verification_status === 'revision_required' ? 'bg-blue-500/20 text-blue-500' :
+                'bg-indigo-500/20 text-indigo-500'
+              }`}>
+                {!dashboardData?.builder_profile ? <Shield /> :
+                 dashboardData.builder_profile.verification_status === 'approved' ? <CheckCircle2 /> :
+                 dashboardData.builder_profile.verification_status === 'pending' ? <Clock /> :
+                 dashboardData.builder_profile.verification_status === 'rejected' ? <AlertCircle /> :
+                 dashboardData.builder_profile.verification_status === 'revision_required' ? <AlertCircle /> :
+                 <Shield />}
+              </div>
+              <div className="flex-1">
+                <h4 className="text-lg font-bold uppercase tracking-tight">
+                  {!dashboardData?.builder_profile ? 'Action Required: Set Up Profile' : 
+                   `Verification Status: ${dashboardData.builder_profile.verification_status.replace('_', ' ')}`}
+                </h4>
+                <p className="text-sm text-secondary-500 max-w-2xl">
+                  {!dashboardData?.builder_profile ? 'You haven\'t set up your builder profile yet. This is required before you can post properties.' :
+                   dashboardData.builder_profile.verification_status === 'approved' ? 'Your profile is fully verified. You can now post properties and manage projects.' :
+                   dashboardData.builder_profile.verification_status === 'pending' ? 'Your profile is currently under review by our administration. This typically takes 24-48 hours.' :
+                   dashboardData.builder_profile.verification_status === 'rejected' ? `Your profile was rejected. Reason: ${dashboardData.builder_profile.rejection_reason || 'See details below.'}` :
+                   dashboardData.builder_profile.verification_status === 'revision_required' ? `The administration has requested some revisions. Feedback: ${dashboardData.builder_profile.rejection_reason}` :
+                   'You need to submit your profile for admin approval before you can post properties.'}
+                </p>
+              </div>
+            </div>
+            
+            {(dashboardData.builder_profile?.verification_status !== 'approved' && dashboardData.builder_profile?.verification_status !== 'pending') && (
+              <Link to="/dashboard/verification" className="shrink-0">
+                <Button className="h-14 px-8 font-bold text-lg shadow-lg">
+                  {!dashboardData?.builder_profile || dashboardData.builder_profile.verification_status === 'details_required' ? 'Setup Profile' : 'Edit & Re-submit'}
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Stats Overview */}
       <div className="mb-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">

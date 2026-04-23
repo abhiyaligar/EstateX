@@ -11,6 +11,11 @@ export const propertyService = {
     return response.data;
   },
 
+  getBuilderProjects: async () => {
+    const response = await api.get('/projects/builder/me');
+    return response.data;
+  },
+
   createProject: async (projectData, images) => {
     const formData = new FormData();
     formData.append('project_data', JSON.stringify(projectData));

@@ -62,7 +62,8 @@ EstateX creates a secure, transparent, and technologically advanced crowdfunding
 ✅ **Smart Escrow**: Automated milestone-based fund releases  
 ✅ **Transparent Distributions**: Smart contracts automate rental income and revenue sharing  
 ✅ **Secondary Marketplace**: P2P trading platform for fractional shares  
-✅ **Investor Analytics**: Real-time portfolio tracking and ROI projections  
+✅ **Macro Market Intelligence**: Database-backed regional growth indicators and rental yields  
+✅ **Investor Analytics**: Real-time portfolio tracking, ROI projections, and Asset Allocation breakdown  
 ✅ **Full Compliance**: KYC pipeline, RERA validation, SEBI-aligned structure  
 
 ---
@@ -87,6 +88,7 @@ EstateX creates a secure, transparent, and technologically advanced crowdfunding
 ### For Platform Admins
 - Complete KYC/builder compliance verification
 - Project milestone validation
+- Macro Analytics Management: Global Market Intelligence CRUD suite
 - Dispute resolution dashboard
 - Platform analytics and reporting
 - Regulatory compliance monitoring
@@ -317,7 +319,9 @@ uvicorn main:app --reload
 |--------|--------|
 | Concurrent Users Supported | 10,000+ |
 | Maximum Concurrent Investors per Project | 500+ |
-| Average Transaction Time | <5 seconds |
+| Average Transaction Time | <100ms (P95 Response) |
+| Order Matching Engine | High-Performance In-Memory FIFO |
+| Live Data Feed | Real-time Push (Zero Polling) |
 | Smart Contract Gas Fee (Polygon) | Rs. 5-10 per transaction |
 | Monthly Distribution Batching | Reduces costs by 80% |
 | KYC Verification Time | <2 hours |
@@ -350,6 +354,6 @@ This project is developed as an academic capstone and is protected under intelle
 
 ---
 
-**Version**: 1.0  
-**Last Updated**: March 6, 2026  
-**Status**: Documentation Phase Complete
+**Version**: 1.1  
+**Last Updated**: April 22, 2026  
+**Status**: Regional Intelligence & Relational Core Complete

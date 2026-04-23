@@ -13,6 +13,10 @@ class Project(Base):
     
     title = Column(String(255), nullable=False)
     description = Column(String)
+    property_type = Column(String(100), default='Apartment')
+    bedroom_count = Column(Integer, nullable=True)
+    bathroom_count = Column(Float, nullable=True)
+    area_sqft = Column(Float, nullable=True)
     
     # Location
     location_address = Column(String, nullable=False)
@@ -25,6 +29,7 @@ class Project(Base):
     # Financials (Stock Broker Model)
     total_budget = Column(DECIMAL(18, 2), nullable=False) # Only for Builder reference
     funding_raised = Column(DECIMAL(18, 2), default=0.00) # Realtime tracking of actual IPO sales
+    total_escrow_held = Column(DECIMAL(18, 2), default=0.00) # Funds currently in Admin control for this project
     
     # Brick Metrics
     total_bricks = Column(Integer, nullable=False)
@@ -55,6 +60,8 @@ class Project(Base):
     # Arbitrary Legacy Financials
     funding_target = Column(DECIMAL(18, 2), nullable=True)
     min_investment = Column(DECIMAL(18, 2), nullable=True)
+    security_deposit = Column(DECIMAL(18, 2), default=0.00)
+    estimated_monthly_rental = Column(DECIMAL(18, 2), default=0.00)
     
     # Metrics
     investor_count = Column(Integer, default=0)
@@ -70,6 +77,14 @@ class Project(Base):
     # Relationships
     builder = relationship("Builder", back_populates="projects")
     milestones = relationship("Milestone", back_populates="project", cascade="all, delete-orphan")
+    
+    # Macro Analytics Link (Linked via Pincode)
+    macro_analytics = relationship(
+        "MacroAnalytics",
+        primaryjoin="Project.pincode == foreign(MacroAnalytics.pincode)",
+        uselist=False,
+        viewonly=True
+    )
 
 
 class Milestone(Base):

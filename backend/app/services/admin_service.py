@@ -3,6 +3,7 @@ from sqlalchemy import func
 from fastapi import HTTPException, status
 from app.models.user import User as DBUser
 from app.models.kyc import KYCRecord
+from app.models.project import Project
 from app.schemas.admin import (
     DashboardStatsResponse, KYCReviewRequest, 
     AdminMilestoneReviewRequest, AdminProjectStatusUpdateRequest
@@ -11,27 +12,40 @@ from app.schemas.admin import (
 class AdminService:
     @staticmethod
     def get_dashboard_stats(db: Session) -> DashboardStatsResponse:
-        # Group users by their specific roles and convert back to a dictionary table mapping
+        # Group users by their specific roles
         role_counts = dict(
             db.query(DBUser.role, func.count(DBUser.id))
             .group_by(DBUser.role)
             .all()
         )
         
-        # Count all users
         total_users = sum(role_counts.values())
         
-        # Count KYC records waiting on admin approval (Assuming OTP was verified but pan check is pending)
         pending_kyc = db.query(func.count(KYCRecord.id)).filter(
             KYCRecord.status.in_(['pending', 'otp_verified']) 
+            if hasattr(KYCRecord, 'status') else True
         ).scalar() or 0
+
+        from app.models.builder import Builder
+        pending_builders = db.query(func.count(Builder.id)).filter(Builder.verification_status == 'pending').scalar() or 0
+
+        # Live Project Stats
+        projects_active = db.query(func.count(Project.id)).filter(Project.status == 'approved').scalar() or 0
+        projects_completed = db.query(func.count(Project.id)).filter(Project.ipo_status == 'completed').scalar() or 0
+        total_investments_locked_inr = db.query(func.sum(Project.funding_raised)).scalar() or 0.0
+        total_platform_escrow = db.query(func.sum(Project.total_escrow_held)).scalar() or 0.0
         
         return DashboardStatsResponse(
             total_users=total_users,
             total_investors=role_counts.get('investor', 0),
             total_builders=role_counts.get('builder', 0),
             total_admins=role_counts.get('admin', 0),
-            kyc_pending_approvals=pending_kyc
+            kyc_pending_approvals=pending_kyc,
+            builder_pending_approvals=pending_builders,
+            projects_active=projects_active,
+            projects_completed=projects_completed,
+            total_investments_locked_inr=float(total_investments_locked_inr),
+            total_platform_escrow=float(total_platform_escrow)
         )
 
     @staticmethod
@@ -42,19 +56,28 @@ class AdminService:
         skip: int = 0, 
         limit: int = 50
     ):
-        query = db.query(KYCRecord)
+        # Join with User table to get full_name
+        query = db.query(
+            KYCRecord,
+            (DBUser.first_name + " " + DBUser.last_name).label("full_name")
+        ).join(DBUser, KYCRecord.user_id == DBUser.id)
         
         if status_filter != 'all':
             query = query.filter(KYCRecord.status == status_filter)
         else:
-            # By default, only show relevant ones
             query = query.filter(KYCRecord.status.in_(['pending', 'otp_verified', 'approved']))
 
         if assigned_admin_id:
             query = query.filter(KYCRecord.assigned_admin_id == assigned_admin_id)
             
         total = query.count()
-        items = query.order_by(KYCRecord.updated_at.asc()).offset(skip).limit(limit).all()
+        results = query.order_by(KYCRecord.updated_at.asc()).offset(skip).limit(limit).all()
+        
+        items = []
+        for kyc, full_name in results:
+            # Add full_name to the kyc object dynamically for the schema dump
+            kyc.full_name = full_name if full_name and full_name.strip() else "Unknown Subject"
+            items.append(kyc)
         
         return {
             "items": items,
@@ -123,19 +146,60 @@ class AdminService:
     
     @staticmethod
     def verify_project_milestone(project_id: str, milestone_id: str, review_data: AdminMilestoneReviewRequest, db: Session):
-        from app.models.project import Milestone
+        from app.models.project import Milestone, Project
+        from app.models.wallet import WalletTransaction
+        from decimal import Decimal
+
+        project = db.query(Project).filter(Project.id == project_id).with_for_update().first()
+        if not project:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
         milestone = db.query(Milestone).filter(
             Milestone.id == milestone_id, 
             Milestone.project_id == project_id
-        ).first()
+        ).with_for_update().first()
         
         if not milestone:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Milestone not found for this project")
+        
+        if milestone.status == 'completed' and review_data.status == 'completed':
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Milestone already verified and funds released.")
             
+        old_status = milestone.status
         milestone.status = review_data.status
+        
+        # Financial Release Logic: If milestone marked as 'completed', move funds from Escrow to Builder
+        if review_data.status == 'completed' and old_status != 'completed':
+            # Calculate payout: Percentage of funding_raised currently held in escrow
+            payout_amount = (Decimal(str(milestone.release_percentage)) / Decimal('100.0')) * (project.funding_raised or Decimal('0.0'))
+            
+            current_escrow = project.total_escrow_held or Decimal('0.0')
+            if current_escrow < payout_amount:
+                # Safety check: should not happen if accounting is correct
+                payout_amount = current_escrow
+                
+            project.total_escrow_held = current_escrow - payout_amount
+        
+            # Find the Builder profile (Business Wallet) and credit it
+            from app.models.builder import Builder
+            builder_profile = db.query(Builder).filter(Builder.id == project.builder_id).with_for_update().first()
+            if builder_profile:
+                builder_profile.wallet_balance += payout_amount
+                
+                # Log Transactions
+                # 1. Admin/Escrow Release (Tagged for Builder Wallet)
+                db.add(WalletTransaction(
+                    user_id=builder_profile.id, 
+                    amount=payout_amount,
+                    transaction_type='milestone_payout',
+                    is_builder_transaction=True, # STRICT SEPARATION
+                    status='completed',
+                    reference_id=f"MS-REL-{milestone.id}"
+                ))
+            
         db.commit()
         db.refresh(milestone)
-        return {"success": True, "milestone_id": milestone.id, "status": milestone.status}
+        return {"success": True, "milestone_id": milestone.id, "status": milestone.status, "payout_executed": True if review_data.status == 'completed' else False}
 
     @staticmethod
     def update_project_status(project_id: str, status_data: AdminProjectStatusUpdateRequest, db: Session):

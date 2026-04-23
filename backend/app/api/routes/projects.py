@@ -5,7 +5,7 @@ from uuid import UUID
 import json
 from app.schemas.auth import User
 from app.schemas.project import ProjectCreate, ProjectListResponse, ProjectDetailResponse
-from app.middleware.auth import get_builder_user
+from app.middleware.auth import get_approved_builder_user
 from app.services.project_service import ProjectService
 from app.utils.storage import upload_file_to_s3
 from app.core.db import get_db
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/projects", tags=["Real Estate Projects"])
 async def create_project(
     project_data: str = Form(...),
     images: List[UploadFile] = File(...),
-    current_builder: User = Depends(get_builder_user),
+    current_builder: User = Depends(get_approved_builder_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -54,6 +54,16 @@ def get_all_projects(
     By default, only returns properties with an 'active' status.
     """
     return ProjectService.list_projects(db, status_filter=lifecycle_status)
+
+@router.get("/builder/me", response_model=List[ProjectListResponse])
+def get_builder_projects(
+    current_builder: User = Depends(get_approved_builder_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Fetch all projects listed by the authenticated builder.
+    """
+    return ProjectService.list_projects(db, status_filter='all', builder_id=current_builder.id)
 
 @router.get("/{project_id}", response_model=ProjectDetailResponse)
 def get_project_details(

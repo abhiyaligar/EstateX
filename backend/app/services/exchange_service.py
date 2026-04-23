@@ -12,6 +12,7 @@ from app.models.wallet import WalletTransaction
 from app.schemas.exchange import OrderCreate
 
 from sqlalchemy import func
+from app.core.db import SessionLocal
 
 class ExchangeService:
     @staticmethod
@@ -47,8 +48,9 @@ class ExchangeService:
         # Log transaction
         db.add(WalletTransaction(user_id=user.id, amount=-total_cost, transaction_type='brick_purchase', status='completed', reference_id=f"IPO-{project.id}"))
         
-        # Add to Builder's funding raised
+        # Add to Builder's funding raised and Admin Escrow
         project.funding_raised += total_cost
+        project.total_escrow_held += total_cost
         
         # Allocate bricks natively to the investor's Portfolio
         holding = db.query(BrickHolding).filter(BrickHolding.user_id == user_id, BrickHolding.project_id == project_id).first()
@@ -121,24 +123,43 @@ class ExchangeService:
         db.add(new_order)
         db.flush() # Secure UUID without committing entirely yet
         
-        # 3. Fire Engine 
-        ExchangeService._matching_engine(new_order.id, db)
+        # NOTE: Matching Engine is now fired as a BackgroundTask in the API layer 
+        # for instant user feedback.
         
-        db.commit() # Globally commits the spawned order AND whatever trades the engine materialized automatically
+        db.commit() # Globally commits the spawned order
         db.refresh(new_order)
         return new_order
 
     @staticmethod
+    def run_matching_engine(order_id: UUID):
+        """
+        Background Worker for the matching engine.
+        Spawns a new database session to ensure isolation from the request cycle.
+        """
+        db = SessionLocal()
+        try:
+            ExchangeService._matching_engine(order_id, db)
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            print(f"MATCHING ENGINE BACKGROUND ERROR: {str(e)}")
+        finally:
+            db.close()
+
+    @staticmethod
     def _matching_engine(new_order_id: UUID, db: Session):
         """
-        The brutal FIFO algorithmic core pairing matching liquidity and spawning Trade objects.
+        Optimized High-Performance FIFO matching core.
+        Uses Request-Level Batching to aggregate all trades, balance changes, and holding 
+        updates into memory, executing a single bulk settlement at the end.
         """
         new_order = db.query(Order).filter(Order.id == new_order_id).first()
-        
-        # Seek counterparties
+        if not new_order:
+            return
+
         counter_type = 'sell' if new_order.order_type == 'buy' else 'buy'
         
-        # Standard FIFO + Price-Time Priority
+        # 1. Fetch potential counterparties with Price-Time Priority
         query = db.query(Order).filter(
             Order.project_id == new_order.project_id,
             Order.order_type == counter_type,
@@ -146,84 +167,92 @@ class ExchangeService:
         )
         
         if new_order.order_type == 'buy':
-            # Buyer wants sellers offering <= their limit price, sorted by cheapest first, then oldest.
             query = query.filter(Order.price_per_brick <= new_order.price_per_brick)
             query = query.order_by(Order.price_per_brick.asc(), Order.created_at.asc())
         else:
-            # Seller wants buyers offering >= their limit price, sorted by highest first, then oldest.
             query = query.filter(Order.price_per_brick >= new_order.price_per_brick)
             query = query.order_by(Order.price_per_brick.desc(), Order.created_at.asc())
             
         counter_orders = query.with_for_update().all()
         
-        project = db.query(Project).filter(Project.id == new_order.project_id).first()
+        # 2. Accumulation Structures (In-Memory Batching)
+        trades_to_create = []
+        user_balance_deltas = {}  # {user_id: Decimal}
+        holding_deltas = {}       # {user_id: int}
         
+        project = db.query(Project).filter(Project.id == new_order.project_id).first()
+        executed_at = None
+
+        # 3. Execution Phase (Pure Calculation Loop)
         for counter_order in counter_orders:
             if new_order.unfilled_quantity <= 0:
-                break # Our order is fully filled
+                break
                 
             trade_qty = min(new_order.unfilled_quantity, counter_order.unfilled_quantity)
-            
-            # The execution price mathematically defaults to the "Maker's" price (the order already sitting on the book)
             execution_price = counter_order.price_per_brick
+            executed_at = execution_price
             
-            buyer = new_order.user_id if new_order.order_type == 'buy' else counter_order.user_id
-            seller = counter_order.user_id if new_order.order_type == 'buy' else new_order.user_id
+            buyer_id = new_order.user_id if new_order.order_type == 'buy' else counter_order.user_id
+            seller_id = counter_order.user_id if new_order.order_type == 'buy' else new_order.user_id
             
             buy_order = new_order if new_order.order_type == 'buy' else counter_order
             sell_order = counter_order if new_order.order_type == 'buy' else new_order
 
-            # 1. Tally the Physical Trade
-            trade = Trade(
+            # Collect Trade Object
+            trades_to_create.append(Trade(
                 project_id=str(project.id),
-                buyer_id=buyer,
-                seller_id=seller,
+                buyer_id=buyer_id,
+                seller_id=seller_id,
                 buy_order_id=buy_order.id,
                 sell_order_id=sell_order.id,
                 price=execution_price,
                 quantity=trade_qty
-            )
-            db.add(trade)
+            ))
             
-            # 2. Unlock & Disperse Assets 
-            # (Note: Sellers pre-locked bricks, Buyers pre-locked fiat at their FULL LIMIT PRICE)
-            
+            # Asset Flow Calculations
             seller_fiat_value = Decimal(str(trade_qty)) * execution_price
             buyer_locked_fiat = Decimal(str(trade_qty)) * buy_order.price_per_brick
-            refund_fiat = buyer_locked_fiat - seller_fiat_value # If Buyer was willing to pay ₹110 but executed at ₹100, refund the ₹10.
+            refund_fiat = buyer_locked_fiat - seller_fiat_value
             
-            # Credit Seller's Fiat
-            seller_model = db.query(User).filter(User.id == seller).with_for_update().first()
-            seller_model.wallet_balance += seller_fiat_value
+            # Aggregate balance deltas
+            user_balance_deltas[seller_id] = user_balance_deltas.get(seller_id, Decimal('0')) + seller_fiat_value
+            if refund_fiat > 0:
+                user_balance_deltas[buyer_id] = user_balance_deltas.get(buyer_id, Decimal('0')) + refund_fiat
+                
+            # Aggregate holding deltas (Buyer gets bricks)
+            holding_deltas[buyer_id] = holding_deltas.get(buyer_id, 0) + trade_qty
             
-            # Inject Bricks into Buyer's Portfolio
-            holding = db.query(BrickHolding).filter(BrickHolding.user_id == buyer, BrickHolding.project_id == str(project.id)).first()
-            if holding:
-                holding.quantity += trade_qty
-            else:
-                db.add(BrickHolding(user_id=buyer, project_id=str(project.id), quantity=trade_qty))
-                
-            # Refund difference to Buyer's Fiat if execution was cheaper
-            if refund_fiat > Decimal('0'):
-                buyer_model = db.query(User).filter(User.id == buyer).with_for_update().first()
-                buyer_model.wallet_balance += refund_fiat
-                
-            # 3. Update Order Book Logic
+            # Update Quantities & Statuses (Buffered in objects)
             new_order.unfilled_quantity -= trade_qty
             counter_order.unfilled_quantity -= trade_qty
             
-            if new_order.unfilled_quantity == 0:
-                new_order.status = 'fulfilled'
-            else:
-                new_order.status = 'partial'
-                
-            if counter_order.unfilled_quantity == 0:
-                counter_order.status = 'fulfilled'
-            else:
-                counter_order.status = 'partial'
-                
-            # 4. Push Market Ticker
-            project.market_value = execution_price
+            counter_order.status = 'fulfilled' if counter_order.unfilled_quantity == 0 else 'partial'
+            new_order.status = 'fulfilled' if new_order.unfilled_quantity == 0 else 'partial'
+
+        # 4. Settlement Phase (Bulk Database Persistence)
+        if trades_to_create:
+            # Save ALL trades in one batch
+            db.bulk_save_objects(trades_to_create)
+
+            # Apply aggregated Balance updates
+            for u_id, delta in user_balance_deltas.items():
+                db.query(User).filter(User.id == u_id).update({User.wallet_balance: User.wallet_balance + delta})
+
+            # Apply aggregated Holding updates
+            for u_id, qty_delta in holding_deltas.items():
+                # Check if holding exists, if not create, else update
+                existing = db.query(BrickHolding).filter(
+                    BrickHolding.user_id == u_id, 
+                    BrickHolding.project_id == str(project.id)
+                ).with_for_update().first()
+                if existing:
+                    existing.quantity += qty_delta
+                else:
+                    db.add(BrickHolding(user_id=u_id, project_id=str(project.id), quantity=qty_delta))
+
+            # Push final market ticker
+            if executed_at:
+                project.market_value = executed_at
 
     @staticmethod
     def cancel_order(user_id: str, order_id: str, db: Session):

@@ -88,10 +88,13 @@ S3_BUCKET=estateX-documents
 **Frontend (.env)**:
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
-NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws
 NEXT_PUBLIC_RPC_URL=https://rpc-mumbai.maticvigil.com
 NEXT_PUBLIC_CHAIN_ID=80001
 NEXT_PUBLIC_TOKEN_ADDRESS=0x...
+
+# Supabase Real-time (Secondary Market)
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 ---
@@ -438,6 +441,41 @@ Target Group: EC2 instances on port 8000
 
 ---
 
+## Frontend Deployment (Vercel)
+
+The EstateX frontend is optimized for deployment on Vercel, providing global edge caching and automatic CI/CD from GitHub.
+
+### Deployment Configuration
+
+**Environment Variables** (Configured in Vercel Dashboard):
+```bash
+NEXT_PUBLIC_API_URL=https://api.estateX.com/api/v1
+NEXT_PUBLIC_RPC_URL=https://rpc-mainnet.maticvigil.com
+NEXT_PUBLIC_CHAIN_ID=137
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### SPA Routing (`vercel.json`)
+Ensure proper routing for the Single Page Application by placing `vercel.json` in the root of the `frontend` directory:
+```json
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
+
+### Deployment Steps
+1. Push the `frontend` directory to a GitHub repository.
+2. Connect the repository in Vercel.
+3. Set the Root Directory to `frontend` or the directory containing the frontend code.
+4. Configure the build command (`npm run build`) and output directory (`dist` or `.next`).
+5. Add the production environment variables.
+6. Deploy.
+
+---
+
 ## CI/CD Pipeline
 
 ### GitHub Actions Workflow
@@ -780,5 +818,5 @@ Tier 3 (Minor):
 ---
 
 **Document Version**: 1.0  
-**Last Updated**: March 6, 2026  
-**Status**: Complete
+**Last Updated**: April 17, 2026  
+**Status**: Complete (Real-time Deployment Update)

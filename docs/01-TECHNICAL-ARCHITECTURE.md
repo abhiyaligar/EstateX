@@ -54,6 +54,7 @@ EstateX employs a **modern, cloud-native, layered architecture** designed for se
 │  • Transaction Service                                           │
 │  • Notification Service                                          │
 │  • Analytics Service                                             │
+  • Exchange & Matching Service                                    │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
                     ┌──────┴──────┐
@@ -638,6 +639,16 @@ Client Browser
                                              │
                                      Client Receives
 ```
+
+### High-Performance Async Pattern (Matching Engine)
+
+For mission-critical trading operations, where UI responsiveness is paramount, we use an **Asynchronous Matching Pattern**:
+
+1. **Client Action**: User submits an order.
+2. **Instant Handshake**: Backend validates the order, escrows assets, and returns a `200 OK` instantly (**<100ms**).
+3. **Background Worker**: FastAPI `BackgroundTasks` spawns a dedicated worker to run the FIFO matching algorithmic core.
+4. **Isolated DB Session**: The worker uses a fresh database session to perform set-based bulk settlements, minimizing lock contention.
+5. **Real-time Push**: Once the match is cleared, **Supabase Realtime** pushes the resulting `Trade` and `Orderbook` updates to all connected clients.
 
 ### Event-Driven Pattern (Asynchronous)
 

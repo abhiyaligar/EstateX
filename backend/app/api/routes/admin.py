@@ -14,6 +14,8 @@ from app.services.admin_service import AdminService
 from app.services.builder_service import BuilderService
 from app.services.wallet_service import WalletService
 from app.core.db import get_db
+from app.models.analytics import MacroAnalytics
+from app.schemas.analytics import MacroDataResponse, MacroAnalyticsCreate, MacroAnalyticsUpdate
 
 router = APIRouter(prefix="/admin", tags=["Admin Portal"])
 
@@ -70,6 +72,16 @@ def verify_builder_profile(
     db: Session = Depends(get_db)
 ):
     return BuilderService.verify_builder(str(builder_id), verification_data, db)
+
+@router.get("/builders/pending", response_model=List[BuilderResponse])
+def list_pending_builders(
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns a list of all Builder profiles currently in 'pending' status awaiting verification.
+    """
+    return BuilderService.get_pending_builders(db)
 
 @router.post("/projects/{project_id}/milestones/{milestone_id}/verify")
 def verify_project_milestone(
@@ -142,3 +154,62 @@ def trigger_secondary_market(
     project.previous_close_price = project.ipo_price # Baseline bounds
     db.commit()
     return {"success": True, "message": "Secondary Market trading is now completely unlocked!"}
+
+# --- Macro Analytics Management ---
+
+@router.get("/analytics/macro", response_model=List[MacroDataResponse])
+def admin_list_macro_data(
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    return db.query(MacroAnalytics).order_by(MacroAnalytics.pincode).all()
+
+@router.post("/analytics/macro", response_model=MacroDataResponse)
+def admin_create_macro_data(
+    data: MacroAnalyticsCreate,
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    # Check if exists
+    existing = db.query(MacroAnalytics).filter(MacroAnalytics.pincode == data.pincode).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Pincode already exists.")
+        
+    new_record = MacroAnalytics(**data.model_dump())
+    db.add(new_record)
+    db.commit()
+    db.refresh(new_record)
+    return new_record
+
+@router.put("/analytics/macro/{pincode}", response_model=MacroDataResponse)
+def admin_update_macro_data(
+    pincode: str,
+    data: MacroAnalyticsUpdate,
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    record = db.query(MacroAnalytics).filter(MacroAnalytics.pincode == pincode).first()
+    if not record:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pincode not found.")
+        
+    update_data = data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(record, key, value)
+        
+    db.commit()
+    db.refresh(record)
+    return record
+
+@router.delete("/analytics/macro/{pincode}")
+def admin_delete_macro_data(
+    pincode: str,
+    current_admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    record = db.query(MacroAnalytics).filter(MacroAnalytics.pincode == pincode).first()
+    if not record:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pincode not found.")
+        
+    db.delete(record)
+    db.commit()
+    return {"success": True, "message": f"Pincode {pincode} deleted successfully."}

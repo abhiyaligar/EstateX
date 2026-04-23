@@ -31,6 +31,11 @@ export const adminService = {
     return response.data;
   },
 
+  getPendingBuilders: async () => {
+    const response = await api.get('/admin/builders/pending');
+    return response.data;
+  },
+
   verifyMilestone: async (projectId, milestoneId, reviewData) => {
     const response = await api.post(`/admin/projects/${projectId}/milestones/${milestoneId}/verify`, reviewData);
     return response.data;
@@ -53,6 +58,27 @@ export const adminService = {
 
   triggerSecondaryMarket: async (projectId) => {
     const response = await api.post(`/admin/projects/${projectId}/trigger_ipo_completion`);
+    return response.data;
+  },
+
+  // Macro Analytics Management
+  getMacroData: async () => {
+    const response = await api.get('/admin/analytics/macro');
+    return response.data;
+  },
+
+  createMacroData: async (data) => {
+    const response = await api.post('/admin/analytics/macro', data);
+    return response.data;
+  },
+
+  updateMacroData: async (pincode, data) => {
+    const response = await api.put(`/admin/analytics/macro/${pincode}`, data);
+    return response.data;
+  },
+
+  deleteMacroData: async (pincode) => {
+    const response = await api.delete(`/admin/analytics/macro/${pincode}`);
     return response.data;
   }
 };

@@ -77,6 +77,8 @@ Daily Transaction: Rs. 50 lakhs
 - Update project milestones
 - Manage investor communications
 - View analytics & investor breakdown
+- **My Projects Workspace**: High-density dashboard for project lifecycle management
+- **Dual Wallet System**: Separate construction funds from personal capital
 
 **Permissions**:
 ```
@@ -420,7 +422,11 @@ Summary Card shows:
 ├── Current portfolio value
 ├── Unrealized gains (%)
 ├── Expected monthly income
-└── Performance vs market
+├── Performance vs market
+└── Asset Allocation (New):
+    ├── Exposure by City (Pie Chart)
+    ├── Exposure by Property Type (Residential, Commercial, Industrial)
+    └── Relationship-backed project metadata (Real-time fetching)
 ```
 
 **Monitor Milestones**
@@ -463,10 +469,10 @@ Portfolio → Project → Sell:
    ├── Platform fee (1%)
    ├── Net proceeds
    └── Processing time (24 hours)
-5. Confirm & list order
-6. Order visible on marketplace
+5. Confirm & list order. **Performance NOTE**: The order is validated and pushed instantly. Matching logic runs in the background.
+6. Order visible on marketplace within milliseconds.
 7. When buyer found:
-   ├── Notification sent
+   ├── Notification sent via Supabase Realtime
    ├── Tokens locked (cannot sell again)
    ├── Payment processed
    ├── Amount credited to bank (24-48 hours)
@@ -493,9 +499,38 @@ Purchase Flow:
    ├── Platform fee (1%)
    ├── Total cost
    └── Processing time
-4. Payment via Razorpay
-5. Tokens transferred to your account (1 hour)
-6. Start receiving distributions on new project
+4. Payment via Razorpay.
+5. Tokens transferred to your account (Instant settlement).
+6. Start receiving distributions on new project. **Real-time NOTE**: The Order Book and Ledger update instantly on your screen without refreshing.
+```
+
+**Manage Active Orders**
+```
+Secondary Market → Active Intents:
+├── View all your open buy/sell orders.
+├── Modify Order:
+│   ├── Adjust price per token based on real-time market depth.
+│   └── Change quantity of tokens to buy/sell.
+└── Cancel Order:
+    ├── Click 'Cancel' to instantly remove your order from the public order book.
+    └── Locked tokens (for sell orders) are immediately returned to your portfolio balance.
+```
+
+**Advanced Trading Terminal**
+```
+Secondary Market → Terminal:
+├── Interactive Charting:
+│   ├── View real-time aggregated trades via TradingView Lightweight Charts.
+│   ├── Seamlessly switch between Candlestick, Line, and Area charts.
+│   └── Built-in volume histogram and 20-period Simple Moving Average (SMA).
+├── Deep Customization:
+│   ├── Change data bucket timeframes (1m, 5m, 1h, 1d).
+│   └── Filter historical data directly (1D, 1W, 1M, 3M, 1Y, ALL).
+├── Fullscreen Mode:
+│   └── Click the 'Maximize' icon to hide orderbooks and expand the terminal for distraction-free technical analysis.
+└── Macro Analytics Panel:
+    ├── Real-time display of YoY property growth percentage for the project's pincode.
+    └── Average rental yield and local demand score to aid fundamental analysis.
 ```
 
 ### 4. Distribution Tracking
@@ -684,6 +719,26 @@ My Projects → Communications → Send Update:
     └── SMS (premium feature)
 ```
 
+### 4. Builder Wallet (Dual Ledger)
+
+**Separate Business Funds**
+```
+Dashboard → Builder Wallet:
+├── Dedicated Business Ledger:
+│   ├── Tracks all project construction funds.
+│   ├── Strictly isolated from personal investor funds.
+│   └── Prevents commingling of personal and business capital.
+├── Balance View:
+│   ├── Total liquid capital available for withdrawal.
+│   ├── Breakdown of funds by project milestones.
+│   └── Recent transaction history (deposits, milestone credits, withdrawals).
+└── Withdrawal Process:
+    ├── Select registered business bank account.
+    ├── Enter amount to withdraw.
+    ├── Confirm via OTP.
+    └── Funds credited in 24-48 hours.
+```
+
 **Investor Queries**
 ```
 My Projects → Investor Queries:
@@ -799,6 +854,33 @@ Admin Dashboard → Disputes:
 │   ├── Investor info & complaint details
 │   ├── Project & investment amount
 │   ├── Timeline & conversation history
+│   └── Suggested resolution
+├── Toolset:
+│   ├── Access user transaction history
+│   ├── View immutable project logs
+│   ├── Contact builder/investor directly
+│   └── Implement resolution (refunds, credits, etc.)
+└── Close: Mark as resolved, log for compliance.
+
+### 5. Macro Analytics Management
+
+**Global Market Intelligence Database**
+```
+Admin Dashboard → Analytics Tab:
+├── Market Intelligence Grid:
+│   ├── View all regional macro nodes by Pincode
+│   ├── Real-time indicators:
+│   │   ├── YoY Growth (%)
+│   │   ├── Avg. Rental Yield (%)
+│   │   └── Demand Score (0-100)
+│   └── Last update timestamp tracking
+├── Node Lifecycle Management:
+│   ├── NEW NODE: Initialize regional intelligence for new geographical areas
+│   ├── UPDATE: Adjust indicators as market cycles shift
+│   └── DELETE: Remove deprecated or incorrect regional data
+└── System Integrity:
+    └── Direct database relationship mapping between Pincodes and active Projects.
+```
 │   ├── Attached evidence/documents
 │   └── Category (payment issue, milestone delay, etc.)
 ├── Resolution process:
@@ -1265,9 +1347,9 @@ A: Platform fee structure:
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: March 6, 2026  
-**Status**: Complete
+**Document Version**: 1.1  
+**Last Updated**: April 22, 2026  
+**Status**: Complete (Analytics & Visualizations Update)
 
 ### Quick Reference Card
 
@@ -1296,3 +1378,21 @@ KEY NUMBERS
 ├─ Average return: 8-12% p.a.
 └─ Completion rate: 98%
 ```
+
+---
+
+## Social & Community (Upcoming)
+
+### Investor Circles
+Connect with fellow investors to discuss project performance, share market insights, and collaborate on investment strategies.
+
+### Project Discussion Groups
+Dedicated chat spaces for each project where investors can ask questions directly to builders and verify site progress with peers.
+
+### Governance Voting
+Participate in platform-wide decisions and project-specific proposals through the weighted "Brick" voting system.
+
+---
+
+**EstateX User Guide v1.5**  
+**Last Updated**: April 22, 2026

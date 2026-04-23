@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, DECIMAL, ForeignKey, DateTime
+from sqlalchemy import Column, String, DECIMAL, ForeignKey, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.models.user import Base
@@ -13,6 +13,7 @@ class WalletTransaction(Base):
     
     amount = Column(DECIMAL(18, 2), nullable=False)
     transaction_type = Column(String(50), nullable=False, index=True) # deposit, withdrawal, admin_adjustment, brick_purchase, brick_sale
+    is_builder_transaction = Column(Boolean, default=False, index=True) # Distinguishes personal vs business wallet
     status = Column(String(50), default='completed') # pending, completed, failed
     
     # E.g. Stripe checkout ID, or Admin's descriptive adjustment reason

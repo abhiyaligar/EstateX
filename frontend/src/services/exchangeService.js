@@ -34,6 +34,16 @@ export const exchangeService = {
   cancelOrder: async (orderId) => {
     const response = await api.post(`/exchange/orders/${orderId}/cancel`);
     return response.data;
+  },
+
+  getOHLCV: async (projectId, interval = '1h') => {
+    const response = await api.get(`/exchange/trades/${projectId}/ohlcv?interval=${interval}`);
+    return response.data;
+  },
+
+  getMacroAnalytics: async (pincode) => {
+    const response = await api.get(`/analytics/macro/${pincode}`);
+    return response.data;
   }
 };
 

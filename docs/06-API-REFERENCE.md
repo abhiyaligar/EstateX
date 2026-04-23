@@ -164,6 +164,45 @@ Logout and invalidate tokens.
 }
 ```
 
+### POST /auth/forgot-password
+
+Generates a 6-digit OTP for the given email to reset password.
+
+**Request**:
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response** (200):
+```json
+{
+  "message": "OTP generated successfully",
+  "otp": "123456"
+}
+```
+
+### POST /auth/reset-password
+
+Resets the user's password using the generated OTP.
+
+**Request**:
+```json
+{
+  "email": "user@example.com",
+  "otp": "123456",
+  "new_password": "NewSecurePass123!"
+}
+```
+
+**Response** (200):
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
 ---
 
 ## User Endpoints
@@ -248,6 +287,78 @@ Retrieve all globally banked liquidity exit points configured for the current us
 Drop a specific bank account from the user profile mapping.
 
 **Response** (204): No Content.
+
+---
+
+## Wallet Endpoints
+
+### GET /wallet
+
+Fetch user's liquid Fiat wallet balance and 10 most recent ledger transactions.
+
+**Response** (200):
+```json
+{
+  "balance": 50000.00,
+  "recent_transactions": [
+    {
+      "id": "tx_123",
+      "amount": 10000.00,
+      "transaction_type": "deposit",
+      "status": "completed",
+      "created_at": "2024-03-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### POST /wallet/deposit
+
+Instantly inject external Fiat into your internal EstateX Wallet.
+
+**Request**:
+```json
+{
+  "amount": 10000.00,
+  "reference_id": "pi_123"
+}
+```
+
+**Response** (200): Returns the created Transaction object.
+
+### POST /wallet/withdraw
+
+Securely extract internal Fiat back to your external bank accounts.
+
+**Request**:
+```json
+{
+  "amount": 5000.00,
+  "bank_account_id": "bank_123"
+}
+```
+
+**Response** (200): Returns the created Transaction object.
+
+### GET /wallet/builder
+
+Fetch builder-specific business balance and recent construction earnings.
+
+**Response** (200): Same format as `/wallet`.
+
+### POST /wallet/builder/withdraw
+
+Securely extract construction revenue from business wallet to builder's registered bank account.
+
+**Request**:
+```json
+{
+  "amount": 50000.00,
+  "bank_account_id": "builder_bank_123"
+}
+```
+
+**Response** (200): Returns the created Transaction object.
 
 ---
 
@@ -415,7 +526,9 @@ Displays the user's legally backed Equity (Bricks) inside various Real Estate Pr
 
 ### POST /exchange/orders
 
-Push intent into the Secondary Orderbook. Bound by `+20% / -10%` circuit breakers! Automatically freezes Fiat (for BUYS) or Bricks (for SELLS) instantly spawning matches via the internal FIFO algorithmic engine.
+Push intent into the Secondary Orderbook! Bound by `+20% / -10%` circuit breakers.
+**Performance**: Returns instantly (sub-100ms) while matching logic runs in a background task.
+**Real-time**: Results are pushed to the UI instantly via Supabase Realtime as matches are cleared.
 
 **Request**:
 ```json
@@ -456,6 +569,46 @@ Lists the current user's outstanding intent to purchase or liquidate assets.
 Publicly tracks transparent historical `Trades` shifting the underlying `Project.market_value` ticker globally!
 
 **Response** (200): Array of Trade objects mapping exactly who bought from who at what price!
+
+### GET /exchange/trades/{project_id}/ohlcv
+
+Aggregates historical trades into Open, High, Low, Close, Volume buckets for advanced candlestick charting in the Terminal.
+
+**Query Parameters**:
+- `interval`: 1m, 5m, 1h, 1d (Time bucket size)
+
+**Response** (200):
+```json
+[
+  {
+    "time": 1712345600,
+    "open": 102.50,
+    "high": 105.00,
+    "low": 102.50,
+    "close": 104.50,
+    "value": 1500
+  }
+]
+```
+
+---
+
+## Analytics Endpoints
+
+### GET /analytics/macro/{pincode}
+
+Provides macroeconomic real estate data for a specific area, empowering investors with external market context. Currently returns simulated deterministic data, built to scale to external real estate APIs (e.g., MagicBricks, 99acres).
+
+**Response** (200):
+```json
+{
+  "pincode": "400001",
+  "yoy_growth_percentage": 12.5,
+  "avg_rental_yield": 6.8,
+  "demand_score": 85,
+  "last_updated": "2024-03-01T00:00:00Z"
+}
+```
 
 ---
 
@@ -680,6 +833,69 @@ Get market-wide analytics.
 
 ---
 
+## Admin Analytics Endpoints (Restricted to Admins)
+
+### GET /admin/analytics/macro
+
+Fetch all regional macro-economic nodes.
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "pincode": "400001",
+      "yoy_growth_percentage": 12.5,
+      "avg_rental_yield": 6.5,
+      "demand_score": 85,
+      "last_updated": "2026-04-22T10:00:00Z"
+    }
+  ]
+}
+```
+
+### POST /admin/analytics/macro
+
+Initialize a new regional intelligence node.
+
+**Request**:
+```json
+{
+  "pincode": "400001",
+  "yoy_growth_percentage": 12.5,
+  "avg_rental_yield": 6.5,
+  "demand_score": 85
+}
+```
+
+### PUT /admin/analytics/macro/{pincode}
+
+Update existing regional indicators.
+
+**Request**:
+```json
+{
+  "yoy_growth_percentage": 13.2,
+  "avg_rental_yield": 6.8,
+  "demand_score": 90
+}
+```
+
+### DELETE /admin/analytics/macro/{pincode}
+
+Permanently remove a regional intelligence node.
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "message": "Macro analytics node deleted successfully"
+}
+```
+
+---
+
 ## Webhooks
 
 ### Payment Webhook
@@ -724,6 +940,6 @@ Get market-wide analytics.
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: March 6, 2026  
-**Status**: Complete
+**Document Version**: 1.1  
+**Last Updated**: April 22, 2026  
+**Status**: Complete (Admin Intelligence Update)

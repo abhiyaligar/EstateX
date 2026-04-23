@@ -16,9 +16,12 @@ import {
   ArrowDown,
   X,
   Edit2,
-  Trash2
+  Trash2,
+  Maximize,
+  Minimize,
+  Shield
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { TradingViewChart } from '../components/charts/TradingViewChart';
 
 import { useAuth } from '../context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
@@ -26,6 +29,9 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import exchangeService from '../services/exchangeService';
 import propertyService from '../services/propertyService';
+import { supabase } from '../utils/supabaseClient';
+import { Loader } from '../components/ui/Loader';
+import governanceService from '../services/governanceService';
 
 // --- Sub-Components ---
 
@@ -114,6 +120,7 @@ const SecondaryMarket = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('marketplace'); // marketplace, holdings
+  const activeProjectId = React.useRef(null);
   
   // Data State
   const [projects, setProjects] = useState([]);
@@ -122,8 +129,16 @@ const SecondaryMarket = () => {
   const [openOrders, setOpenOrders] = useState([]);
   const [publicOrderBook, setPublicOrderBook] = useState([]);
   const [tradeHistory, setTradeHistory] = useState([]);
+  const [ohlcvData, setOhlcvData] = useState([]);
+  const [macroData, setMacroData] = useState(null);
+  const [proposals, setProposals] = useState([]);
+  const [isHolder, setIsHolder] = useState(false);
   
   // UI Logic State
+  const [timeframe, setTimeframe] = useState('1h');
+  const [dateRange, setDateRange] = useState('ALL');
+  const [chartType, setChartType] = useState('candlestick');
+  const [isExpanded, setIsExpanded] = useState(false);
   const [orderType, setOrderType] = useState('buy');
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
@@ -155,40 +170,125 @@ const SecondaryMarket = () => {
     initFetch();
   }, []);
 
+  // Update active project ref
+  useEffect(() => {
+    activeProjectId.current = selectedProject?.id;
+  }, [selectedProject?.id]);
+
   // Fetch Live Data
   const refreshLiveData = async () => {
     if (!selectedProject) return;
     try {
-      const [history, orders, book] = await Promise.all([
+      setLoading(true);
+      const [project, history, ohlc, orders, book, govProposals, userPortfolio] = await Promise.all([
+        propertyService.getPropertyById(selectedProject.id),
         exchangeService.getTradeHistory(selectedProject.id),
-        exchangeService.getOpenOrders('open'),
-        exchangeService.getPublicOrderBook(selectedProject.id)
+        exchangeService.getOHLCV(selectedProject.id, timeframe),
+        exchangeService.getOpenOrders(),
+        exchangeService.getPublicOrderBook(selectedProject.id),
+        governanceService.getProposals(selectedProject.id).catch(() => []),
+        exchangeService.getPortfolio().catch(() => [])
       ]);
+      
+      // Atomic guard: only update if this is still the selected project
+      if (selectedProject.id !== activeProjectId.current) return;
+
+      setSelectedProject(project);
       setTradeHistory(history);
       setOpenOrders(orders);
+      setOhlcvData(ohlc);
       setPublicOrderBook(book);
+      setProposals(govProposals);
+      
+      const holding = userPortfolio.find(h => h.project_id === selectedProject.id);
+      setIsHolder(holding && holding.quantity > 0);
+      setHoldings(userPortfolio);
+      setOhlcvData(ohlc);
+      
+      // Macro data is now automatically mapped to the project relationship
+      if (project.macro_analytics) {
+         setMacroData(project.macro_analytics);
+      } else {
+         setMacroData(null);
+      }
     } catch (error) {
       console.error("Live data fetch failed", error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Initialize Data
   useEffect(() => {
     refreshLiveData();
-    const interval = setInterval(refreshLiveData, 5000); 
-    return () => clearInterval(interval);
-  }, [selectedProject]);
+  }, [selectedProject?.id, timeframe]);
 
-  // Derived Data
+  // Real-time Subscriptions
+  useEffect(() => {
+    if (!selectedProject) return;
+
+    // 1. Subscribe to Trades (Live Ledger & Chart)
+    const tradeChannel = supabase
+      .channel('public:trades')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'trades',
+          filter: `project_id=eq.${selectedProject.id}`
+        },
+        (payload) => {
+          console.log('New Trade Received:', payload.new);
+          // Prepend new trade to history
+          setTradeHistory(prev => [payload.new, ...prev].slice(0, 50));
+        }
+      )
+      .subscribe();
+
+    // 2. Subscribe to Orders (Depth / Orderbook)
+    const orderChannel = supabase
+      .channel('public:orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'orders',
+          filter: `project_id=eq.${selectedProject.id}`
+        },
+        () => {
+          // Re-fetch the orderbook to ensure consistency
+          console.log('Orderbook change detected - refreshing depth...');
+          refreshLiveData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(tradeChannel);
+      supabase.removeChannel(orderChannel);
+    };
+  }, [selectedProject?.id]);
+
   const buyOrders = useMemo(() => publicOrderBook.filter(o => o.order_type === 'buy').slice(0, 15), [publicOrderBook]);
   const sellOrders = useMemo(() => publicOrderBook.filter(o => o.order_type === 'sell').sort((a,b) => a.price_per_brick - b.price_per_brick).slice(0, 15), [publicOrderBook]);
-  
-  const chartData = useMemo(() => {
-    if (!tradeHistory.length) return [];
-    return tradeHistory.slice().reverse().map(t => ({
-      time: new Date(t.executed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      price: t.price
-    }));
-  }, [tradeHistory]);
+
+  const filteredChartData = useMemo(() => {
+    if (!ohlcvData || ohlcvData.length === 0) return [];
+    if (dateRange === 'ALL') return ohlcvData;
+    
+    // Using current time (or max time in data)
+    const maxTime = Math.max(...ohlcvData.map(d => d.time));
+    let cutoff = 0;
+    if (dateRange === '1D') cutoff = maxTime - 24 * 60 * 60;
+    else if (dateRange === '1W') cutoff = maxTime - 7 * 24 * 60 * 60;
+    else if (dateRange === '1M') cutoff = maxTime - 30 * 24 * 60 * 60;
+    else if (dateRange === '3M') cutoff = maxTime - 90 * 24 * 60 * 60;
+    else if (dateRange === '1Y') cutoff = maxTime - 365 * 24 * 60 * 60;
+    
+    return ohlcvData.filter(d => d.time >= cutoff);
+  }, [ohlcvData, dateRange]);
 
   const latestPrice = tradeHistory.length > 0 ? tradeHistory[0].price : (selectedProject?.market_price || 0);
 
@@ -233,15 +333,31 @@ const SecondaryMarket = () => {
          price_per_brick: parseFloat(newPrice)
        });
        setModifyingOrder(null);
-       alert("Order successfully modified (Cancel + Re-place complete).");
        refreshLiveData();
-    } catch (err) { alert(err.response?.data?.detail || "Modification failed mid-sequence."); }
+       alert("Order updated successfully.");
+    } catch (err) {
+       alert(err.response?.data?.detail || "Update failed");
+    }
+  };
+
+  const handleVote = async (proposalId, optionIndex) => {
+    if (!isHolder) {
+      alert("Only brick holders can vote on governance proposals.");
+      return;
+    }
+    try {
+      await governanceService.castVote(proposalId, optionIndex);
+      alert("Vote cast successfully!");
+      refreshLiveData();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Voting failed");
+    }
   };
 
   if (loading && projects.length === 0) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
-        <div className="w-12 h-12 border-2 border-white/5 border-t-white animate-spin" />
+        <Loader size={48} text="Synchronizing Exchange Data..." />
       </div>
     );
   }
@@ -277,6 +393,11 @@ const SecondaryMarket = () => {
          <div className="flex bg-[#111] p-0.5 border border-white/5">
             <button onClick={() => setActiveTab('marketplace')} className={`px-4 py-1.5 text-[9px] uppercase tracking-[0.2em] font-bold ${activeTab === 'marketplace' ? 'bg-white text-black' : 'text-white/30'}`}>Exchange</button>
             <button onClick={() => setActiveTab('holdings')} className={`px-4 py-1.5 text-[9px] uppercase tracking-[0.2em] font-bold ${activeTab === 'holdings' ? 'bg-white text-black' : 'text-white/30'}`}>My Vault</button>
+            {proposals.length > 0 && (
+               <button onClick={() => setActiveTab('governance')} className={`px-4 py-1.5 text-[9px] uppercase tracking-[0.2em] font-bold ${activeTab === 'governance' ? 'bg-white text-black' : 'text-white/30'} flex items-center gap-2`}>
+                 <Shield size={10} /> GOVERNANCE
+               </button>
+            )}
          </div>
       </div>
 
@@ -286,6 +407,7 @@ const SecondaryMarket = () => {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="grid grid-cols-1 md:grid-cols-12 gap-6"
           >
+            {!isExpanded && (
             <div className="md:col-span-3 order-3 md:order-1">
                <Card noPadding className="h-[600px] flex flex-col">
                   <div className="p-4 border-b border-white/5">
@@ -313,32 +435,97 @@ const SecondaryMarket = () => {
                   </div>
                </Card>
             </div>
+            )}
 
-            <div className="md:col-span-6 order-1 md:order-2 space-y-6">
-               <Card noPadding className="h-[450px] relative">
-                  <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                     <span className="text-[10px] font-bold uppercase tracking-widest text-green-500">Node-01 Live Feed</span>
+            <div className={`${isExpanded ? 'md:col-span-12' : 'md:col-span-6'} order-1 md:order-2 space-y-6 transition-all duration-300`}>
+               <Card noPadding className={`${isExpanded ? 'h-[750px]' : 'h-[450px]'} relative transition-all duration-300`}>
+                  <div className="p-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-4">
+                     <div className="flex items-center gap-3">
+                         <span className="text-[12px] font-bold uppercase tracking-widest text-green-500">Terminal</span>
+                         <button onClick={() => setIsExpanded(!isExpanded)} className="text-white/40 hover:text-white transition-colors" title="Toggle Fullscreen Terminal">
+                            {isExpanded ? <Minimize size={14} /> : <Maximize size={14} />}
+                         </button>
+                     </div>
+                     
+                     {/* Controls Container */}
+                     <div className="flex items-center gap-4">
+                         {/* Chart Type */}
+                         <div className="flex bg-[#111] border border-white/5 p-0.5">
+                            {['candlestick', 'line', 'area'].map(type => (
+                                <button 
+                                  key={type}
+                                  onClick={() => setChartType(type)}
+                                  className={`px-3 py-1 text-[9px] uppercase font-bold transition-colors ${chartType === type ? 'bg-white text-black' : 'text-white/30 hover:text-white/60'}`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                         </div>
+                         
+                         {/* Date Range */}
+                         <div className="flex bg-[#111] border border-white/5 p-0.5">
+                            {['1D', '1W', '1M', '3M', '1Y', 'ALL'].map(dr => (
+                                <button 
+                                  key={dr}
+                                  onClick={() => setDateRange(dr)}
+                                  className={`px-3 py-1 text-[9px] uppercase font-bold transition-colors ${dateRange === dr ? 'bg-white text-black' : 'text-white/30 hover:text-white/60'}`}
+                                >
+                                    {dr}
+                                </button>
+                            ))}
+                         </div>
+
+                         {/* Timeframe Bucket */}
+                         <div className="flex bg-[#111] border border-white/5 p-0.5">
+                            {['1m', '5m', '1h', '1d'].map(tf => (
+                                <button 
+                                  key={tf}
+                                  onClick={() => setTimeframe(tf)}
+                                  className={`px-3 py-1 text-[9px] uppercase font-bold transition-colors ${timeframe === tf ? 'bg-white text-black' : 'text-white/30 hover:text-white/60'}`}
+                                >
+                                    {tf}
+                                </button>
+                            ))}
+                         </div>
+                     </div>
                   </div>
-                  <div className="h-[350px] w-full p-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData}>
-                        <defs>
-                          <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.02)" />
-                        <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fill: 'rgba(255,255,255,0.2)', fontSize: 8}} dy={10} />
-                        <YAxis domain={['auto', 'auto']} axisLine={false} tickLine={false} tick={{fill: 'rgba(255,255,255,0.2)', fontSize: 8}} dx={-10} />
-                        <Tooltip contentStyle={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '0', fontSize: '10px' }} />
-                        <Area type="stepAfter" dataKey="price" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                  <div className={`${isExpanded ? 'h-[650px]' : 'h-[350px]'} w-full p-4 transition-all duration-300`}>
+                    <TradingViewChart data={filteredChartData} chartType={chartType} />
                   </div>
+               </Card>
+
+               {/* Macro Economic Panel */}
+               <Card noPadding>
+                   <div className="p-4 border-b border-white/5 flex items-center gap-2">
+                       <Layers size={14} className="text-violet-500" />
+                       <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold">Macro Analytics</h3>
+                       {macroData && <span className="ml-auto text-[8px] text-white/30 uppercase tracking-widest bg-white/5 px-2 py-1 rounded-full">Pincode: {macroData.pincode}</span>}
+                   </div>
+                   
+                   {!macroData ? (
+                       <div className="p-8 text-center">
+                           {loading ? <Loader size={20} /> : <p className="text-[9px] uppercase tracking-widest text-white/40">No macroeconomic data available for this region</p>}
+                       </div>
+                   ) : (
+                       <div className="grid grid-cols-3 divide-x divide-white/5">
+                           <div className="p-4 text-center">
+                               <p className="text-[9px] uppercase tracking-widest text-white/40 mb-2">YoY Growth</p>
+                               <p className="text-lg font-mono font-bold text-green-500">+{macroData.yoy_growth_percentage}%</p>
+                           </div>
+                           <div className="p-4 text-center">
+                               <p className="text-[9px] uppercase tracking-widest text-white/40 mb-2">Avg Rental Yield</p>
+                               <p className="text-lg font-mono font-bold text-sky-400">{macroData.avg_rental_yield}%</p>
+                           </div>
+                           <div className="p-4 text-center">
+                               <p className="text-[9px] uppercase tracking-widest text-white/40 mb-2">Demand Score</p>
+                               <p className="text-lg font-mono font-bold text-violet-500">{macroData.demand_score}/100</p>
+                           </div>
+                       </div>
+                   )}
                </Card>
             </div>
 
+            {!isExpanded && (
             <div className="md:col-span-3 order-2 md:order-3 space-y-6">
                <Card>
                   <div className="flex bg-[#111] p-0.5 border border-white/5 mb-6">
@@ -359,12 +546,13 @@ const SecondaryMarket = () => {
                      <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold">Live Ledger</h3>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4">
-                     {tradeHistory.slice(0, 20).map((t, i) => (
+                     {tradeHistory.slice(0, 5).map((t, i) => (
                        <LedgerRow key={i} price={t.price} quantity={t.quantity} time={new Date(t.executed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} />
                      ))}
                   </div>
                </Card>
             </div>
+            )}
           </motion.div>
         )}
 
@@ -454,6 +642,71 @@ const SecondaryMarket = () => {
                         })}
                       </tbody>
                    </table>
+                </div>
+             </Card>
+          </motion.div>
+        )}
+        {activeTab === 'governance' && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="space-y-6"
+          >
+             <Card noPadding>
+                <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                   <div>
+                      <h2 className="text-xl font-bold uppercase tracking-tighter">On-Chain Consensus Protocols</h2>
+                      <p className="text-[10px] uppercase tracking-widest text-white/30 mt-1">Weighted voting for {selectedProject?.title}</p>
+                   </div>
+                   {!isHolder && (
+                     <div className="bg-red-500/10 border border-red-500/20 px-4 py-2 text-[8px] uppercase tracking-widest font-bold text-red-500">
+                       VOTING DISABLED: NO EQUITY DETECTED
+                     </div>
+                   )}
+                </div>
+                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                   {proposals.map(p => (
+                     <div key={p.id} className="bg-white/[0.02] border border-white/10 p-6 space-y-6 relative group">
+                        <div className="absolute top-4 right-4">
+                           <span className={`px-2 py-0.5 text-[8px] font-bold uppercase border ${p.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'text-white/20 border-white/10'}`}>{p.status}</span>
+                        </div>
+                        <div>
+                           <h4 className="text-lg font-bold uppercase tracking-tight">{p.title}</h4>
+                           <p className="text-[10px] text-white/40 uppercase mt-1 leading-relaxed line-clamp-2">{p.description}</p>
+                        </div>
+
+                        <div className="space-y-4">
+                           {p.options.map((opt, idx) => {
+                              const totalWeight = p.total_votes || 1;
+                              const weight = p.vote_distribution?.[idx] || 0;
+                              const percentage = Math.round((weight / totalWeight) * 100);
+                              return (
+                                 <div key={idx} className="space-y-2">
+                                    <div className="flex justify-between text-[8px] uppercase tracking-widest font-bold">
+                                       <span className="text-white/60">{opt}</span>
+                                       <span className="text-white/30">{percentage}% ({weight.toLocaleString()} BK)</span>
+                                    </div>
+                                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                                       <div className="h-full bg-white transition-all duration-1000" style={{ width: `${percentage}%` }}></div>
+                                    </div>
+                                    {p.status === 'active' && isHolder && (
+                                       <Button 
+                                         variant="ghost" 
+                                         className="w-full h-8 text-[8px] font-bold tracking-[0.2em] border border-white/5 hover:bg-white text-white hover:text-black mt-2"
+                                         onClick={() => handleVote(p.id, idx)}
+                                       >
+                                          CAST WEIGHTED VOTE
+                                       </Button>
+                                    )}
+                                 </div>
+                              );
+                           })}
+                        </div>
+                        <div className="pt-4 border-t border-white/5 flex justify-between text-[8px] uppercase tracking-widest text-white/20 font-mono">
+                           <span>ENDS: {new Date(p.end_date).toLocaleDateString()}</span>
+                           <span>TOTAL POWER: {p.total_votes.toLocaleString()}</span>
+                        </div>
+                     </div>
+                   ))}
                 </div>
              </Card>
           </motion.div>

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional, Any
+from app.schemas.analytics import MacroDataResponse
 from datetime import datetime, date, timezone
 from uuid import UUID
 
@@ -27,6 +28,10 @@ class ProjectBase(BaseModel):
     city: str
     state: str
     pincode: str
+    property_type: Optional[str] = 'Apartment'
+    bedroom_count: Optional[int] = None
+    bathroom_count: Optional[float] = None
+    area_sqft: Optional[float] = None
     total_budget: float
     
     total_bricks: int = Field(..., gt=0)
@@ -34,6 +39,13 @@ class ProjectBase(BaseModel):
     ipo_price: float = Field(..., gt=0)
     
     rera_id: Optional[str] = None
+    rera_approved: bool = False
+    environmental_clearance: bool = False
+    insurance_coverage: bool = False
+    
+    rera_approval_url: Optional[str] = None
+    brochure_url: Optional[str] = None
+    
     expected_completion_date: Optional[datetime] = None
 
 class ProjectCreate(ProjectBase):
@@ -53,6 +65,7 @@ class ProjectLocationResponse(BaseModel):
     pincode: str
     latitude: Optional[float]
     longitude: Optional[float]
+    area_sqft: Optional[float]
 
 class ProjectFinancialResponse(BaseModel):
     total_budget: float
@@ -64,6 +77,7 @@ class ProjectFinancialResponse(BaseModel):
     ipo_price: float
     market_value: Optional[float]
     previous_close_price: Optional[float]
+    total_escrow_held: float # Funds in admin control
 
 class ProjectTimelineResponse(BaseModel):
     launch_date: Optional[date]
@@ -97,6 +111,7 @@ class ProjectListResponse(BaseModel):
     ipo_status: str
     status: str
     created_at: datetime
+    macro_analytics: Optional[MacroDataResponse] = None
     
     @model_validator(mode='before')
     @classmethod
@@ -139,8 +154,12 @@ class ProjectListResponse(BaseModel):
                 "state": get_attr("state", ""),
                 "pincode": get_attr("pincode", ""),
                 "latitude": get_attr("latitude"),
-                "longitude": get_attr("longitude")
+                "longitude": get_attr("longitude"),
+                "area_sqft": get_attr("area_sqft")
             },
+            "property_type": get_attr("property_type", "Apartment"),
+            "bedrooms": get_attr("bedroom_count"),
+            "bathrooms": get_attr("bathroom_count"),
             "financial": {
                 "total_budget": get_attr("total_budget", 0),
                 "funding_target": get_attr("funding_target"),
@@ -150,7 +169,8 @@ class ProjectListResponse(BaseModel):
                 "face_value": get_attr("face_value", 0),
                 "ipo_price": get_attr("ipo_price", 0),
                 "market_value": get_attr("market_value"),
-                "previous_close_price": get_attr("previous_close_price")
+                "previous_close_price": get_attr("previous_close_price"),
+                "total_escrow_held": get_attr("total_escrow_held", 0)
             },
             "timeline": {
                 "launch_date": get_attr("launch_date"),
@@ -173,7 +193,8 @@ class ProjectListResponse(BaseModel):
             "view_count": get_attr("view_count", 0),
             "ipo_status": get_attr("ipo_status", "upcoming"),
             "status": get_attr("status", "draft"),
-            "created_at": get_attr("created_at")
+            "created_at": get_attr("created_at"),
+            "macro_analytics": get_attr("macro_analytics")
         }
 
     class Config:
