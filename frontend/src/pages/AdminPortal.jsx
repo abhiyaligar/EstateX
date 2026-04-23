@@ -183,7 +183,7 @@ const ProjectReviewModal = ({ isOpen, onClose, project, onIPOAction, onHaltActio
 
           <div className="flex flex-wrap gap-3">
              {project.ipo_status === 'upcoming' && (
-               <Button size="sm" className="bg-white text-black hover:bg-white/90 text-[10px] h-10 px-6 font-bold tracking-widest" onClick={() => onIPOAction(project.id, 'approve')}>APPROVE IPO</Button>
+               <Button size="sm" className="bg-primary-600 hover:bg-primary-700 text-white text-[10px] h-10 px-6 font-bold tracking-widest" onClick={() => onIPOAction(project.id, 'approve')}>APPROVE IPO</Button>
              )}
              {project.ipo_status === 'active' && (
                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-10 px-6 font-bold tracking-widest" onClick={() => onIPOAction(project.id, 'complete')}>COMPLETE IPO</Button>

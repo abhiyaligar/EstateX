@@ -41,11 +41,13 @@ const PropertyCard = ({ property }) => {
         
         {/* Badges */}
         <div className="absolute left-6 top-6 flex gap-2">
-          <span className="inline-flex items-center bg-white text-black px-3 py-1 text-[9px] font-bold uppercase tracking-widest">
-            {type}
-          </span>
+          {type && (
+            <span className="inline-flex items-center bg-black/40 backdrop-blur-md text-white border border-white/10 px-3 py-1 text-[9px] font-bold uppercase tracking-widest">
+              {type}
+            </span>
+          )}
           {ipo_status === 'active' && (
-            <span className="inline-flex items-center bg-accent-red text-white px-3 py-1 text-[9px] font-bold uppercase tracking-widest">
+            <span className="inline-flex items-center bg-red-600 text-white px-3 py-1 text-[9px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.3)]">
               Live IPO
             </span>
           )}

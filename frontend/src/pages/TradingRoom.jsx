@@ -22,7 +22,8 @@ import {
   BarChart3,
   History,
   Shield,
-  ArrowLeft
+  ArrowLeft,
+  Search
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createChart, ColorType, AreaSeries, HistogramSeries, CandlestickSeries, LineSeries } from 'lightweight-charts';
@@ -69,52 +70,116 @@ const TradeHistoryRow = ({ price, quantity, time, type }) => (
   </div>
 );
 
-const ProjectSelector = ({ projects, selectedProject, onSelect }) => {
+const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const filteredProjects = projects.filter(p => 
+    p.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   
   return (
-    <div className="relative z-50">
+    <>
       <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-4 bg-zinc-900 border border-white/5 px-4 md:px-6 py-4 rounded-[var(--radius)] hover:border-white/20 transition-all group w-full md:w-auto"
+        onClick={() => setIsOpen(true)}
+        className="flex items-center gap-4 bg-zinc-900/50 border border-white/5 px-4 md:px-6 py-4 rounded-xl hover:border-white/20 transition-all group w-full md:w-auto hover:bg-zinc-900"
       >
-        <div className="h-8 w-8 bg-white flex items-center justify-center rounded-[var(--radius)]">
-          <Layers size={16} className="text-black" />
-        </div>
+        <Search size={18} className="text-zinc-500 group-hover:text-white transition-colors" />
         <div className="text-left">
-          <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-bold leading-none mb-1">Select Asset Cluster</p>
-          <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold uppercase tracking-tight text-white">{selectedProject?.title || 'Select Project'}</h2>
-            <ChevronDown size={14} className={`text-zinc-700 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-          </div>
+          <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-bold leading-none mb-1">Active Cluster</p>
+          <h2 className="text-base font-bold uppercase tracking-tight text-white">{selectedProject?.title || 'Search Properties...'}</h2>
         </div>
       </button>
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="absolute top-full left-0 mt-2 w-72 bg-[#111] border border-white/10 shadow-2xl p-2"
-          >
-            {projects.map(p => (
-              <button
-                key={p.id}
-                onClick={() => { onSelect(p); setIsOpen(false); }}
-                className={`w-full text-left p-4 hover:bg-white/5 flex items-center justify-between group transition-colors ${selectedProject?.id === p.id ? 'bg-white/5' : ''}`}
-              >
-                <div>
-                    <p className="text-xs font-bold uppercase tracking-tight text-white group-hover:text-primary-400">{p.title}</p>
-                    <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-1">₹{p.market_price?.toLocaleString()} / BK</p>
+          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] px-4">
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            />
+
+            {/* Modal Content */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-zinc-950 border border-white/10 shadow-[0_0_100px_rgba(0,0,0,1)] rounded-2xl overflow-hidden"
+            >
+              {/* Search Header */}
+              <div className="p-6 border-b border-white/5 flex items-center gap-4">
+                <Search size={22} className="text-zinc-500" />
+                <input 
+                  type="text" 
+                  placeholder="Search by name, location, or asset code..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent text-xl font-medium focus:outline-none text-white placeholder:text-zinc-800"
+                  autoFocus
+                />
+                <button onClick={() => setIsOpen(false)} className="text-zinc-500 hover:text-white">
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Results */}
+              <div className="max-h-[60vh] overflow-y-auto">
+                {filteredProjects.length > 0 ? (
+                  <div className="p-4 grid grid-cols-1 gap-2">
+                    {filteredProjects.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => { onSelect(p); setIsOpen(false); setSearchQuery(''); }}
+                        className={`w-full text-left p-4 rounded-xl flex items-center justify-between group transition-all ${selectedProject?.id === p.id ? 'bg-white/10 border border-white/10' : 'hover:bg-white/5 border border-transparent'}`}
+                      >
+                        <div className="flex items-center gap-4">
+                           <div className="h-12 w-12 bg-zinc-900 rounded-lg flex items-center justify-center border border-white/5">
+                              <Layers size={20} className={selectedProject?.id === p.id ? 'text-white' : 'text-zinc-600 group-hover:text-zinc-400'} />
+                           </div>
+                           <div>
+                              <p className="text-sm font-bold text-white group-hover:text-primary-400">{p.title}</p>
+                              <div className="flex items-center gap-3 mt-1">
+                                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono font-bold">₹{p.market_price?.toLocaleString()}</span>
+                                <span className="h-1 w-1 bg-zinc-800 rounded-full" />
+                                <span className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">
+                                  {typeof p.location === 'object' && p.location !== null 
+                                    ? `${p.location.city || ''}, ${p.location.state || ''}`.trim().replace(/^, |, $/g, '') || 'Prime Cluster'
+                                    : p.location || 'Prime Cluster'}
+                                </span>
+                              </div>
+                           </div>
+                        </div>
+                        {selectedProject?.id === p.id && (
+                          <div className="px-3 py-1 bg-primary-500/10 border border-primary-500/20 text-primary-400 text-[9px] font-bold uppercase tracking-widest rounded-full">Active</div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-24 text-center opacity-40">
+                    <History size={48} className="mx-auto mb-4" />
+                    <p className="text-sm uppercase tracking-[0.3em] font-bold">No results for "{searchQuery}"</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 bg-zinc-900/30 border-t border-white/5 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] font-bold text-zinc-600">
+                <div className="flex items-center gap-6">
+                  <span>ENTER to select</span>
+                  <span>ESC to close</span>
                 </div>
-                {selectedProject?.id === p.id && <div className="h-1.5 w-1.5 bg-white rounded-full" />}
-              </button>
-            ))}
-          </motion.div>
+                <span>{filteredProjects.length} Assets Found</span>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 };
 
@@ -166,7 +231,7 @@ const ModifyOrderModal = ({ isOpen, onClose, order, onModify }) => {
               </p>
               <div className="flex gap-4">
                  <Button variant="outline" className="flex-1 h-12 text-[10px]" onClick={onClose}>CLOSE</Button>
-                 <Button className="flex-1 h-12 text-[10px] bg-white text-black font-bold" onClick={() => onModify(order.id, newPrice, newQuantity)}>SUBMIT MODS</Button>
+                 <Button className="flex-1 h-12 text-[10px] bg-primary-600 hover:bg-primary-700 text-white font-bold" onClick={() => onModify(order.id, newPrice, newQuantity)}>SUBMIT MODS</Button>
               </div>
            </div>
         </div>
@@ -512,12 +577,12 @@ const TradingRoom = () => {
                     <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-zinc-400">
                         <ArrowLeft size={20} />
                     </button>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius)] bg-white text-black font-bold text-xs">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-800 border border-white/10 text-white font-bold text-xs">
                         EX
                     </div>
                 </div>
                 
-                <ProjectSelector 
+                <PropertySearchModal 
                     projects={projects} 
                     selectedProject={selectedProject} 
                     onSelect={setSelectedProject} 
@@ -541,11 +606,11 @@ const TradingRoom = () => {
             </div>
 
             <div className="flex items-center gap-4">
-                <div className="flex bg-[#111] p-0.5 border border-white/5">
-                   <button onClick={() => setActiveTab('exchange')} className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold ${activeTab === 'exchange' ? 'bg-white text-black shadow-lg' : 'text-zinc-500 hover:text-white'}`}>Exchange</button>
-                   <button onClick={() => setActiveTab('holdings')} className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold ${activeTab === 'holdings' ? 'bg-white text-black shadow-lg' : 'text-zinc-500 hover:text-white'}`}>My Vault</button>
+                <div className="flex bg-zinc-900/50 p-0.5 border border-white/5 rounded-lg overflow-hidden">
+                   <button onClick={() => setActiveTab('exchange')} className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'exchange' ? 'bg-primary-600 text-white shadow-lg' : 'text-zinc-500 hover:text-white'}`}>Exchange</button>
+                   <button onClick={() => setActiveTab('holdings')} className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'holdings' ? 'bg-primary-600 text-white shadow-lg' : 'text-zinc-500 hover:text-white'}`}>My Vault</button>
                    {proposals.length > 0 && (
-                      <button onClick={() => setActiveTab('governance')} className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold ${activeTab === 'governance' ? 'bg-white text-black shadow-lg' : 'text-zinc-500 hover:text-white'} flex items-center gap-2`}>
+                      <button onClick={() => setActiveTab('governance')} className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'governance' ? 'bg-primary-600 text-white shadow-lg' : 'text-zinc-500 hover:text-white'} flex items-center gap-2`}>
                         <Shield size={10} /> GOVERNANCE
                       </button>
                    )}
@@ -578,7 +643,7 @@ const TradingRoom = () => {
                                                 <button 
                                                     key={tf}
                                                     onClick={() => setChartTimeframe(tf)}
-                                                    className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all ${chartTimeframe === tf ? 'bg-white text-black' : 'text-zinc-600 hover:text-white'}`}
+                                                    className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all ${chartTimeframe === tf ? 'bg-primary-600 text-white' : 'text-zinc-600 hover:text-white'}`}
                                                 >
                                                     {tf}
                                                 </button>
@@ -589,7 +654,7 @@ const TradingRoom = () => {
                                                 <button 
                                                     key={type}
                                                     onClick={() => setChartType(type)}
-                                                    className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all ${chartType === type ? 'bg-white text-black' : 'text-zinc-600 hover:text-white'}`}
+                                                    className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all ${chartType === type ? 'bg-primary-600 text-white' : 'text-zinc-600 hover:text-white'}`}
                                                 >
                                                     {type}
                                                 </button>
@@ -674,7 +739,7 @@ const TradingRoom = () => {
                                 <div className="flex bg-zinc-900 p-1 rounded-lg border border-white/5 mb-8">
                                     <button 
                                         onClick={() => setOrderType('buy')} 
-                                        className={`flex-1 py-4 text-[10px] font-bold uppercase rounded-md tracking-[0.2em] transition-all ${orderType === 'buy' ? 'bg-white text-black shadow-2xl' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                        className={`flex-1 py-4 text-[10px] font-bold uppercase rounded-md tracking-[0.2em] transition-all ${orderType === 'buy' ? 'bg-primary-600 text-white shadow-2xl shadow-primary-900/40' : 'text-zinc-500 hover:text-zinc-300'}`}
                                     >
                                         BUY BRICK
                                     </button>
