@@ -21,8 +21,10 @@ import {
   LineChart,
   BarChart3,
   History,
-  Shield
+  Shield,
+  ArrowLeft
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { createChart, ColorType, AreaSeries, HistogramSeries, CandlestickSeries, LineSeries } from 'lightweight-charts';
 import { supabase } from '../utils/supabaseClient';
 
@@ -177,6 +179,7 @@ const ModifyOrderModal = ({ isOpen, onClose, order, onModify }) => {
 
 const TradingRoom = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   
   // Data State
@@ -494,6 +497,26 @@ const TradingRoom = () => {
         {/* Header Bar */}
         <header className="h-auto md:h-20 border-b border-white/5 px-4 md:px-6 py-4 md:py-0 flex flex-col md:flex-row items-center justify-between gap-4 bg-black/50 backdrop-blur-xl shrink-0 z-30">
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-12 w-full md:w-auto">
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => navigate(-1)} 
+                    className="mr-2 border border-white/5 bg-white/5 hover:bg-white/10 hidden md:flex"
+                    leftIcon={<ArrowLeft size={14} />}
+                >
+                    Return
+                </Button>
+
+                {/* Mobile Navigation Header */}
+                <div className="flex items-center justify-between w-full md:hidden mb-2">
+                    <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-zinc-400">
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius)] bg-white text-black font-bold text-xs">
+                        EX
+                    </div>
+                </div>
+                
                 <ProjectSelector 
                     projects={projects} 
                     selectedProject={selectedProject} 
