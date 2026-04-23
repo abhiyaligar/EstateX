@@ -17,12 +17,11 @@ const Navbar = () => {
     { name: 'Properties', path: '/properties' },
     { name: 'Trade', path: '/trade' },
     { name: 'About', path: '/about' },
-    ...(isAuthenticated ? [{ name: 'Exchange', path: '/dashboard/exchange' }] : []),
   ];
 
   const dashboardLinks = [
     { name: 'Overview', path: '/dashboard' },
-    { name: 'Exchange', path: '/dashboard/exchange' },
+    { name: 'Trade', path: '/trade' },
     { name: 'My Portfolio', path: '/dashboard/portfolio' },
     { name: 'Wallet', path: '/dashboard/wallet' },
     { name: 'KYC Verification', path: '/dashboard/kyc' },

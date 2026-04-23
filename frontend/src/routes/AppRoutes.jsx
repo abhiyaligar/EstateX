@@ -18,7 +18,6 @@ import Profile from '../pages/Profile';
 import Wallet from '../pages/Wallet';
 import KYC from '../pages/KYC';
 import Portfolio from '../pages/Portfolio';
-import SecondaryMarket from '../pages/SecondaryMarket';
 import TradingRoom from '../pages/TradingRoom';
 import AdminPortal from '../pages/AdminPortal';
 
@@ -76,7 +75,6 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }>
             <Route index element={<Dashboard />} />
-            <Route path="exchange" element={<SecondaryMarket />} />
             <Route path="profile" element={<Profile />} />
             <Route path="wallet" element={<Wallet />} />
             <Route path="portfolio" element={<Portfolio />} />

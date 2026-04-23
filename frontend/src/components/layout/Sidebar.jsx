@@ -20,7 +20,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
   const links = [
     { name: 'Overview', path: '/dashboard', icon: LayoutDashboard, exact: true },
-    { name: 'Secondary Market', path: '/dashboard/exchange', icon: ArrowLeftRight },
+    { name: 'Trade', path: '/trade', icon: ArrowLeftRight },
     { name: 'My Portfolio', path: '/dashboard/portfolio', icon: Home },
     { name: user?.role === 'builder' ? 'Investor Wallet' : 'Wallet', path: '/dashboard/wallet', icon: Wallet },
     ...(user?.role === 'builder' 
