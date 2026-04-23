@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
@@ -6,33 +6,26 @@ import { AuthProvider, useAuth } from '../context/AuthContext';
 import MainLayout from '../layouts/MainLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
 
-// Pages - Lazy Loaded
-const Home = lazy(() => import('../pages/Home'));
-const Login = lazy(() => import('../pages/Login'));
-const Register = lazy(() => import('../pages/Register'));
-const Properties = lazy(() => import('../pages/Properties'));
-const PropertyDetails = lazy(() => import('../pages/PropertyDetails'));
-const Dashboard = lazy(() => import('../pages/Dashboard'));
-const AddProperty = lazy(() => import('../pages/AddProperty'));
-const Profile = lazy(() => import('../pages/Profile'));
-const Wallet = lazy(() => import('../pages/Wallet'));
-const KYC = lazy(() => import('../pages/KYC'));
-const Portfolio = lazy(() => import('../pages/Portfolio'));
-const SecondaryMarket = lazy(() => import('../pages/SecondaryMarket'));
-const TradingRoom = lazy(() => import('../pages/TradingRoom'));
-const AdminPortal = lazy(() => import('../pages/AdminPortal'));
-const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
-const BuilderWallet = lazy(() => import('../pages/BuilderWallet'));
-const BuilderVerification = lazy(() => import('../pages/BuilderVerification'));
-const MyProjects = lazy(() => import('../pages/MyProjects'));
+// Pages
+import Home from '../pages/Home';
+import Login from '../pages/Login';
+import Register from '../pages/Register';
+import Properties from '../pages/Properties';
+import PropertyDetails from '../pages/PropertyDetails';
+import Dashboard from '../pages/Dashboard';
+import AddProperty from '../pages/AddProperty';
+import Profile from '../pages/Profile';
+import Wallet from '../pages/Wallet';
+import KYC from '../pages/KYC';
+import Portfolio from '../pages/Portfolio';
+import SecondaryMarket from '../pages/SecondaryMarket';
+import TradingRoom from '../pages/TradingRoom';
+import AdminPortal from '../pages/AdminPortal';
 
-// Loading Placeholder
-const LoadingScreen = () => (
-    <div className="h-screen w-full bg-[#0a0a0a] flex flex-col items-center justify-center gap-6">
-        <div className="w-12 h-12 border-2 border-white/5 border-t-white animate-spin rounded-full" />
-        <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-500 font-bold">Synchronizing EstateX...</p>
-    </div>
-);
+import ForgotPassword from '../pages/ForgotPassword';
+import BuilderWallet from '../pages/BuilderWallet';
+import BuilderVerification from '../pages/BuilderVerification';
+import MyProjects from '../pages/MyProjects';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, roles = [] }) => {
@@ -57,84 +50,82 @@ const AppRoutes = () => {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Suspense fallback={<LoadingScreen />}>
-          <Routes>
-            {/* Public Routes with Main Layout */}
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/properties" element={<Properties />} />
-              <Route path="/properties/:id" element={<PropertyDetails />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/unauthorized" element={<div className="p-20 text-center">Unauthorized Access</div>} />
-            </Route>
+        <Routes>
+          {/* Public Routes with Main Layout */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/properties" element={<Properties />} />
+            <Route path="/properties/:id" element={<PropertyDetails />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/unauthorized" element={<div className="p-20 text-center">Unauthorized Access</div>} />
+          </Route>
 
-            {/* Full Screen Protected Routes (No shared layout) */}
-            <Route path="/trade" element={
-              <ProtectedRoute>
-                <TradingRoom />
-              </ProtectedRoute>
-            } />
+          {/* Full Screen Protected Routes (No shared layout) */}
+          <Route path="/trade" element={
+            <ProtectedRoute>
+              <TradingRoom />
+            </ProtectedRoute>
+          } />
 
-            {/* Protected Routes with Dashboard Layout */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Dashboard />} />
-              <Route path="exchange" element={<SecondaryMarket />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="wallet" element={<Wallet />} />
-              <Route path="portfolio" element={<Portfolio />} />
-              <Route path="kyc" element={<KYC />} />
-              <Route 
-                path="add-property" 
-                element={
-                  <ProtectedRoute roles={['builder', 'admin']}>
-                    <AddProperty />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="builder-wallet" 
-                element={
-                  <ProtectedRoute roles={['builder']}>
-                    <BuilderWallet />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="verification" 
-                element={
-                  <ProtectedRoute roles={['builder']}>
-                    <BuilderVerification />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="my-projects" 
-                element={
-                  <ProtectedRoute roles={['builder']}>
-                    <MyProjects />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="admin" 
-                element={
-                  <ProtectedRoute roles={['admin']}>
-                    <AdminPortal />
-                  </ProtectedRoute>
-                } 
-              />
-            </Route>
+          {/* Protected Routes with Dashboard Layout */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Dashboard />} />
+            <Route path="exchange" element={<SecondaryMarket />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="wallet" element={<Wallet />} />
+            <Route path="portfolio" element={<Portfolio />} />
+            <Route path="kyc" element={<KYC />} />
+            <Route 
+              path="add-property" 
+              element={
+                <ProtectedRoute roles={['builder', 'admin']}>
+                  <AddProperty />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="builder-wallet" 
+              element={
+                <ProtectedRoute roles={['builder']}>
+                  <BuilderWallet />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="verification" 
+              element={
+                <ProtectedRoute roles={['builder']}>
+                  <BuilderVerification />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="my-projects" 
+              element={
+                <ProtectedRoute roles={['builder']}>
+                  <MyProjects />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="admin" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <AdminPortal />
+                </ProtectedRoute>
+              } 
+            />
+          </Route>
 
-            {/* Fallback Route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+          {/* Fallback Route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </BrowserRouter>
     </AuthProvider>
   );

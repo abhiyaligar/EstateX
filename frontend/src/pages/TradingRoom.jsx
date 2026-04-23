@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -21,9 +20,7 @@ import {
   Maximize2,
   LineChart,
   BarChart3,
-  History,
-  ArrowLeft,
-  Search
+  History
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
@@ -69,11 +66,6 @@ const TradeHistoryRow = ({ price, quantity, time, type }) => (
 
 const ProjectSelector = ({ projects, selectedProject, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  const filteredProjects = projects.filter(p => 
-    p.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
   
   return (
     <div className="relative">
@@ -99,44 +91,21 @@ const ProjectSelector = ({ projects, selectedProject, onSelect }) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute top-full left-0 mt-2 w-72 bg-[#111] border border-white/10 shadow-2xl z-50 overflow-hidden"
+            className="absolute top-full left-0 mt-2 w-72 bg-[#111] border border-white/10 shadow-2xl z-50 p-2"
           >
-            {/* Search Input */}
-            <div className="p-3 border-b border-white/5 bg-black/40">
-               <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" />
-                  <input 
-                    type="text" 
-                    placeholder="Search properties..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/5 rounded-md py-2 pl-9 pr-4 text-xs font-medium focus:outline-none focus:border-white/20 text-white placeholder:text-zinc-700"
-                    autoFocus
-                  />
-               </div>
-            </div>
-
-            <div className="max-h-64 overflow-y-auto p-2">
-                {filteredProjects.length > 0 ? (
-                    filteredProjects.map(p => (
-                        <button
-                            key={p.id}
-                            onClick={() => { onSelect(p); setIsOpen(false); setSearchQuery(''); }}
-                            className={`w-full text-left p-4 hover:bg-white/5 flex items-center justify-between group transition-colors ${selectedProject?.id === p.id ? 'bg-white/5' : ''}`}
-                        >
-                            <div>
-                                <p className="text-xs font-bold uppercase tracking-tight text-white group-hover:text-primary-400">{p.title}</p>
-                                <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-1">₹{p.market_price?.toLocaleString()} / BK</p>
-                            </div>
-                            {selectedProject?.id === p.id && <div className="h-1.5 w-1.5 bg-white rounded-full" />}
-                        </button>
-                    ))
-                ) : (
-                    <div className="p-8 text-center">
-                        <p className="text-[10px] uppercase tracking-widest text-zinc-700 font-bold">No assets found</p>
-                    </div>
-                )}
-            </div>
+            {projects.map(p => (
+              <button
+                key={p.id}
+                onClick={() => { onSelect(p); setIsOpen(false); }}
+                className={`w-full text-left p-4 hover:bg-white/5 flex items-center justify-between group transition-colors ${selectedProject?.id === p.id ? 'bg-white/5' : ''}`}
+              >
+                <div>
+                    <p className="text-xs font-bold uppercase tracking-tight text-white group-hover:text-primary-400">{p.title}</p>
+                    <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-1">₹{p.market_price?.toLocaleString()} / BK</p>
+                </div>
+                {selectedProject?.id === p.id && <div className="h-1.5 w-1.5 bg-white rounded-full" />}
+              </button>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
@@ -148,7 +117,6 @@ const ProjectSelector = ({ projects, selectedProject, onSelect }) => {
 
 const TradingRoom = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   
   // Data State
@@ -276,27 +244,7 @@ const TradingRoom = () => {
     <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans overflow-hidden">
         {/* Header Bar */}
         <header className="h-auto md:h-20 border-b border-white/5 px-4 md:px-6 py-4 md:py-0 flex flex-col md:flex-row items-center justify-between gap-4 bg-black/50 backdrop-blur-xl shrink-0 z-30">
-            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => navigate(-1)} 
-                    className="mr-2 border border-white/5 bg-white/5 hover:bg-white/10 hidden md:flex"
-                    leftIcon={<ArrowLeft size={14} />}
-                >
-                    Return
-                </Button>
-                
-                {/* Mobile Back Button */}
-                <div className="flex items-center justify-between w-full md:hidden">
-                    <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-zinc-400">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius)] bg-white text-black font-bold text-xs">
-                        EX
-                    </div>
-                </div>
-
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-12 w-full md:w-auto">
                 <ProjectSelector 
                     projects={projects} 
                     selectedProject={selectedProject} 
