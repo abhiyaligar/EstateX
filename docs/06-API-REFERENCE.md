@@ -32,7 +32,8 @@ Response includes tokens:
 }
 ```
 
----
+> [!NOTE]
+> **API Version**: 1.4 — Updated April 25, 2026. Added performance-optimized `OHLCV` engine with `DailyCandle` caching and documented the `400 Bad Request` responses for Circuit Breaker violations.
 
 ## Standard Response Format
 
