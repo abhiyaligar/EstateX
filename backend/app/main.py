@@ -5,6 +5,7 @@ from app.core.config import settings
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.services.candle_service import open_daily_candles, close_daily_candles
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,10 @@ scheduler = BackgroundScheduler(timezone="Asia/Kolkata")
 
 @app.on_event("startup")
 def start_scheduler():
+    if os.environ.get("VERCEL"):
+        logger.info("Running on Vercel — skipping background scheduler.")
+        return
+
     # 12:00 AM IST — Open fresh candles for all active projects
     scheduler.add_job(
         open_daily_candles,
@@ -44,8 +49,9 @@ def start_scheduler():
 
 @app.on_event("shutdown")
 def stop_scheduler():
-    scheduler.shutdown(wait=False)
-    logger.info("APScheduler shut down.")
+    if not os.environ.get("VERCEL"):
+        scheduler.shutdown(wait=False)
+        logger.info("APScheduler shut down.")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CORS
