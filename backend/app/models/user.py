@@ -12,6 +12,9 @@ def utcnow():
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = (
+        CheckConstraint('wallet_balance >= 0', name='ck_users_wallet_balance_non_negative'),
+    )
 
     # UUID returned by Supabase Auth maps to this primary key
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

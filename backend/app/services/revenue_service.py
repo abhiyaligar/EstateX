@@ -122,14 +122,21 @@ class RevenueService:
         # -----------------------------------------------------------------------
 
         # 1. Deduct Gross from Builder Wallet (Business Ledger)
+        # Atomic conditional UPDATE: only succeeds if balance is sufficient.
+        # Eliminates the separate read-check-write pattern that is vulnerable to race conditions.
         builder_profile = db.query(Builder).filter(Builder.id == project.builder_id).first()
         if not builder_profile:
              raise HTTPException(status_code=404, detail="Builder profile not found")
 
-        if builder_profile.wallet_balance < cycle.gross_amount:
-             raise HTTPException(status_code=400, detail="Insufficient funds in builder business wallet")
-             
-        builder_profile.wallet_balance -= cycle.gross_amount
+        rows_updated = db.query(Builder).filter(
+            Builder.id == project.builder_id,
+            Builder.wallet_balance >= cycle.gross_amount
+        ).update(
+            {Builder.wallet_balance: Builder.wallet_balance - cycle.gross_amount},
+            synchronize_session=False
+        )
+        if rows_updated == 0:
+            raise HTTPException(status_code=400, detail="Insufficient funds in builder business wallet")
         
         # Create Builder Debit Transaction
         db.add(WalletTransaction(
@@ -140,9 +147,12 @@ class RevenueService:
             reference_id=str(cycle.id)
         ))
         
-        # 2. Platform Fee (Credit to Admin)
+        # 2. Platform Fee (Credit to Admin) — atomic DB-level credit
         admin = db.query(User).filter(User.id == admin_id).first()
-        admin.wallet_balance += cycle.fee_amount
+        db.query(User).filter(User.id == admin_id).update(
+            {User.wallet_balance: User.wallet_balance + cycle.fee_amount},
+            synchronize_session=False
+        )
         db.add(WalletTransaction(
             user_id=admin.id,
             amount=cycle.fee_amount,
@@ -151,17 +161,21 @@ class RevenueService:
         ))
         
         # 3. Pro-rata Distribution to Mature Holders
+        # Each credit is an atomic DB-level UPDATE — no object fetch needed.
+        # This also eliminates the previous N+1 SELECT pattern (1 query per investor).
         price_per_mature_brick = cycle.net_amount / Decimal(total_eligible_bricks)
         
         for eh in eligible_holders:
             payout_amt = Decimal(eh['qty']) * price_per_mature_brick
-            
-            # Credit Investor
-            investor = db.query(User).filter(User.id == eh['user_id']).first()
-            investor.wallet_balance += payout_amt
-            
+
+            # Atomic credit — pushes arithmetic to the DB engine, no race window
+            db.query(User).filter(User.id == eh['user_id']).update(
+                {User.wallet_balance: User.wallet_balance + payout_amt},
+                synchronize_session=False
+            )
+
             db.add(WalletTransaction(
-                user_id=investor.id,
+                user_id=eh['user_id'],
                 amount=payout_amt,
                 transaction_type='rental_income_credit',
                 reference_id=str(cycle.id)

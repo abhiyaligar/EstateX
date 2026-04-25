@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Float, Integer, ForeignKey, DECIMAL
+from sqlalchemy import Column, String, Boolean, DateTime, Float, Integer, ForeignKey, DECIMAL, CheckConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.models.user import Base
@@ -6,6 +6,9 @@ import datetime
 
 class Builder(Base):
     __tablename__ = 'builders'
+    __table_args__ = (
+        CheckConstraint('wallet_balance >= 0', name='ck_builders_wallet_balance_non_negative'),
+    )
 
     # The Primary Key is also a Foreign Key pointing to users.id (1:1 relationship)
     id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True, index=True)
