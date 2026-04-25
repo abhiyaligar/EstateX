@@ -27,7 +27,7 @@ from app.models.builder import Builder
 from app.models.project import Project, Milestone
 from app.models.wallet import WalletTransaction
 from app.models.portfolio import BrickHolding
-from app.models.exchange import Order, Trade
+from app.models.exchange import Order, Trade, DailyCandle
 from app.models.otp import OTPRecord
 from app.models.analytics import MacroAnalytics
 from app.models.governance import GovernanceProposal, ProposalVote

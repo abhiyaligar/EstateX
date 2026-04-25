@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, Integer, String, DECIMAL, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, DECIMAL, ForeignKey, DateTime, Date, Boolean, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.models.user import Base
@@ -48,3 +48,35 @@ class Trade(Base):
     quantity = Column(Integer, nullable=False)
     
     executed_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow, index=True)
+
+
+class DailyCandle(Base):
+    """
+    Pre-computed OHLCV candle per project per calendar day (IST).
+
+    Lifecycle:
+      - Created at 12:00 AM IST by open_daily_candles() scheduler job.
+      - open_price is frozen at creation and NEVER changes — circuit breaker anchors to it.
+      - high / low / close / volume are updated live on every trade execution.
+      - Finalized at 11:59 PM IST by close_daily_candles() scheduler job.
+    """
+    __tablename__ = 'daily_candles'
+    __table_args__ = (
+        UniqueConstraint('project_id', 'date', name='uq_daily_candle_project_date'),
+    )
+
+    id           = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    project_id   = Column(UUID(as_uuid=True), ForeignKey('projects.id', ondelete='CASCADE'), nullable=False, index=True)
+    date         = Column(Date, nullable=False, index=True)  # Calendar date in IST
+
+    open_price   = Column(DECIMAL(18, 2), nullable=False)    # Frozen at session open — circuit breaker base
+    high_price   = Column(DECIMAL(18, 2), nullable=False)    # Updated live on each trade
+    low_price    = Column(DECIMAL(18, 2), nullable=False)    # Updated live on each trade
+    close_price  = Column(DECIMAL(18, 2), nullable=False)    # Rolling last trade price
+    volume       = Column(Integer, default=0, nullable=False) # Total bricks traded today
+
+    is_finalized = Column(Boolean, default=False, nullable=False)  # True after 11:59 PM job runs
+
+    created_at   = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
+    updated_at   = Column(DateTime(timezone=True), default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+

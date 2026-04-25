@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import auth, kyc, admin, builders, projects, wallet, exchange, users, analytics, governance, revenue
 from app.core.config import settings
+from apscheduler.schedulers.background import BackgroundScheduler
+from app.services.candle_service import open_daily_candles, close_daily_candles
 import logging
 
 # Configure logging
@@ -14,7 +16,40 @@ app = FastAPI(
     description="EstateX Backend APIs"
 )
 
-# Setup CORS middleware
+# ─────────────────────────────────────────────────────────────────────────────
+# APScheduler — Daily Candle Jobs (IST timezone)
+# ─────────────────────────────────────────────────────────────────────────────
+scheduler = BackgroundScheduler(timezone="Asia/Kolkata")
+
+@app.on_event("startup")
+def start_scheduler():
+    # 12:00 AM IST — Open fresh candles for all active projects
+    scheduler.add_job(
+        open_daily_candles,
+        'cron',
+        hour=0, minute=0,
+        id='open_daily_candles',
+        replace_existing=True
+    )
+    # 11:59 PM IST — Finalize today's candles and roll previous_close_price
+    scheduler.add_job(
+        close_daily_candles,
+        'cron',
+        hour=23, minute=59,
+        id='close_daily_candles',
+        replace_existing=True
+    )
+    scheduler.start()
+    logger.info("APScheduler started — Daily candle jobs registered.")
+
+@app.on_event("shutdown")
+def stop_scheduler():
+    scheduler.shutdown(wait=False)
+    logger.info("APScheduler shut down.")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CORS
+# ─────────────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], # Adjust in production
@@ -23,7 +58,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Routers
+# ─────────────────────────────────────────────────────────────────────────────
+# Routers
+# ─────────────────────────────────────────────────────────────────────────────
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(users.router, prefix=settings.API_V1_STR)
 app.include_router(kyc.router, prefix=settings.API_V1_STR)

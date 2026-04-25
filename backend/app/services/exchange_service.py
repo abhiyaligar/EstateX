@@ -10,6 +10,7 @@ from app.models.portfolio import BrickHolding
 from app.models.exchange import Order, Trade
 from app.models.wallet import WalletTransaction
 from app.schemas.exchange import OrderCreate
+from app.services.candle_service import CandleService
 
 from sqlalchemy import func
 from app.core.db import SessionLocal
@@ -64,17 +65,14 @@ class ExchangeService:
         return {"success": True, "message": f"Successfully purchased {quantity} Bricks for {total_cost} INR."}
 
     @staticmethod
-    def _enforce_circuit_breakers(project: Project, desired_price: Decimal):
+    def _enforce_circuit_breakers(project: Project, desired_price: Decimal, db: Session):
         """
-        Secondary Market: Mathematically clamps volatility. +20% / -10% from previous close.
-        Priority: previous_close_price → market_value → ipo_price
-        This ensures the band is always anchored to the most recent reference price,
-        not the original IPO price which may be stale after extended trading.
+        Secondary Market: Clamps volatility to +20% / -10% from today's session open.
+        open_price is frozen at 12:00 AM IST and never changes during the trading day,
+        making it pump-proof regardless of intraday price movement.
         """
-        base_price = (
-            project.previous_close_price
-            or project.market_value
-            or project.ipo_price
+        base_price = CandleService.get_circuit_breaker_base(
+            db, str(project.id), project.ipo_price
         )
 
         max_allowed = base_price * Decimal('1.20')
@@ -97,7 +95,7 @@ class ExchangeService:
         if project.status == 'halted':
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Trading is currently halted for this project by administration.")
             
-        ExchangeService._enforce_circuit_breakers(project, Decimal(str(order_data.price_per_brick)))
+        ExchangeService._enforce_circuit_breakers(project, Decimal(str(order_data.price_per_brick)), db)
         
         order_type = order_data.order_type.lower()
         if order_type not in ['buy', 'sell']:
@@ -257,9 +255,21 @@ class ExchangeService:
                 else:
                     db.add(BrickHolding(user_id=u_id, project_id=str(project.id), quantity=qty_delta))
 
-            # Push final market ticker
+            # Push final market ticker + update live candle
             if executed_at:
                 project.market_value = executed_at
+                # Initialize previous_close_price on first-ever trade (legacy compat)
+                if project.previous_close_price is None:
+                    project.previous_close_price = executed_at
+                # Update today's OHLCV candle (high/low/close/volume) atomically
+                total_qty_traded = sum(t.quantity for t in trades_to_create)
+                CandleService.update_live_candle(
+                    db,
+                    str(project.id),
+                    executed_at,
+                    total_qty_traded,
+                    project.ipo_price
+                )
 
     @staticmethod
     def cancel_order(user_id: str, order_id: str, db: Session):
