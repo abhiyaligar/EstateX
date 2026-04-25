@@ -1,12 +1,18 @@
 from fastapi import APIRouter, Depends, Query, BackgroundTasks
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
 from uuid import UUID
+from datetime import timedelta
+import time
 
 from app.schemas.auth import User
-from app.schemas.exchange import OrderCreate, OrderResponse, BrickHoldingResponse, PublicOrderResponse
+from app.schemas.exchange import (
+    OrderCreate, OrderResponse, BrickHoldingResponse, 
+    PublicOrderResponse, TradeResponse, OHLCVResponse
+)
 from app.models.portfolio import BrickHolding
-from app.models.exchange import Order
+from app.models.exchange import Order, Trade, DailyCandle
 from app.middleware.auth import get_current_user
 from app.services.exchange_service import ExchangeService
 from app.core.db import get_db
@@ -65,8 +71,6 @@ def get_my_open_market_intents(
     """
     return db.query(Order).filter(Order.user_id == current_user.id, Order.status == status).order_by(Order.created_at.desc()).all()
 
-from app.schemas.exchange import TradeResponse
-from app.models.exchange import Trade
 @router.get("/trades/{project_id}", response_model=List[TradeResponse])
 def get_project_trade_history(
     project_id: UUID,
@@ -102,9 +106,6 @@ def cancel_order(
     """
     return ExchangeService.cancel_order(str(current_user.id), str(order_id), db)
 
-from app.schemas.exchange import OHLCVResponse
-from sqlalchemy import func
-from datetime import timedelta
 
 @router.get("/trades/{project_id}/ohlcv", response_model=List[OHLCVResponse])
 def get_project_ohlcv(
@@ -114,29 +115,51 @@ def get_project_ohlcv(
 ):
     """
     Returns aggregated OHLCV data for advanced charting.
-    Note: For a production app, this would use timescaleDB or a materialized view.
-    Here we do a simple python-side aggregation for demonstration.
+    
+    Optimization:
+    - If interval is '1d', we use the pre-computed DailyCandle table (High Speed).
+    - Otherwise, we aggregate from the Trade ledger (Slower, used for intraday).
     """
-    # Fetch trades ordered by time
-    trades = db.query(Trade).filter(Trade.project_id == str(project_id)).order_by(Trade.executed_at.asc()).all()
+    
+    # CASE 1: Daily Charts — Use the high-performance candle table
+    if interval == '1d':
+        candles = db.query(DailyCandle).filter(
+            DailyCandle.project_id == str(project_id)
+        ).order_by(DailyCandle.date.asc()).all()
+        
+        if not candles:
+            return []
+            
+        return [
+            {
+                "time": int(time.mktime(c.date.timetuple())),
+                "open": float(c.open_price),
+                "high": float(c.high_price),
+                "low": float(c.low_price),
+                "close": float(c.close_price),
+                "value": c.volume
+            } for c in candles
+        ]
+
+    # CASE 2: Intraday Charts — Manual aggregation from Trade ledger
+    # Note: We limit this to the last 2000 trades to prevent OOM/Timeouts
+    trades = db.query(Trade).filter(
+        Trade.project_id == str(project_id)
+    ).order_by(Trade.executed_at.asc()).limit(2000).all()
     
     if not trades:
         return []
 
-    # Map intervals to pandas-like frequency or simple timedelta
     interval_map = {
         '1m': timedelta(minutes=1),
         '5m': timedelta(minutes=5),
         '1h': timedelta(hours=1),
-        '1d': timedelta(days=1)
     }
     td = interval_map.get(interval, timedelta(hours=1))
     
     ohlcv_data = {}
     
     for trade in trades:
-        # Floor the timestamp to the nearest interval
-        # E.g., for 1h: 14:35 -> 14:00
         timestamp = trade.executed_at.timestamp()
         interval_seconds = td.total_seconds()
         bucket = int(timestamp // interval_seconds) * interval_seconds
