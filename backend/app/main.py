@@ -50,9 +50,16 @@ def stop_scheduler():
 # ─────────────────────────────────────────────────────────────────────────────
 # CORS
 # ─────────────────────────────────────────────────────────────────────────────
+origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://estate-x-49m3.vercel.app",
+    "https://estate-x-nine-orcin.vercel.app", # Adding both just in case
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Adjust in production
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
