@@ -1,15 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import auth, kyc, admin, builders, projects, wallet, exchange, users, analytics, governance, revenue
+try:
+    from app.api.routes import auth, kyc, admin, builders, projects, wallet, exchange, users, analytics, governance, revenue
+except ImportError as e:
+    logging.error(f"IMPORT ERROR: {e}")
+    raise e
+
 from app.core.config import settings
-from apscheduler.schedulers.background import BackgroundScheduler
-from app.services.candle_service import open_daily_candles, close_daily_candles
 import logging
 import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+logger.info("Starting EstateX Backend...")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
