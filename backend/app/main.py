@@ -18,42 +18,6 @@ app = FastAPI(
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
-# APScheduler — Daily Candle Jobs (IST timezone)
-# ─────────────────────────────────────────────────────────────────────────────
-scheduler = BackgroundScheduler(timezone="Asia/Kolkata")
-
-@app.on_event("startup")
-def start_scheduler():
-    if os.environ.get("VERCEL"):
-        logger.info("Running on Vercel — skipping background scheduler.")
-        return
-
-    # 12:00 AM IST — Open fresh candles for all active projects
-    scheduler.add_job(
-        open_daily_candles,
-        'cron',
-        hour=0, minute=0,
-        id='open_daily_candles',
-        replace_existing=True
-    )
-    # 11:59 PM IST — Finalize today's candles and roll previous_close_price
-    scheduler.add_job(
-        close_daily_candles,
-        'cron',
-        hour=23, minute=59,
-        id='close_daily_candles',
-        replace_existing=True
-    )
-    scheduler.start()
-    logger.info("APScheduler started — Daily candle jobs registered.")
-
-@app.on_event("shutdown")
-def stop_scheduler():
-    if not os.environ.get("VERCEL"):
-        scheduler.shutdown(wait=False)
-        logger.info("APScheduler shut down.")
-
-# ─────────────────────────────────────────────────────────────────────────────
 # CORS
 # ─────────────────────────────────────────────────────────────────────────────
 app.add_middleware(
