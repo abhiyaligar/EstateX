@@ -60,10 +60,13 @@ EstateX creates a secure, transparent, and technologically advanced crowdfunding
 ✅ **Verified Builder Onboarding**: RERA document validation and compliance verification  
 ✅ **Fractional Ownership**: Tokenized properties tradable like stocks  
 ✅ **Smart Escrow**: Automated milestone-based fund releases  
-✅ **Transparent Distributions**: Smart contracts automate rental income and revenue sharing  
+✅ **Revenue Distribution Engine**: Two-stage approval pipeline for pro-rata monthly rental payouts  
 ✅ **Secondary Marketplace**: P2P trading platform for fractional shares  
+✅ **Professional Trading Terminal**: TradingView Lightweight Charts with OHLCV, candlestick/line/area, SMA, fullscreen mode  
+✅ **DAO Governance**: Snapshot-based weighted voting for brick holders on project decisions  
 ✅ **Macro Market Intelligence**: Database-backed regional growth indicators and rental yields  
 ✅ **Investor Analytics**: Real-time portfolio tracking, ROI projections, and Asset Allocation breakdown  
+✅ **Dual Wallet Architecture**: Strict separation of investor personal funds and builder business ledger  
 ✅ **Full Compliance**: KYC pipeline, RERA validation, SEBI-aligned structure  
 
 ---
@@ -88,6 +91,8 @@ EstateX creates a secure, transparent, and technologically advanced crowdfunding
 ### For Platform Admins
 - Complete KYC/builder compliance verification
 - Project milestone validation
+- **Revenue Settlement Dashboard**: Approve/reject monthly rental cycle submissions from builders
+- **DAO Governance Management**: Create proposals, configure voting options, and execute consensus results
 - Macro Analytics Management: Global Market Intelligence CRUD suite
 - Dispute resolution dashboard
 - Platform analytics and reporting
@@ -155,9 +160,10 @@ EstateX creates a secure, transparent, and technologically advanced crowdfunding
 ### Frontend
 - **Framework**: Next.js 14 with React 18
 - **Styling**: Tailwind CSS 3.4
-- **Visualization**: Chart.js for analytics
+- **Visualization**: TradingView Lightweight Charts (OHLCV terminal), Recharts (portfolio analytics)
 - **Web3**: Web3.js for blockchain wallet connectivity
 - **State Management**: Redux/Zustand
+- **Realtime**: Supabase Realtime (orders, trades, live feed)
 - **Testing**: Jest, React Testing Library
 
 ### Backend
@@ -354,6 +360,6 @@ This project is developed as an academic capstone and is protected under intelle
 
 ---
 
-**Version**: 1.1  
-**Last Updated**: April 22, 2026  
-**Status**: Regional Intelligence & Relational Core Complete
+**Version**: 1.3  
+**Last Updated**: April 25, 2026  
+**Status**: Revenue Distribution Engine, DAO Governance & Professional Trading Terminal Complete

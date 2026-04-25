@@ -9,9 +9,9 @@ Comprehensive Technical Documentation Suite
 
 This documentation suite provides complete technical specifications, architectural design, implementation guides, and user guides for the EstateX platform.
 
-**Total Documentation**: ~38,500 lines  
-**Last Updated**: April 22, 2026  
-**Version**: 1.5
+**Total Documentation**: ~42,000 lines  
+**Last Updated**: April 25, 2026  
+**Version**: 1.6
 
 ---
 
@@ -40,6 +40,14 @@ This documentation suite provides complete technical specifications, architectur
 
 ## Recent Technical Updates (April 2026)
 
+### Revenue Distribution Engine (April 25)
+- **Rental Cycle Ledger**: Implemented a two-stage approval pipeline (`RentalCycle` + `RentalPayout` models) separating deposit initiation from verified settlement.
+- **Dual Initiator Support**: Both Builders and Admins can initiate a rental deposit, with the Admin serving as the final settlement authority.
+- **Maturity-Based (FIFO) Eligibility**: Investors must hold bricks for **≥ 30 days** to qualify for a cycle's distribution, preventing last-minute speculative purchases from diluting long-term holders.
+- **Pro-Rata Settlement**: `RevenueService.settle_revenue_cycle()` atomically calculates each investor's share from `brick_holdings`, creates individual `RentalPayout` records, and credits `users.wallet_balance`.
+- **Admin Settlement Dashboard**: Admin Portal now displays a "Pending Settlements" tab showing all `pending_approval` cycles with project context and approve/reject actions.
+
+
 ### Builder Project Workspace (April 22)
 - **Collapsible Navigation**: Implemented a professional, toggleable sidebar across the platform to optimize screen real estate.
 - **My Projects Workspace**: Developed a dedicated high-density dashboard for builders to manage their portfolio, track IPO performance, and monitor construction milestones.
@@ -66,6 +74,13 @@ This documentation suite provides complete technical specifications, architectur
 - **Asset Allocation Logic**: Integrated `recharts` to provide real-time exposure breakdown by **City** and **Property Type**.
 - **Relational Deep-Dives**: Mapped `BrickHolding` to `Project` models, enabling complex portfolio analytics and cross-relational data fetching.
 - **UI Performance**: Optimized React hook ordering and memoization to handle large portfolios without re-render performance hits.
+
+### Professional Trading Terminal (April 23)
+- **Lightweight Charts Migration**: Migrated from Chart.js to **TradingView Lightweight Charts** for a professional-grade OHLCV candlestick terminal with sub-pixel rendering.
+- **Chart Type Switching**: Seamless toggle between Candlestick, Line, and Area chart series.
+- **Built-in Overlays**: Volume histogram and 20-period Simple Moving Average (SMA) rendered natively via the `LineSeries` overlay.
+- **Fullscreen Mode**: Maximize button hides the orderbook panels to expand the chart for distraction-free technical analysis.
+- **Timeframe & Range Controls**: Bucket size (1m, 5m, 1h, 1d) and quick-range selectors (1D, 1W, 1M, 3M, 1Y, ALL) for fine-grained historical navigation.
 
 ### S3 Storage Resilience (April 17)
 - **Path-Style Addressing**: Configured `boto3` to use `addressing_style='path'` to ensure compatibility with Supabase S3 endpoints.
@@ -174,7 +189,7 @@ Data & Blockchain Layer
 9. BlockchainService - Smart contract calls
 10. RevenueService - Distribution automation
 
-**API Endpoints**: 32 documented endpoints across 8 categories
+**API Endpoints**: 45+ documented endpoints across 12 categories
 
 ---
 
@@ -225,15 +240,22 @@ Data & Blockchain Layer
 
 **Core Tables**:
 1. users (25 columns)
-2. builders (20 columns)
+2. builders (20 columns, incl. `wallet_balance`)
 3. projects (30 columns)
-4. investments (15 columns)
-5. payments (15 columns)
-6. milestones (10 columns)
-7. distributions (10 columns)
-8. secondary_market_orders (12 columns)
-9. kyc_records (12 columns)
-10. audit_logs (10 columns)
+4. bank_accounts (6 columns)
+5. wallet_transactions (6 columns, incl. `is_builder_transaction` flag)
+6. brick_holdings (5 columns)
+7. milestones (15 columns)
+8. distributions (10 columns)
+9. orders (8 columns)
+10. trades (7 columns)
+11. kyc_records (20 columns)
+12. audit_logs (10 columns)
+13. macro_analytics (5 columns)
+14. **rental_cycles** (9 columns) — NEW
+15. **rental_payouts** (5 columns) — NEW
+16. **governance_proposals** (9 columns) — NEW
+17. **proposal_votes** (5 columns) — NEW
 
 **Performance**:
 - DECIMAL(18,2) for large financial amounts
@@ -543,7 +565,6 @@ Admin:
 3. **Week 1-2**: Database setup (05-DATABASE-SCHEMA.md)
 4. **Week 3-4**: Smart contracts (04-BLOCKCHAIN-ARCHITECTURE.md)
 5. **Week 5-8**: Feature implementation (09-FEATURES-USER-GUIDE.md)
-6. **Week 9-10**: Social & Community (Upcoming) - Investor circles and group discussions.
 7. **Week 11-12**:- Security & Risk Assessment: Rs. 10B exposure analysis (08-SECURITY-COMPLIANCE.md)
 - User Workflows: 15 documented user journeys (09-FEATURES-USER-GUIDE.md)
 - DAO Governance: Weighted voting & proposal management (10-GOVERNANCE-DAO.md)
@@ -608,7 +629,7 @@ Admin:
 
 ---
 
-**EstateX Documentation Suite v1.5**  
+**EstateX Documentation Suite v1.6**  
 **Status**: Complete & Production Ready  
-**Total Lines**: ~35,000  
+**Total Lines**: ~42,000  
 **Documents**: 10 major files

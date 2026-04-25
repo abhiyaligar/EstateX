@@ -16,6 +16,9 @@
 8. [Backup & Recovery](#backup--recovery)
 9. [Query Optimization](#query-optimization)
 
+> [!NOTE]
+> **Schema Version**: 1.3 — Updated April 25, 2026 to include the Revenue Distribution Engine (`rental_cycles`, `rental_payouts`) and DAO Governance tables (`governance_proposals`, `proposal_votes`).
+
 ---
 
 ## Database Overview
@@ -102,6 +105,48 @@
 ┌─────────┴───────────┐
 │      projects       │
 └─────────────────────┘
+
+┌──────────────────────────┐
+│      rental_cycles       │
+├──────────────────────────┤
+│ id (PK)                  │
+│ project_id (FK)          │
+│ month / year             │
+│ gross_amount             │
+│ net_amount               │
+│ status (pending/settled) │
+└──────┬───────────────────┘
+       │
+┌──────▼───────────────────┐
+│      rental_payouts      │
+├──────────────────────────┤
+│ id (PK)                  │
+│ cycle_id (FK)            │
+│ user_id (FK)             │
+│ eligible_quantity        │
+│ amount_paid              │
+└──────────────────────────┘
+
+┌─────────────────────────────┐
+│    governance_proposals     │
+├─────────────────────────────┤
+│ id (PK)                     │
+│ project_id (FK)             │
+│ title / description         │
+│ options (JSONB)             │
+│ status / end_date           │
+│ result_option_index         │
+└──────┬──────────────────────┘
+       │
+┌──────▼──────────────────────┐
+│       proposal_votes        │
+├─────────────────────────────┤
+│ id (PK)                     │
+│ proposal_id (FK)            │
+│ user_id (FK)                │
+│ option_index                │
+│ weight (brick snapshot)     │
+└─────────────────────────────┘
 ```
 
 ---
@@ -541,7 +586,94 @@ CREATE TABLE macro_analytics (
 
 CREATE INDEX idx_macro_pincode ON macro_analytics(pincode);
 ```
+
+### 12. rental_cycles & rental_payouts Tables
+
+The **Revenue Distribution Engine** — drives automated, pro-rata monthly rental payouts to brick holders.
+
+```sql
+CREATE TABLE rental_cycles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+
+    month INTEGER NOT NULL,  -- 1-12
+    year  INTEGER NOT NULL,
+
+    gross_amount DECIMAL(18,2) NOT NULL,       -- Total rental deposited
+    fee_amount   DECIMAL(18,2) NOT NULL,       -- 1% platform fee
+    net_amount   DECIMAL(18,2) NOT NULL,       -- 99% distributed to investors
+
+    status   VARCHAR(50) DEFAULT 'pending_approval', -- pending_approval | settled | failed
+    admin_id UUID REFERENCES users(id) ON DELETE SET NULL,  -- Admin who settled
+
+    created_at     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    distributed_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX idx_rental_cycles_project  ON rental_cycles(project_id);
+CREATE INDEX idx_rental_cycles_status   ON rental_cycles(status);
+
+CREATE TABLE rental_payouts (
+    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    cycle_id   UUID NOT NULL REFERENCES rental_cycles(id) ON DELETE CASCADE,
+    user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+    eligible_quantity INTEGER     NOT NULL,  -- Bricks held ≥ 30 days at snapshot
+    amount_paid       DECIMAL(18,2) NOT NULL,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_rental_payouts_cycle  ON rental_payouts(cycle_id);
+CREATE INDEX idx_rental_payouts_user   ON rental_payouts(user_id);
 ```
+
+> [!IMPORTANT]
+> **Maturity Gate**: `eligible_quantity` reflects bricks that have been held for **≥ 30 days**. This enforces a FIFO-based maturity rule — bricks purchased during the current cycle month do **not** qualify for that cycle's distribution. The `RevenueService.settle_revenue_cycle()` computes this at settlement time using `brick_holdings.created_at`.
+
+### 13. governance_proposals & proposal_votes Tables
+
+The **DAO Governance** system — enables weighted brick-holder voting on project management proposals.
+
+```sql
+CREATE TABLE governance_proposals (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id  UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+
+    title       VARCHAR(255) NOT NULL,
+    description TEXT         NOT NULL,
+    options     JSONB        NOT NULL,  -- e.g. ["Renew", "Change Tenant", "Sell"]
+
+    status      VARCHAR(50) DEFAULT 'active',  -- active | closed | executed
+    end_date    TIMESTAMP WITH TIME ZONE NOT NULL,
+    result_option_index INTEGER,  -- Set by admin on execution
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_proposals_project ON governance_proposals(project_id);
+CREATE INDEX idx_proposals_status  ON governance_proposals(status);
+
+CREATE TABLE proposal_votes (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    proposal_id UUID NOT NULL REFERENCES governance_proposals(id) ON DELETE CASCADE,
+    user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+    option_index INTEGER NOT NULL,
+    weight       INTEGER NOT NULL,  -- Snapshot of brick holdings at time of vote
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (proposal_id, user_id)  -- Prevent double voting
+);
+
+CREATE INDEX idx_votes_proposal ON proposal_votes(proposal_id);
+CREATE INDEX idx_votes_user     ON proposal_votes(user_id);
+```
+
+> [!NOTE]
+> **Sybil Resistance**: The `UNIQUE (proposal_id, user_id)` constraint enforces one-vote-per-user at the database level. Voting eligibility requires both a verified KYC profile and an active `brick_holdings` record for the proposal's `project_id`.
 
 ---
 
@@ -558,7 +690,9 @@ users (1) ──────────── (N) investments
   │
   ├─────────── (N) payments
   │
-  └─────────── (N) distributions
+  ├─────────── (N) distributions
+  │
+  └─────────── (N) rental_payouts
 
 builders (1) ──────────── (N) projects
 
@@ -568,7 +702,11 @@ projects (1) ──────────── (N) investments
   │
   ├─────────── (N) distributions
   │
-  └─────────── (N) secondary_market_orders
+  ├─────────── (N) secondary_market_orders
+  │
+  ├─────────── (N) rental_cycles         [Revenue Engine]
+  │
+  └─────────── (N) governance_proposals  [DAO Governance]
 
 investments (1) ──────────── (N) distributions
 
@@ -578,8 +716,15 @@ secondary_market_orders (1) ──> users (seller_id)
 projects (1) ─────────── (1) macro_analytics (Mapped via Pincode)
 brick_holdings (N) ───── (1) projects (Direct Portfolio Relationship)
 
+Revenue Distribution Chain:
+rental_cycles (1) ──── (N) rental_payouts ──── (1) users
+
+DAO Governance Chain:
+governance_proposals (1) ──── (N) proposal_votes ──── (1) users
+proposal_votes.weight = SNAPSHOT of brick_holdings.quantity at vote time
+
 Dual Wallet Structure:
-├── users.wallet_balance: Personal/Investor ledger
+├── users.wallet_balance:    Personal/Investor ledger
 └── builders.wallet_balance: Business/Construction ledger (credited via Milestones)
 ```
 

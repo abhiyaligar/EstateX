@@ -896,6 +896,159 @@ Permanently remove a regional intelligence node.
 
 ---
 
+## Revenue Distribution Endpoints
+
+### POST /revenue/deposit
+
+Initiate a new monthly rental cycle for a project. Accessible by **Builders** and **Admins**.
+
+**Request**:
+```json
+{
+  "project_id": "uuid-string",
+  "amount": 500000.00,
+  "month": 4,
+  "year": 2026
+}
+```
+
+**Response** (200):
+```json
+{
+  "id": "uuid-string",
+  "project_id": "uuid-string",
+  "month": 4,
+  "year": 2026,
+  "gross_amount": 500000.00,
+  "fee_amount": 5000.00,
+  "net_amount": 495000.00,
+  "status": "pending_approval",
+  "created_at": "2026-04-25T00:00:00Z"
+}
+```
+
+### GET /revenue/admin/pending
+
+Admin-only. Fetch all rental cycles awaiting settlement approval.
+
+**Response** (200): Array of `RentalCycle` objects with `status = "pending_approval"`.
+
+### POST /revenue/admin/settle/{cycle_id}
+
+Admin-only. Approve and execute the pro-rata distribution for a pending cycle. The service calculates each brick holder's `eligible_quantity` (bricks held ≥ 30 days) and credits their wallet accordingly.
+
+**Response** (200):
+```json
+{
+  "id": "uuid-string",
+  "status": "settled",
+  "distributed_at": "2026-04-25T12:00:00Z",
+  "payouts_created": 143
+}
+```
+
+### DELETE /revenue/admin/reject/{cycle_id}
+
+Admin-only. Reject and permanently remove a pending rental cycle (e.g., incorrect amount submitted by builder).
+
+**Response** (200):
+```json
+{ "message": "Cycle rejected and removed" }
+```
+
+### GET /revenue/history/{project_id}
+
+Publicly fetch the settled distribution history for a project, ordered most-recent first.
+
+**Response** (200): Array of settled `RentalCycle` objects.
+
+---
+
+## Governance Endpoints
+
+### GET /governance/proposals/{project_id}
+
+Fetch all governance proposals for a specific project, including real-time vote distribution.
+
+**Response** (200):
+```json
+[
+  {
+    "id": "uuid-string",
+    "project_id": "uuid-string",
+    "title": "Renew Tenant Contract for 2027?",
+    "description": "The current lease expires in December 2026.",
+    "options": ["Renew", "Change Tenant", "Sell Asset"],
+    "status": "active",
+    "end_date": "2026-05-15T23:59:00Z",
+    "total_votes": 4250,
+    "vote_distribution": [3000, 750, 500]
+  }
+]
+```
+
+### POST /governance/proposals/{proposal_id}/vote
+
+Cast a weighted vote on a proposal. Requires KYC-approved **Investor** with active brick holdings in the proposal's project. Weight is snapshotted from current brick holdings.
+
+**Request**:
+```json
+{
+  "option_index": 0
+}
+```
+
+**Response** (200):
+```json
+{
+  "id": "uuid-string",
+  "proposal_id": "uuid-string",
+  "user_id": "uuid-string",
+  "option_index": 0,
+  "weight": 150,
+  "created_at": "2026-04-25T14:00:00Z"
+}
+```
+
+**Errors**:
+- `400`: Proposal not active or already voted
+- `403`: Not a brick holder of this project
+
+### GET /governance/admin/proposals
+
+Admin-only. Fetch all governance proposals across all projects.
+
+**Response** (200): Array of `ProposalResponse` objects.
+
+### POST /governance/admin/proposals
+
+Admin-only. Create a new governance proposal for a project.
+
+**Request**:
+```json
+{
+  "project_id": "uuid-string",
+  "title": "Renew Tenant Contract for 2027?",
+  "description": "The current lease expires in December 2026. Vote to decide next steps.",
+  "options": ["Renew", "Change Tenant", "Sell Asset"],
+  "end_date": "2026-05-15T23:59:00Z"
+}
+```
+
+**Response** (201): Created `ProposalResponse` object.
+
+### PUT /governance/admin/proposals/{proposal_id}/status
+
+Admin-only. Close or execute a proposal, recording the winning option.
+
+**Query Parameters**:
+- `status`: `closed` or `executed`
+- `result_index`: Integer index of the winning option (required when `status=executed`)
+
+**Response** (200): Updated `ProposalResponse` object.
+
+---
+
 ## Webhooks
 
 ### Payment Webhook
@@ -940,6 +1093,6 @@ Permanently remove a regional intelligence node.
 
 ---
 
-**Document Version**: 1.1  
-**Last Updated**: April 22, 2026  
-**Status**: Complete (Admin Intelligence Update)
+**Document Version**: 1.3  
+**Last Updated**: April 25, 2026  
+**Status**: Complete (Revenue Distribution Engine & DAO Governance Update)

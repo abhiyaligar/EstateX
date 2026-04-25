@@ -898,7 +898,71 @@ Admin Dashboard → Analytics Tab:
     └── To RERA if builder breach confirmed
 ```
 
-### 5. Compliance Reporting
+### 6. Revenue Distribution Settlement
+
+**Review & Approve Monthly Rental Cycles**
+```
+Admin Dashboard → Revenue Settlements:
+├── Pending Settlements Queue:
+│   ├── Lists all rental cycles in 'pending_approval' state.
+│   ├── For each cycle:
+│   │   ├── Project name & builder identity
+│   │   ├── Month / Year of the distribution
+│   │   ├── Gross amount deposited by builder
+│   │   ├── Calculated 1% platform fee
+│   │   ├── Net amount to be distributed (99%)
+│   │   └── Number of eligible brick holders
+│   └── Action Options:
+│       ├── APPROVE → Executes pro-rata distribution to all holders.
+│       │   ├── System queries brick_holdings for bricks held ≥ 30 days.
+│       │   ├── Creates individual RentalPayout records per investor.
+│       │   └── Credits each investor's wallet_balance automatically.
+│       └── REJECT → Permanently removes the cycle (builder must re-submit).
+└── Settlement Audit:
+    ├── View completed cycles with settlement timestamps.
+    ├── Drill into individual payouts per investor.
+    └── Track admin who approved each settlement.
+```
+
+**Revenue Distribution Data Flow**
+```
+Builder/Admin deposits rental → RentalCycle created (pending_approval)
+    │
+    ▼
+Admin reviews amount & period
+    │
+    ├─ APPROVE:
+    │   ├─ Query: brick_holdings WHERE created_at ≤ (cycle.month - 30 days)
+    │   ├─ Sum total eligible bricks
+    │   ├─ For each holder: payout = (holder_bricks / total_bricks) × net_amount
+    │   ├─ Create RentalPayout record
+    │   ├─ Credit users.wallet_balance
+    │   └─ Mark RentalCycle.status = 'settled'
+    │
+    └─ REJECT: DELETE RentalCycle (builder re-submits with correction)
+```
+
+### 7. DAO Governance Management
+
+**Create & Manage Voting Proposals**
+```
+Admin Dashboard → Governance Tab:
+├── All Proposals View:
+│   ├── Lists proposals across all projects.
+│   ├── Status filter: Active, Closed, Executed.
+│   └── Real-time vote tallies with weighted distribution.
+├── Create Proposal:
+│   ├── Select target project.
+│   ├── Enter title & detailed rationale.
+│   ├── Define multi-choice options (e.g. "Renew", "Sell", "Abstain").
+│   └── Set UTC deadline for voting closure.
+└── Execute Consensus:
+    ├── View final weighted distribution chart.
+    ├── Mark winning option (result_option_index).
+    └── Set status to 'executed' to close the record.
+```
+
+### 8. Compliance Reporting
 
 **Generate Compliance Reports**
 ```
@@ -1347,9 +1411,9 @@ A: Platform fee structure:
 
 ---
 
-**Document Version**: 1.1  
-**Last Updated**: April 22, 2026  
-**Status**: Complete (Analytics & Visualizations Update)
+**Document Version**: 1.3  
+**Last Updated**: April 25, 2026  
+**Status**: Revenue Distribution Engine & DAO Governance Complete
 
 ### Quick Reference Card
 
@@ -1379,20 +1443,6 @@ KEY NUMBERS
 └─ Completion rate: 98%
 ```
 
----
-
-## Social & Community (Upcoming)
-
-### Investor Circles
-Connect with fellow investors to discuss project performance, share market insights, and collaborate on investment strategies.
-
-### Project Discussion Groups
-Dedicated chat spaces for each project where investors can ask questions directly to builders and verify site progress with peers.
-
-### Governance Voting
-Participate in platform-wide decisions and project-specific proposals through the weighted "Brick" voting system.
-
----
-
-**EstateX User Guide v1.5**  
-**Last Updated**: April 22, 2026
+**EstateX User Guide v1.6**  
+**Last Updated**: April 25, 2026  
+**Status**: Revenue Distribution Engine & DAO Governance Complete
