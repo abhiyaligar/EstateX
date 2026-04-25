@@ -67,16 +67,23 @@ class ExchangeService:
     def _enforce_circuit_breakers(project: Project, desired_price: Decimal):
         """
         Secondary Market: Mathematically clamps volatility. +20% / -10% from previous close.
+        Priority: previous_close_price → market_value → ipo_price
+        This ensures the band is always anchored to the most recent reference price,
+        not the original IPO price which may be stale after extended trading.
         """
-        base_price = project.previous_close_price or project.ipo_price
-        
+        base_price = (
+            project.previous_close_price
+            or project.market_value
+            or project.ipo_price
+        )
+
         max_allowed = base_price * Decimal('1.20')
         min_allowed = base_price * Decimal('0.90')
-        
+
         if desired_price > max_allowed:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Upper Circuit Limit Hit. Max price allowed is {max_allowed}")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Upper Circuit Limit Hit. Max price allowed is {max_allowed:.2f}")
         if desired_price < min_allowed:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Lower Circuit Limit Hit. Min price allowed is {min_allowed}")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Lower Circuit Limit Hit. Min price allowed is {min_allowed:.2f}")
 
     @staticmethod
     def place_order(user_id: str, order_data: OrderCreate, db: Session):
