@@ -211,11 +211,12 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
         onClick={() => setIsOpen(true)}
         className="flex items-center gap-5 px-2 py-1 group transition-all relative"
       >
-        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/5 group-hover:border-white/20 group-hover:bg-white/5 transition-all">
-          <Search size={18} className="text-zinc-500 group-hover:text-white transition-colors" />
+        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/5 group-hover:border-white/20 group-hover:bg-white/5 transition-all relative">
+          <Search size={16} className="text-zinc-500 group-hover:text-white transition-colors relative z-10" />
+          <div className="absolute inset-0 bg-primary-500/0 group-hover:bg-primary-500/10 blur-xl transition-all rounded-full" />
         </div>
         <div className="text-left">
-          <p className="text-[7px] uppercase tracking-[0.3em] text-zinc-600 font-black leading-none mb-1 group-hover:text-zinc-400 transition-colors hidden md:block">Asset Identifier</p>
+          <p className="text-[7px] uppercase tracking-[0.4em] text-zinc-600 font-black leading-none mb-1.5 group-hover:text-zinc-400 transition-colors hidden md:block">Asset Protocol // Live</p>
           <div className="flex items-center gap-1.5">
             <h2 className="text-base md:text-lg font-black uppercase tracking-tighter text-white group-hover:text-primary-400 transition-colors truncate max-w-[120px] md:max-w-none">
               {selectedProject?.title || 'Select Asset'}
@@ -223,9 +224,6 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
             <ChevronDown size={10} className="text-zinc-700 group-hover:text-white transition-all group-hover:translate-y-0.5" />
           </div>
         </div>
-        
-        {/* Subtle hover indicator */}
-        <div className="absolute -bottom-2 left-0 w-0 h-0.5 bg-primary-500 group-hover:w-full transition-all duration-500 opacity-50" />
       </button>
 
       <AnimatePresence>
@@ -392,7 +390,6 @@ const TradingRoom = () => {
   const [ohlcvData, setOhlcvData] = useState([]);
   
   // Vault & Governance State
-  const [activeTab, setActiveTab] = useState('exchange');
   const [bookMode, setBookMode] = useState('book'); // book, news, dao, vault
   const [mobileTab, setMobileTab] = useState('chart');
   const [holdings, setHoldings] = useState([]);
@@ -446,7 +443,7 @@ const TradingRoom = () => {
     if (!selectedProject) return;
     try {
       const [history, book, ohlcv, govProposals, userPortfolio, orders, walletData] = await Promise.all([
-        exchangeService.getTradeHistory(selectedProject.id),
+        (bookMode === 'history' || tradeHistory.length === 0) ? exchangeService.getTradeHistory(selectedProject.id) : Promise.resolve(tradeHistory),
         exchangeService.getPublicOrderBook(selectedProject.id),
         exchangeService.getOHLCV(selectedProject.id, chartTimeframe.toLowerCase()),
         governanceService.getProposals(selectedProject.id).catch(() => []),
@@ -471,6 +468,15 @@ const TradingRoom = () => {
 
   useEffect(() => {
     refreshLiveData();
+    if (!selectedProject) return;
+  }, [selectedProject, chartTimeframe]);
+
+  useEffect(() => {
+    if (bookMode === 'history') {
+      refreshLiveData();
+    }
+  }, [bookMode]);
+  useEffect(() => {
     if (!selectedProject) return;
 
     const tradeChannel = supabase
@@ -497,7 +503,7 @@ const TradingRoom = () => {
     };
   }, [selectedProject, chartTimeframe]);
 
-  // Calculations
+
   const buyOrders = useMemo(() => {
     const orders = publicOrderBook.filter(o => o.order_type === 'buy').sort((a,b) => b.price_per_brick - a.price_per_brick);
     let total = 0;
@@ -567,7 +573,7 @@ const TradingRoom = () => {
   const volChartContainerRef = React.useRef(null);
 
   useEffect(() => {
-    if (!priceChartContainerRef.current || formattedChartData.price.length === 0 || activeTab !== 'exchange') return;
+    if (!priceChartContainerRef.current || formattedChartData.price.length === 0) return;
     
     const priceChart = createChart(priceChartContainerRef.current, {
       layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: '#71717a' },
@@ -646,12 +652,27 @@ const TradingRoom = () => {
       resizeObserver.disconnect();
       priceChart.remove();
     };
-  }, [formattedChartData.price, formattedChartData.volume, chartType, activeTab, mobileTab]);
+  }, [formattedChartData.price, formattedChartData.volume, chartType, mobileTab]);
 
   // Combined Price & Volume Metrics
 
   const latestPrice = tradeHistory.length > 0 ? tradeHistory[0].price : (selectedProject?.market_price || 0);
   const priceChange = tradeHistory.length > 1 ? ((tradeHistory[0].price - tradeHistory[1].price) / tradeHistory[1].price * 100).toFixed(2) : 0;
+
+  // Portfolio & Holding Stats
+  const activeHolding = useMemo(() => 
+    holdings.find(h => h.project_id === selectedProject?.id), 
+  [holdings, selectedProject]);
+
+  const activeHoldingStats = useMemo(() => {
+    if (!activeHolding || !latestPrice) return { quantity: 0, pnl: 0, percent: 0, avgPrice: 0 };
+    const avgPrice = activeHolding.average_buy_price || 0;
+    const currentVal = activeHolding.quantity * latestPrice;
+    const costBasis = activeHolding.quantity * avgPrice;
+    const pnl = currentVal - costBasis;
+    const percent = costBasis > 0 ? (pnl / costBasis) * 100 : 0;
+    return { quantity: activeHolding.quantity, pnl, percent, avgPrice };
+  }, [activeHolding, latestPrice]);
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
@@ -755,7 +776,7 @@ const TradingRoom = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans overflow-hidden relative">
+    <div className="h-screen bg-[#050505] text-white flex flex-col font-sans overflow-hidden relative">
         {/* Mobile-Optimized Header (Groww Style) */}
         <header className="h-16 md:h-20 border-b border-white/10 px-4 md:px-8 flex items-center justify-between bg-[#080808]/95 backdrop-blur-3xl sticky top-0 z-[110] shadow-2xl">
             <div className="flex items-center gap-3">
@@ -769,10 +790,10 @@ const TradingRoom = () => {
                 <div className="hidden md:block">
                         <button 
                         onClick={() => navigate(-1)} 
-                        className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-zinc-400 hover:text-white"
+                        className="group flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-zinc-400 hover:text-white"
+                        title="Return to Dashboard"
                     >
-                        <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">Return</span>
+                        <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
                     </button>
                 </div>
 
@@ -819,53 +840,20 @@ const TradingRoom = () => {
                 </div>
 
 
-            <div className="flex items-center gap-6 hidden md:flex">
-                {/* Modern Segmented Control */}
-                <div className="flex bg-zinc-950 p-1 border border-white/5 rounded-xl">
-                   {[
-                     { id: 'exchange', label: 'Exchange' },
-                     { id: 'holdings', label: 'My Vault' },
-                     { id: 'governance', label: 'DAO', icon: <Shield size={10} /> }
-                   ].filter(t => t.id !== 'governance' || proposals.length > 0).map((tab) => (
-                     <button 
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)} 
-                        className={`relative px-5 py-2.5 text-[9px] uppercase tracking-[0.2em] font-black transition-all rounded-lg flex items-center gap-2 ${activeTab === tab.id ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
-                     >
-                        {activeTab === tab.id && (
-                          <motion.div 
-                            layoutId="activeTabHeader" 
-                            className="absolute inset-0 bg-white/10 rounded-lg border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)]" 
-                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                          />
-                        )}
-                        <span className="relative z-10 flex items-center gap-2">
-                          {tab.icon} {tab.label}
-                        </span>
-                     </button>
-                   ))}
-                </div>
-
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/5 border border-green-500/10 rounded-full">
-                    <div className="h-1.5 w-1.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
-                    <span className="text-[9px] uppercase tracking-[0.2em] text-green-500/80 font-black">Live Matcher</span>
-                </div>
-            </div>
         </header>
 
         {/* Main Layout Area */}
-        <div className="flex-1 overflow-hidden relative">
+        <div className="flex-1 h-full overflow-hidden relative">
             <AnimatePresence mode="wait">
-                {activeTab === 'exchange' && (
-                    <motion.div 
-                        key="exchange"
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="flex-1 flex flex-col md:flex-row pb-20 md:pb-0 min-h-0"
-                    >
+                <motion.div 
+                    key="terminal"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="h-full flex flex-col md:flex-row pb-20 md:pb-0 min-h-0"
+                >
                         {/* Left Column: Charts */}
                         {/* Left Column: Unified Technical Chart */}
                         <div className={`flex-1 flex flex-col border-r border-white/5 overflow-hidden ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
-                            <div className="flex-1 flex flex-col min-h-0 bg-black/20 relative">
+                            <div className="flex-1 flex flex-col h-full bg-black/20 relative">
                                 {/* Chart Header / Timeframes */}
                                 <div className="h-8 border-b border-white/5 px-4 flex items-center justify-between shrink-0 bg-zinc-950/20">
                                     <div className="flex bg-zinc-900/50 rounded-md border border-white/5 relative">
@@ -907,8 +895,8 @@ const TradingRoom = () => {
                                 </div>
 
                                 {/* Unified Chart Area */}
-                                <div className="flex-1 min-h-[350px] md:min-h-0 relative overflow-hidden bg-[#050505]">
-                                    <div ref={priceChartContainerRef} className="absolute inset-0 [&_a]:hidden" />
+                                <div className="flex-1 relative overflow-hidden bg-[#050505]">
+                                    <div ref={priceChartContainerRef} className="h-full w-full [&_a]:hidden" />
                                     
                                     {/* Real-time Status Overlay */}
                                     <div className="absolute top-3 left-4 flex flex-col gap-1 pointer-events-none z-10">
@@ -935,6 +923,7 @@ const TradingRoom = () => {
                             <div className="flex items-center justify-around py-2 border-b border-white/5 bg-zinc-950/40 relative">
                                 {[
                                     { id: 'book', icon: <BarChart3 size={14} />, label: 'Depth' },
+                                    { id: 'history', icon: <Clock size={14} />, label: 'History' },
                                     { id: 'news', icon: <Newspaper size={14} />, label: 'News' },
                                     { id: 'vault', icon: <Lock size={14} />, label: 'Vault' },
                                     { id: 'dao', icon: <Shield size={14} />, label: 'DAO' }
@@ -961,6 +950,7 @@ const TradingRoom = () => {
                                 <div className="h-8 border-b border-white/5 px-4 flex items-center justify-between shrink-0 bg-zinc-950/20">
                                     <h3 className="text-[8px] uppercase font-black tracking-[0.2em] flex items-center gap-2 text-zinc-500">
                                         {bookMode === 'book' && 'Market Depth (Top 5)'}
+                                        {bookMode === 'history' && 'Market Settlement Ledger'}
                                         {bookMode === 'news' && 'Global Intelligence HUD'}
                                         {bookMode === 'vault' && 'Asset Allocation Protocol'}
                                         {bookMode === 'dao' && 'Governance Core Sync'}
@@ -1050,27 +1040,75 @@ const TradingRoom = () => {
                                             </motion.div>
                                         )}
 
+                                        {bookMode === 'history' && (
+                                            <motion.div 
+                                                key="history"
+                                                initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
+                                                className="flex-1 flex flex-col overflow-hidden"
+                                            >
+                                                <div className="flex-1 overflow-y-auto">
+                                                    {tradeHistory.length === 0 ? (
+                                                        <div className="p-12 text-center text-zinc-600 uppercase tracking-widest text-[10px]">No recent settlements found</div>
+                                                    ) : tradeHistory.slice(0, 50).map((t, i) => (
+                                                        <TradeHistoryRow 
+                                                            key={i} 
+                                                            price={t.price} 
+                                                            quantity={t.quantity} 
+                                                            time={new Date(t.executed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                            type={t.type || (i % 2 === 0 ? 'buy' : 'sell')}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )}
+
                                         {bookMode === 'vault' && (
                                             <motion.div 
                                                 key="vault"
-                                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                                initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
                                                 className="p-6 space-y-6"
                                             >
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl">
                                                         <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">Owned</p>
-                                                        <p className="text-sm font-mono font-black text-white">450 BK</p>
+                                                        <p className="text-sm font-mono font-black text-white">{activeHoldingStats.quantity.toLocaleString()} <span className="text-[10px] text-zinc-700">BK</span></p>
                                                     </div>
                                                     <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl">
-                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">P&L 24H</p>
-                                                        <p className="text-sm font-mono font-black text-green-500">+₹1,240</p>
+                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">Unrealized P&L</p>
+                                                        <p className={`text-sm font-mono font-black ${activeHoldingStats.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                            {activeHoldingStats.pnl >= 0 ? '+' : ''}₹{Math.abs(activeHoldingStats.pnl).toLocaleString()}
+                                                        </p>
                                                     </div>
                                                 </div>
-                                                <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl border-dashed">
-                                                     <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-2">Vault Utilization</p>
-                                                     <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
-                                                         <div className="h-full w-2/3 bg-primary-500 shadow-[0_0_10px_rgba(var(--primary-500),0.3)]" />
-                                                     </div>
+                                                
+                                                <div className="space-y-4">
+                                                    <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl border-dashed relative overflow-hidden group">
+                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-2">Vault Performance</p>
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="text-[10px] font-bold text-zinc-400">Total</span>
+                                                            <span className={`text-[10px] font-mono font-black ${activeHoldingStats.percent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                                {activeHoldingStats.percent >= 0 ? '+' : ''}{activeHoldingStats.percent.toFixed(2)}%
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                                                            <motion.div 
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${Math.min(Math.max(activeHoldingStats.percent + 50, 0), 100)}%` }}
+                                                                className={`h-full ${activeHoldingStats.percent >= 0 ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]'}`}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between px-1">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[7px] uppercase font-black text-zinc-600 tracking-widest">Avg Buy Price</span>
+                                                            <span className="text-[11px] font-mono font-bold text-zinc-300">₹{activeHoldingStats.avgPrice.toLocaleString()}</span>
+                                                        </div>
+                                                        <div className="flex flex-col text-right">
+                                                            <span className="text-[7px] uppercase font-black text-zinc-600 tracking-widest">Current Value</span>
+                                                            <span className="text-[11px] font-mono font-bold text-white">₹{(activeHoldingStats.quantity * latestPrice).toLocaleString()}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </motion.div>
                                         )}
@@ -1121,215 +1159,10 @@ const TradingRoom = () => {
                                         />
                                     </div>
 
-                            {/* Ledger / Recent Trades */}
-                            <div className="flex-1 flex flex-col min-h-0">
-                                <div className="h-12 border-b border-white/5 px-8 flex items-center justify-between shrink-0">
-                                    <h3 className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center gap-2">
-                                        <History size={12} className="text-zinc-600" />
-                                        Recent Trades
-                                    </h3>
-                                </div>
-                                <div className="flex-1 overflow-y-auto">
-                                    {tradeHistory.slice(0, 50).map((t, i) => (
-                                        <TradeHistoryRow 
-                                            key={i} 
-                                            price={t.price} 
-                                            quantity={t.quantity} 
-                                            time={new Date(t.executed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                            type={t.type || (i % 2 === 0 ? 'buy' : 'sell')} // Mock type if missing
-                                        />
-                                    ))}
-                                </div>
-                            </div>
                         </div>
                     </motion.div>
-                )}
-
-                {activeTab === 'holdings' && (
-                    <motion.div 
-                        key="holdings"
-                        initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
-                        className="h-full w-full overflow-y-auto p-8 space-y-8 bg-[#0a0a0a]"
-                    >
-                        <div className="max-w-6xl mx-auto space-y-8">
-                             {/* My Active Intents Table */}
-                             <Card noPadding>
-                                <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                                   <div>
-                                      <h2 className="text-xl font-bold uppercase tracking-tighter text-white">My Active Intents</h2>
-                                      <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">Pending matches in the global orderbook</p>
-                                   </div>
-                                </div>
-                                <div className="overflow-x-auto">
-                                   <table className="w-full text-left">
-                                      <thead>
-                                        <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-zinc-600 bg-black/20">
-                                          <th className="p-6">Intent ID</th>
-                                          <th className="p-6">Type</th>
-                                          <th className="p-6">Price</th>
-                                          <th className="p-6">Unfilled Qty</th>
-                                          <th className="p-6 text-right">Actions</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {openOrders.length === 0 ? (
-                                           <tr><td colSpan="5" className="p-20 text-center text-zinc-600 uppercase tracking-widest text-xs">No active intents in the matcher.</td></tr>
-                                        ) : openOrders.map(o => (
-                                          <tr key={o.id} className="border-b border-white/5 hover:bg-white/[0.01]">
-                                            <td className="p-6 font-mono text-[10px] text-zinc-500">{o.id.substring(0,18)}...</td>
-                                            <td className="p-6">
-                                               <span className={`px-2 py-0.5 text-[8px] font-bold uppercase border ${o.order_type === 'buy' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>{o.order_type}</span>
-                                            </td>
-                                            <td className="p-6 font-mono text-white">₹{o.price_per_brick.toLocaleString()}</td>
-                                            <td className="p-6 font-mono text-zinc-400">{o.unfilled_quantity} BK</td>
-                                            <td className="p-6 text-right">
-                                               <div className="flex justify-end gap-2">
-                                                  <Button size="sm" variant="ghost" className="h-9 px-4 text-white hover:bg-white/10" onClick={() => setModifyingOrder(o)}>
-                                                    <Edit2 size={12} className="mr-2" /> Modify
-                                                  </Button>
-                                                  <Button size="sm" variant="ghost" className="h-9 px-4 text-red-500 hover:bg-red-500/10" onClick={() => handleCancelOrder(o.id)}>
-                                                    <Trash2 size={12} className="mr-2" /> Cancel
-                                                  </Button>
-                                               </div>
-                                            </td>
-                                          </tr>
-                                        ))}
-                                      </tbody>
-                                   </table>
-                                </div>
-                             </Card>
-
-                             {/* Equity Inventory Table */}
-                             <Card noPadding>
-                                <div className="p-8 border-b border-white/5">
-                                   <h2 className="text-xl font-bold uppercase tracking-tighter text-white">Equity Inventory</h2>
-                                   <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">Legally backed assets in your digital vault</p>
-                                </div>
-                                <div className="overflow-x-auto">
-                                   <table className="w-full text-left">
-                                      <thead>
-                                        <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-zinc-600 bg-black/20">
-                                          <th className="p-6">Asset Cluster</th>
-                                          <th className="p-6 text-center">Volume</th>
-                                          <th className="p-6 text-center">Inventory Value</th>
-                                          <th className="p-6 text-center">P&L Status</th>
-                                          <th className="p-6 text-right">Ops</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {holdings.length === 0 ? (
-                                          <tr><td colSpan="5" className="p-20 text-center text-zinc-600 uppercase tracking-widest text-xs">Vault empty. Begin acquisition on the exchange.</td></tr>
-                                        ) : holdings.map(h => {
-                                           const proj = projects.find(p => p.id === h.project_id);
-                                           const currentVal = h.quantity * (proj?.market_price || 0);
-                                           const costBasis = h.total_cost_basis || 0;
-                                           const pnl = currentVal - costBasis;
-                                           const roi = costBasis > 0 ? (pnl / costBasis) * 100 : 0;
-
-                                           return (
-                                             <tr key={h.id} className="border-b border-white/5 hover:bg-white/[0.01]">
-                                               <td className="p-6 font-bold uppercase text-sm text-white">
-                                                   <div className="flex flex-col">
-                                                       {proj?.title || h.project_id}
-                                                       <span className="text-[10px] font-mono text-zinc-600 font-normal">AVG COST: ₹{(costBasis / (h.quantity || 1)).toFixed(2)}</span>
-                                                   </div>
-                                               </td>
-                                               <td className="p-6 font-mono text-zinc-400 text-center">{h.quantity} BK</td>
-                                               <td className="p-6 font-mono font-bold text-white text-center">₹{currentVal.toLocaleString()}</td>
-                                               <td className="p-6 font-mono font-bold text-center">
-                                                   <div className="flex flex-col">
-                                                       <span className={pnl >= 0 ? 'text-green-500' : 'text-red-500'}>
-                                                           {pnl >= 0 ? '+' : ''}₹{Math.abs(pnl).toLocaleString()}
-                                                       </span>
-                                                       <span className={`text-[10px] ${pnl >= 0 ? 'text-green-500/60' : 'text-red-500/60'}`}>
-                                                           {pnl >= 0 ? '+' : ''}{roi.toFixed(2)}%
-                                                       </span>
-                                                   </div>
-                                               </td>
-                                               <td className="p-6 text-right">
-                                                  <Button size="sm" variant="outline" onClick={() => { setSelectedProject(proj); setActiveTab('exchange'); }}>TRADE</Button>
-                                                </td>
-                                             </tr>
-                                           );
-                                        })}
-                                      </tbody>
-                                   </table>
-                                </div>
-                             </Card>
-                        </div>
-                    </motion.div>
-                )}
-
-                {activeTab === 'governance' && (
-                    <motion.div 
-                        key="governance"
-                        initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
-                        className="h-full w-full overflow-y-auto p-8 bg-[#0a0a0a]"
-                    >
-                        <div className="max-w-6xl mx-auto">
-                             <Card noPadding>
-                                <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                                   <div>
-                                      <h2 className="text-xl font-bold uppercase tracking-tighter text-white">On-Chain Consensus Protocols</h2>
-                                      <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">Weighted voting for {selectedProject?.title}</p>
-                                   </div>
-                                   {!isHolder && (
-                                     <div className="bg-red-500/10 border border-red-500/20 px-4 py-2 text-[8px] uppercase tracking-widest font-bold text-red-500">
-                                       VOTING DISABLED: NO EQUITY DETECTED
-                                     </div>
-                                   )}
-                                </div>
-                                <div className="p-8 grid grid-cols-1 xl:grid-cols-2 gap-8 bg-black/20">
-                                   {proposals.map(p => (
-                                     <div key={p.id} className="bg-white/[0.02] border border-white/5 p-8 space-y-6 relative group hover:border-white/10 transition-all">
-                                        <div className="absolute top-6 right-6">
-                                           <span className={`px-2 py-0.5 text-[8px] font-bold uppercase border ${p.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'text-zinc-600 border-white/5'}`}>{p.status}</span>
-                                        </div>
-                                        <div>
-                                           <h4 className="text-lg font-bold uppercase tracking-tight text-white pr-16">{p.title}</h4>
-                                           <p className="text-[11px] text-zinc-400 uppercase mt-2 leading-relaxed line-clamp-2">{p.description}</p>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                           {p.options.map((opt, idx) => {
-                                              const totalWeight = p.total_votes || 1;
-                                              const weight = p.vote_distribution?.[idx] || 0;
-                                              const percentage = Math.round((weight / totalWeight) * 100);
-                                              return (
-                                                 <div key={idx} className="space-y-2">
-                                                    <div className="flex justify-between text-[8px] uppercase tracking-widest font-bold">
-                                                       <span className="text-zinc-400">{opt}</span>
-                                                       <span className="text-zinc-600 font-mono">{percentage}% ({weight.toLocaleString()} BK)</span>
-                                                    </div>
-                                                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                                       <div className="h-full bg-white transition-all duration-1000" style={{ width: `${percentage}%` }}></div>
-                                                    </div>
-                                                    {p.status === 'active' && isHolder && (
-                                                       <Button 
-                                                         variant="ghost" 
-                                                         className="w-full h-10 text-[9px] font-bold tracking-[0.2em] border border-white/5 hover:bg-white text-white hover:text-black mt-4"
-                                                         onClick={() => handleVote(p.id, idx)}
-                                                       >
-                                                          CAST WEIGHTED VOTE
-                                                       </Button>
-                                                    )}
-                                                 </div>
-                                              );
-                                           })}
-                                        </div>
-                                        <div className="pt-6 border-t border-white/5 flex justify-between text-[9px] uppercase tracking-widest text-zinc-600 font-mono">
-                                           <span>ENDS: {new Date(p.end_date).toLocaleDateString()}</span>
-                                           <span>TOTAL POWER: {p.total_votes.toLocaleString()}</span>
-                                        </div>
-                                     </div>
-                                   ))}
-                                </div>
-                             </Card>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+                </AnimatePresence>
+            </div>
 
         {/* Sticky Mobile Action Buttons (Groww Style) */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#050505]/80 backdrop-blur-xl border-t border-white/5 flex gap-3 z-[70]">
