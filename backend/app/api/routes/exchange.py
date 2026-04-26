@@ -44,8 +44,15 @@ def place_secondary_market_order(
     Returns instantly; matching logic happens in a background worker.
     """
     new_order = ExchangeService.place_order(current_user.id, order_data, db)
+    db.commit() # Force persistence so the matching engine can see it
     
-    # Fire the matching engine in a background task for sub-100ms response time
+    # 1. Try an immediate synchronous match to avoid background race conditions
+    try:
+        ExchangeService.run_matching_engine(new_order.id)
+    except Exception as e:
+        print(f"SYNC MATCHING WARNING: {e}")
+
+    # 2. Fire the matching engine in a background task as a fallback
     background_tasks.add_task(ExchangeService.run_matching_engine, new_order.id)
     
     return new_order
