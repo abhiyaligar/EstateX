@@ -164,15 +164,15 @@ write:dispute_resolution
    ├── Enter account number & IFSC
    ├── Account holder name
    └── Verify (next 48 hours)
-7. Status: Pending → Approved
+7. Status: Submitted → Approved (Manual Review)
 ```
 
 **KYC Status**: Check anytime in Profile → KYC Status
 ```
 Status Flow:
 ├── Not Started: Complete documents
-├── Submitted: Awaiting verification (24 hours)
-├── In Review: Manual verification in progress
+├── Submitted: Awaiting manual review
+├── In Review: Claimed by a compliance officer
 ├── Approved: Ready to invest
 └── Rejected: Contact support for resubmission
 ```
@@ -1031,7 +1031,7 @@ Day 1-2 - KYC (10 mins active)
 ├─ Verify via OTP
 ├─ Enter PAN number
 ├─ Add bank account
-└─ Status: Submitted (auto-approved in 5 mins)
+└─ Status: Submitted (Awaiting manual approval ~24h)
 
 Day 2 - First Investment (20 mins)
 ├─ Home → Featured Projects
@@ -1055,6 +1055,31 @@ Day 2 onwards - Monitor
 ├─ After 2 months: Consider selling some tokens (at 2% profit)
 └─ After 5 years: Property completed, rental permanent income
 ```
+
+---
+
+## Social Features (In Development 🚧)
+
+EstateX is expanding from a pure investment platform into a vibrant social ecosystem. The following features are currently being implemented:
+
+### 1. Investment Circles
+- Connect with friends and family to pool capital.
+- Private discussion boards for shared investment strategies.
+- Co-ownership dashboards for group investments.
+
+### 2. Community Discussions
+- Project-specific forums for investors to ask questions.
+- Verified builder Q&A sessions.
+- Expert market analysis and community sentiment tracking.
+
+### 3. Investor Reputation
+- Badges for long-term holders and successful exiters.
+- Community-driven trust scores for builders.
+
+> [!NOTE]
+> These features are currently in the database schema and backend implementation phase. Full UI integration is expected in the next major release.
+
+---
 
 ### Workflow 2: Builder's Project Launch
 

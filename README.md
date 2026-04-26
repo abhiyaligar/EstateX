@@ -67,7 +67,8 @@ EstateX creates a secure, transparent, and technologically advanced crowdfunding
 ✅ **Macro Market Intelligence**: Database-backed regional growth indicators and rental yields  
 ✅ **Investor Analytics**: Real-time portfolio tracking, ROI projections, and Asset Allocation breakdown  
 ✅ **Dual Wallet Architecture**: Strict separation of investor personal funds and builder business ledger  
-✅ **Full Compliance**: KYC pipeline, RERA validation, SEBI-aligned structure  
+✅ **Strict Compliance**: Manual KYC review policy, RERA validation, SEBI-aligned structure  
+✅ **Social Interaction Circles (In Development)**: Investment pooling and community forums  
 
 ---
 
@@ -360,6 +361,6 @@ This project is developed as an academic capstone and is protected under intelle
 
 ---
 
-**Version**: 1.3  
-**Last Updated**: April 25, 2026  
-**Status**: Revenue Distribution Engine, DAO Governance & Professional Trading Terminal Complete
+**Version**: 1.4  
+**Last Updated**: April 26, 2026  
+**Status**: Manual KYC Policy, Macro Intelligence Admin Suite & Social Feature Roadmap Active

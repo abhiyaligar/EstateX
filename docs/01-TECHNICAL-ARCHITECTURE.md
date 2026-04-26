@@ -336,13 +336,13 @@ Functions:
 #### 3.7 KYC/Compliance Service
 ```
 Functions:
-- UIDAI/Aadhaar verification
-- PAN verification
-- NSDL integration
-- KYC status tracking
-- Document validation
-- AML checks
-- Compliance reporting
+- UIDAI/Aadhaar verification (OTP-based)
+- PAN verification (NSDL integration)
+- Strict Manual Review: Human-in-the-loop validation for all users
+- Admin Queue Management: Claim/Release mechanics for review tickets
+- KYC Status Tracking (Submitted, In Review, Approved, Rejected)
+- AML checks and Sanction list screening
+- Compliance reporting and audit trails
 ```
 
 ---

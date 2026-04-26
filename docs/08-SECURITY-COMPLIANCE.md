@@ -191,8 +191,8 @@ Optional for retail:
 └── Network transfer proof (Beneficiary details)
 ```
 
-**Total KYC Time**: ~10 minutes  
-**Status**: Pending → Approved (same day)
+**Total KYC Time**: ~10 minutes (Active) / 24-48 hours (Approval)  
+**Status**: Submitted → In Review → Approved
 
 ### Builder KYC Pipeline
 
@@ -245,19 +245,27 @@ Verify:
 ```
 
 **Total Verification Time**: 5-7 business days  
-**Approval Process**: Admin review → Approval
+**Approval Process**: 
+1. Initial Automated Screening
+2. Document Verification by Compliance Officer
+3. Final Approval by Senior Auditor
 
 ### AML Screening
 
-```
-Watchlist Checks:
+**AML Screening**:
 ├── PEP (Politically Exposed Persons)
 ├── FATF Sanctioned Countries
 ├── RBI Defaulter List
 ├── SEBI Debarred Entities
 └── Interpol Red Notices
 
-Triggers for Enhanced Due Diligence:
+**Manual Review & Collision Prevention**:
+├── **Ticket Claiming**: Admins must "claim" an application from the queue to prevent duplicate reviews.
+├── **Evidence Cross-Check**: Admin manually verifies uploaded document authenticity.
+├── **Strict Manual Policy**: Auto-approval is disabled; all accounts require human validation.
+└── **Audit Log**: Every approval/rejection is logged with the admin's identity.
+
+**Triggers for Enhanced Due Diligence**:
 ├── Investment > Rs. 25 lakhs
 ├── Rapid portfolio changes
 ├── Unusual activity patterns

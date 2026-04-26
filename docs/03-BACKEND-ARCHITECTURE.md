@@ -492,12 +492,15 @@ estateX-backend/
 - trigger_fund_release(milestone_id) → Transaction (Credits Builder Wallet)
 ```
 
-#### 12. Exchange Service
+#### 12. Exchange Service (High-Performance)
 ```python
 - place_order(user_id, order_data) → Order
 - run_matching_engine(order_id) → None (Background Task)
 - cancel_order(user_id, order_id) → bool
+- sync_global_ticker(project_id, last_price) → None (Real-time Sync)
 ```
+> [!NOTE]
+> **Price Sync Logic**: The matching engine atomically updates the `Project.market_value` after every successful execution. This ensures that the global ticker across the platform (headers, search, and detail pages) remains perfectly synchronized with the last traded price in the exchange.
 
 ---
 

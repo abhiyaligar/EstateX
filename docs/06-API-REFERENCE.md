@@ -680,8 +680,8 @@ Verify PAN against government database.
 {
   "success": true,
   "data": {
-    "status": "approved",
-    "message": "KYC verification completed successfully"
+    "status": "pending",
+    "message": "Documents submitted successfully. Your identity is now under review by our compliance team."
   }
 }
 ```
@@ -726,6 +726,7 @@ Retrieve a paginated list of KYC applications for admin review. Supports filteri
     {
       "id": "uuid-string",
       "user_id": "uuid-string",
+      "full_name": "John Doe",
       "status": "pending",
       "assigned_admin_id": null,
       "pan_number": "AAXPA...",
@@ -785,6 +786,55 @@ Finalizes the KYC review process, marking it Approved or Rejected and logging th
   "kyc_status": "approved"
 }
 ```
+
+### GET /admin/analytics/macro
+
+List all macroeconomic data nodes (Pincode-based).
+
+**Response** (200): Array of MacroData objects.
+
+### POST /admin/analytics/macro
+
+Create a new macroeconomic data node.
+
+**Request**:
+```json
+{
+  "pincode": "400001",
+  "yoy_growth_percentage": 12.5,
+  "avg_rental_yield": 6.8,
+  "demand_score": 85
+}
+```
+
+**Response** (201): Created MacroData object.
+
+### PUT /admin/analytics/macro/{pincode}
+
+Update an existing macroeconomic data node.
+
+**Response** (200): Updated MacroData object.
+
+### DELETE /admin/analytics/macro/{pincode}
+
+Remove a macroeconomic data node.
+
+**Response** (200): Success message.
+
+### POST /admin/users/{user_id}/wallet/adjust
+
+**God Mode**: Directly adjust a user's wallet balance. Use with extreme caution.
+
+**Request**:
+```json
+{
+  "amount": 500.0,
+  "transaction_type": "refund",
+  "reason": "Resolving dispute #123"
+}
+```
+
+**Response** (200): Transaction summary.
 
 ---
 

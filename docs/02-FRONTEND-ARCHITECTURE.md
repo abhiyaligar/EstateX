@@ -446,7 +446,7 @@ RootLayout
 #### 3. Feature Components (Organisms)
 - **Header**: Top navigation bar
 - **Sidebar**: Left navigation panel. Recently updated to be **fully collapsible** with persistence (stores state in local storage) and role-based menu generation.
-- **Secondary Market Terminal**: A specialized high-density trading interface utilizing Supabase Realtime for sub-100ms updates to orderbooks and trade history.
+- **Secondary Market Terminal**: A specialized high-density trading interface utilizing Supabase Realtime for sub-100ms updates to orderbooks and trade history. Recently updated to include **Real-time Ticker Sync**, ensuring the header's market value reflects the absolute last execution price without page refreshes.
 - **Footer**: Bottom footer
 - **ProjectCard**: Project listing card
 - **InvestmentForm**: Multi-step investment form
