@@ -3,6 +3,7 @@ from fastapi import HTTPException, status
 from decimal import Decimal
 from typing import List
 from uuid import UUID
+from datetime import datetime, timezone
 
 from app.models.user import User
 from app.models.project import Project
@@ -204,7 +205,9 @@ class ExchangeService:
             db.commit()
         except Exception as e:
             db.rollback()
-            print(f"MATCHING ENGINE BACKGROUND ERROR: {str(e)}")
+            import traceback
+            logger.error(f"CRITICAL MATCHING ENGINE FAILURE for order {order_id}: {str(e)}")
+            logger.error(traceback.format_exc())
         finally:
             db.close()
 
@@ -258,6 +261,11 @@ class ExchangeService:
             if new_order.unfilled_quantity <= 0:
                 break
                 
+            # 3.0 Self-Matching Prevention
+            # We skip orders from the same user to prevent circular balance/holding updates
+            if str(new_order.user_id) == str(counter_order.user_id):
+                continue
+
             trade_qty = min(new_order.unfilled_quantity, counter_order.unfilled_quantity)
             
             # Price Discovery:
@@ -321,13 +329,14 @@ class ExchangeService:
             counter_order.status = 'fulfilled' if counter_order.unfilled_quantity == 0 else 'partial'
             new_order.status = 'fulfilled' if new_order.unfilled_quantity == 0 else 'partial'
             
-            # 3.5 Update the project's global market value to the last execution price
-            # This ensures the 'ticker' in the UI (Depth/Header) stays in sync with the Chart
-            from app.models.project import Project
-            db.query(Project).filter(Project.id == project.id).update({Project.market_value: execution_price})
-
+            executed_at = datetime.now(timezone.utc)
+            
         # 4. Settlement Phase (Bulk Database Persistence)
         if trades_to_create:
+            # Update the project's global market value to the last execution price
+            # Using the last execution price from the loop
+            project.market_value = Decimal(str(trades_to_create[-1].price))
+            
             # Save ALL trades in one batch
             db.bulk_save_objects(trades_to_create)
 
