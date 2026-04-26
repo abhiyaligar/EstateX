@@ -527,7 +527,8 @@ const TradingRoom = () => {
       setOpenOrders(orders);
       setWalletBalance(walletData.balance || 0);
       if (projectDetails) {
-          setCurrentPrice(projectDetails.market_price || 0);
+          // Correctly map to the financial.market_value field
+          setCurrentPrice(projectDetails.financial?.market_value || projectDetails.financial?.ipo_price || 0);
       }
 
       const holding = userPortfolio.find(h => h.project_id === selectedProject.id);
@@ -758,22 +759,42 @@ const TradingRoom = () => {
 
   // Combined Price & Volume Metrics
 
-  const latestPrice = currentPrice || (tradeHistory.length > 0 ? tradeHistory[0].price : (selectedProject?.market_price || 0));
+  const latestPrice = currentPrice || (tradeHistory.length > 0 ? tradeHistory[0].price : (selectedProject?.financial?.market_value || selectedProject?.financial?.ipo_price || 0));
   const priceChange = tradeHistory.length > 1 ? ((tradeHistory[0].price - tradeHistory[1].price) / tradeHistory[1].price * 100).toFixed(2) : 0;
+
+  // Auto-sync price input on project switch
+  useEffect(() => {
+    if (latestPrice > 0) {
+        setPrice(latestPrice.toString());
+        setQuantity(''); // Clear quantity for safety on project switch
+    }
+  }, [selectedProject?.id]); // Only trigger when the actual project ID changes
 
   // Portfolio & Holding Stats
   const activeHolding = useMemo(() => 
-    holdings.find(h => h.project_id === selectedProject?.id), 
+    holdings.find(h => h.project_id?.toString().toLowerCase() === selectedProject?.id?.toString().toLowerCase()), 
   [holdings, selectedProject]);
 
   const activeHoldingStats = useMemo(() => {
     if (!activeHolding || !latestPrice) return { quantity: 0, pnl: 0, percent: 0, avgPrice: 0 };
-    const avgPrice = activeHolding.average_buy_price || 0;
+    
+    // Backend provides total_cost_basis, we derive the average from it
+    const avgPrice = activeHolding.quantity > 0 
+      ? (activeHolding.total_cost_basis / activeHolding.quantity) 
+      : 0;
+      
     const currentVal = activeHolding.quantity * latestPrice;
-    const costBasis = activeHolding.quantity * avgPrice;
+    const costBasis = activeHolding.total_cost_basis || (activeHolding.quantity * avgPrice);
+    
     const pnl = currentVal - costBasis;
     const percent = costBasis > 0 ? (pnl / costBasis) * 100 : 0;
-    return { quantity: activeHolding.quantity, pnl, percent, avgPrice };
+    
+    return { 
+      quantity: activeHolding.quantity, 
+      pnl, 
+      percent, 
+      avgPrice 
+    };
   }, [activeHolding, latestPrice]);
 
    const handlePlaceOrder = async (e) => {
@@ -934,12 +955,16 @@ const TradingRoom = () => {
 
                     <div className="space-y-1">
                         <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-black">24h High</p>
-                        <span className="text-[11px] font-mono font-bold text-zinc-400">₹{(latestPrice * 1.05).toFixed(2)}</span>
+                        <span className="text-[11px] font-mono font-bold text-zinc-400">
+                            ₹{(ohlcvData.length > 0 ? Math.max(...ohlcvData.slice(-24).map(d => d.high)) : latestPrice * 1.02).toLocaleString(undefined, {minimumFractionDigits: 2})}
+                        </span>
                     </div>
 
                     <div className="space-y-1">
                         <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-black">24h Low</p>
-                        <span className="text-[11px] font-mono font-bold text-zinc-400">₹{(latestPrice * 0.92).toFixed(2)}</span>
+                        <span className="text-[11px] font-mono font-bold text-zinc-400">
+                            ₹{(ohlcvData.length > 0 ? Math.min(...ohlcvData.slice(-24).map(d => d.low)) : latestPrice * 0.98).toLocaleString(undefined, {minimumFractionDigits: 2})}
+                        </span>
                     </div>
 
                     <div className="space-y-1">
@@ -1243,38 +1268,89 @@ const TradingRoom = () => {
                                                 initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
                                                 className="flex-1 overflow-y-auto p-6 space-y-6"
                                             >
+                                                {/* Global Portfolio Stats */}
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl">
-                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">Owned</p>
-                                                        <p className="text-sm font-mono font-black text-white">{activeHoldingStats.quantity.toLocaleString()} <span className="text-[10px] text-zinc-700">BK</span></p>
+                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">Portfolio Total</p>
+                                                        <p className="text-sm font-mono font-black text-white">
+                                                            {holdings.reduce((sum, h) => sum + h.quantity, 0).toLocaleString()} <span className="text-[10px] text-zinc-700">BK</span>
+                                                        </p>
                                                     </div>
                                                     <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl">
-                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">Unrealized P&L</p>
-                                                        <p className={`text-sm font-mono font-black ${activeHoldingStats.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                                            {activeHoldingStats.pnl >= 0 ? '+' : ''}₹{Math.abs(activeHoldingStats.pnl).toLocaleString()}
+                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">Unique Assets</p>
+                                                        <p className="text-sm font-mono font-black text-white">
+                                                            {holdings.length} <span className="text-[10px] text-zinc-700">PROJECTS</span>
                                                         </p>
                                                     </div>
                                                 </div>
                                                 
-                                                <div className="space-y-4">
-                                                    <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl border-dashed relative overflow-hidden group">
-                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-2">Vault Performance</p>
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <span className="text-[10px] font-bold text-zinc-400">Total</span>
-                                                            <span className={`text-[10px] font-mono font-black ${activeHoldingStats.percent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                                                {activeHoldingStats.percent >= 0 ? '+' : ''}{activeHoldingStats.percent.toFixed(2)}%
-                                                            </span>
+                                                {/* Active Project Specifics (The one the user is looking at) */}
+                                                <div className="p-4 bg-zinc-900/50 border border-primary-500/20 rounded-xl relative overflow-hidden">
+                                                    <div className="absolute top-0 right-0 p-2">
+                                                        <span className="text-[7px] bg-primary-500/10 text-primary-400 px-1.5 py-0.5 border border-primary-500/20 rounded font-bold uppercase tracking-tighter">Current Node</span>
+                                                    </div>
+                                                    <p className="text-[9px] font-bold text-white mb-3 uppercase tracking-tight truncate w-3/4">{selectedProject?.title}</p>
+                                                    
+                                                    <div className="grid grid-cols-2 gap-6">
+                                                        <div>
+                                                            <p className="text-[7px] uppercase tracking-widest text-zinc-500 mb-1">Quantity</p>
+                                                            <p className="text-xs font-mono font-black text-white">{activeHoldingStats.quantity} BK</p>
                                                         </div>
-                                                        <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
-                                                            <motion.div 
-                                                                initial={{ width: 0 }}
-                                                                animate={{ width: `${Math.min(Math.max(activeHoldingStats.percent + 50, 0), 100)}%` }}
-                                                                className={`h-full ${activeHoldingStats.percent >= 0 ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]'}`}
-                                                            />
+                                                        <div>
+                                                            <p className="text-[7px] uppercase tracking-widest text-zinc-500 mb-1">Unrealized P&L</p>
+                                                            <p className={`text-xs font-mono font-black ${activeHoldingStats.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                                {activeHoldingStats.pnl >= 0 ? '+' : ''}₹{Math.abs(activeHoldingStats.pnl).toLocaleString()}
+                                                            </p>
                                                         </div>
                                                     </div>
+                                                </div>
 
-                                                    <div className="flex items-center justify-between px-1">
+                                                <div className="space-y-4 pt-4 border-t border-white/5">
+                                                    <p className="text-[8px] uppercase tracking-widest text-zinc-600">Asset Allocation Registry</p>
+                                                    
+                                                    {holdings.length === 0 ? (
+                                                        <div className="text-center py-8">
+                                                            <p className="text-[10px] text-zinc-600 uppercase italic">No digital deeds found in this wallet.</p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-2">
+                                                            {holdings.map((h, idx) => {
+                                                                const proj = projects.find(p => p.id === h.project_id);
+                                                                return (
+                                                                    <div key={idx} className="p-3 bg-zinc-950 border border-white/5 rounded-lg flex items-center justify-between group hover:border-white/10 transition-colors">
+                                                                        <div className="min-w-0">
+                                                                            <p className="text-[10px] font-bold text-white truncate">{proj?.title || 'Unknown Project'}</p>
+                                                                            <p className="text-[8px] text-zinc-500 font-mono uppercase tracking-tighter">NODE: {h.project_id.substring(0,8)}...</p>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <p className="text-[10px] font-mono font-black text-primary-400">{h.quantity.toLocaleString()} BK</p>
+                                                                            <p className="text-[7px] text-zinc-600 uppercase">Equity Stake</p>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Vault Performance Metrics */}
+                                                <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl space-y-4">
+                                                    <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-2">Vault Performance</p>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-[10px] font-bold text-zinc-400">Total</span>
+                                                        <span className={`text-[10px] font-mono font-black ${activeHoldingStats.percent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                            {activeHoldingStats.percent >= 0 ? '+' : ''}{activeHoldingStats.percent.toFixed(2)}%
+                                                        </span>
+                                                    </div>
+                                                    <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                                                        <motion.div 
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${Math.min(Math.max(activeHoldingStats.percent + 50, 0), 100)}%` }}
+                                                            className={`h-full ${activeHoldingStats.percent >= 0 ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]'}`}
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between px-1 pt-2">
                                                         <div className="flex flex-col">
                                                             <span className="text-[7px] uppercase font-black text-zinc-600 tracking-widest">Avg Buy Price</span>
                                                             <span className="text-[11px] font-mono font-bold text-zinc-300">₹{activeHoldingStats.avgPrice.toLocaleString()}</span>

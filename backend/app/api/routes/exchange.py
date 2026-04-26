@@ -58,7 +58,13 @@ def get_investor_holdings(
     """
     Displays the user's legally backed Equity (Bricks) inside various Real Estate Projects!
     """
-    return db.query(BrickHolding).filter(BrickHolding.user_id == current_user.id).all()
+    # Ensure string ID from middleware is cast to UUID for the query
+    uid = UUID(str(current_user.id))
+    results = db.query(BrickHolding).filter(BrickHolding.user_id == uid).all()
+    print(f"DEBUG: Portfolio fetch for {uid} - Found {len(results)} assets")
+    for r in results:
+        print(f"  -> Project: {r.project_id}, Qty: {r.quantity}")
+    return results
 
 @router.get("/orders", response_model=List[OrderResponse])
 def get_my_open_market_intents(

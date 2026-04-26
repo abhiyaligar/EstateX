@@ -53,14 +53,38 @@ class ExchangeService:
         project.funding_raised += total_cost
         project.total_escrow_held += total_cost
         
+        print(f"DEBUG: IPO Subscription Attempt - User: {user_id}, Project: {project_id}, Qty: {quantity}")
+        
         # Allocate bricks natively to the investor's Portfolio
-        holding = db.query(BrickHolding).filter(BrickHolding.user_id == user_id, BrickHolding.project_id == project_id).first()
-        if holding:
+        # Using .all() and merging to handle any legacy duplicates from before the UniqueConstraint
+        holdings = db.query(BrickHolding).filter(
+            BrickHolding.user_id == UUID(str(user_id)), 
+            BrickHolding.project_id == UUID(str(project_id))
+        ).all()
+
+        if holdings:
+            # Use the first one and sum up others if they exist (cleanup)
+            holding = holdings[0]
             holding.quantity += quantity
             holding.total_cost_basis += total_cost
+            
+            # Legacy cleanup: merge and delete extras
+            if len(holdings) > 1:
+                print(f"DEBUG: Cleanup - Merging {len(holdings)} duplicate records for user {user_id}")
+                for extra in holdings[1:]:
+                    holding.quantity += extra.quantity
+                    holding.total_cost_basis += extra.total_cost_basis
+                    db.delete(extra)
         else:
-            holding = BrickHolding(user_id=user_id, project_id=project_id, quantity=quantity, total_cost_basis=total_cost)
+            print(f"DEBUG: Creating NEW holding for user {user_id}")
+            holding = BrickHolding(
+                user_id=UUID(str(user_id)), 
+                project_id=UUID(str(project_id)), 
+                quantity=quantity, 
+                total_cost_basis=total_cost
+            )
             db.add(holding)
+            project.investor_count += 1
             
         db.commit()
         return {"success": True, "message": f"Successfully purchased {quantity} Bricks for {total_cost} INR."}
@@ -131,9 +155,20 @@ class ExchangeService:
             
             user.wallet_balance -= total_escrow_needed # Freeze Fiat
         else:
-            holding = db.query(BrickHolding).filter(BrickHolding.user_id == user_id, BrickHolding.project_id == str(project.id)).with_for_update().first()
+            uid = UUID(str(user_id))
+            pid = project.id 
+            print(f"DEBUG: Place Sell Order - User: {uid}, Project: {pid}, Requested: {order_data.quantity}")
+            
+            holding = db.query(BrickHolding).filter(
+                BrickHolding.user_id == uid, 
+                BrickHolding.project_id == pid
+            ).with_for_update().first()
+            
+            print(f"DEBUG: Holding in DB: {holding.quantity if holding else 'None'}")
+            
             if not holding or holding.quantity < order_data.quantity:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient Bricks in Portfolio to lock Sell Order.")
+            
             holding.quantity -= order_data.quantity # Freeze Bricks
             
         # 2. Spawn Order
@@ -299,8 +334,8 @@ class ExchangeService:
             for u_id, qty_delta in holding_deltas.items():
                 # Check if holding exists, if not create, else update
                 existing = db.query(BrickHolding).filter(
-                    BrickHolding.user_id == u_id, 
-                    BrickHolding.project_id == str(project.id)
+                    BrickHolding.user_id == UUID(str(u_id)), 
+                    BrickHolding.project_id == project.id
                 ).with_for_update().first()
                 if existing:
                     # Update cost basis for buyer (add spent amount)
@@ -308,8 +343,8 @@ class ExchangeService:
                     existing.total_cost_basis += (Decimal(str(qty_delta)) * execution_price)
                 else:
                     db.add(BrickHolding(
-                        user_id=u_id, 
-                        project_id=str(project.id), 
+                        user_id=UUID(str(u_id)), 
+                        project_id=project.id, 
                         quantity=qty_delta,
                         total_cost_basis=(Decimal(str(qty_delta)) * execution_price)
                     ))
@@ -322,8 +357,8 @@ class ExchangeService:
             for s_id in unique_sellers:
                 total_sold = sum(t.quantity for t in trades_to_create if t.seller_id == s_id)
                 seller_holding = db.query(BrickHolding).filter(
-                    BrickHolding.user_id == s_id,
-                    BrickHolding.project_id == str(project.id)
+                    BrickHolding.user_id == UUID(str(s_id)),
+                    BrickHolding.project_id == project.id
                 ).with_for_update().first()
                 if seller_holding and seller_holding.quantity + total_sold > 0:
                     # Basis reduction: new_basis = old_basis * (remaining / (remaining + sold))

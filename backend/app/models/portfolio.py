@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Numeric
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Numeric, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.models.user import Base
@@ -10,6 +10,9 @@ class BrickHolding(Base):
     Legally maps fractional ownership. Investors own integer quantities of 'Bricks' representing equity in a specific Real Estate Project.
     """
     __tablename__ = 'brick_holdings'
+    __table_args__ = (
+        UniqueConstraint('user_id', 'project_id', name='uq_user_project_holding'),
+    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
