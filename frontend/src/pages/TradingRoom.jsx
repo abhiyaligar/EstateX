@@ -58,7 +58,7 @@ const OrderBookRow = ({ price, quantity, type, isHeader = false, total = 0, maxT
     )}
     <div className="flex justify-between items-center h-7 px-3 md:px-5 relative z-10">
       <span className={`text-[10px] md:text-[11px] font-mono font-bold ${isHeader ? 'text-zinc-600' : type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>
-        {isHeader ? 'PRICE' : `₹${price.toLocaleString()}`}
+        {isHeader ? 'PRICE' : price === null ? 'MARKET' : `₹${price.toLocaleString()}`}
       </span>
       <span className={`text-[10px] md:text-[11px] font-mono font-bold ${isHeader ? 'text-zinc-600' : 'text-zinc-300'}`}>
         {isHeader ? 'QUANTITY' : quantity.toLocaleString()}
@@ -71,7 +71,7 @@ const TradeHistoryRow = ({ price, quantity, time, type }) => (
   <div className="flex items-center justify-between text-[10px] py-2 px-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors">
      <div className="flex items-center gap-2">
         <div className={`w-1 h-1 rounded-full ${type === 'buy' ? 'bg-green-500' : 'bg-red-500'}`} />
-        <span className={`font-mono font-medium ${type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>₹{price.toLocaleString()}</span>
+        <span className={`font-mono font-medium ${type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>{price ? `₹${price.toLocaleString()}` : 'MARKET'}</span>
      </div>
      <span className="text-zinc-500 font-mono">{quantity} BK</span>
      <span className="text-zinc-700 text-[8px] font-medium">{time}</span>
@@ -81,6 +81,8 @@ const TradeHistoryRow = ({ price, quantity, time, type }) => (
 const TradeForm = ({ 
     orderType, 
     setOrderType, 
+    executionMode,
+    setExecutionMode,
     price, 
     setPrice, 
     quantity, 
@@ -116,23 +118,42 @@ const TradeForm = ({
         </div>
 
         <div className="space-y-4">
-            {/* Price Input */}
+            {/* Execution Type Toggle & Price Input */}
             <div className="space-y-1.5">
                  <div className="flex justify-between items-end px-1">
-                    <label className="text-[8px] uppercase font-black text-zinc-600 tracking-[0.3em]">Price Limit</label>
+                    <div className="flex items-center gap-3">
+                        <label className="text-[8px] uppercase font-black text-zinc-600 tracking-[0.3em]">Execution</label>
+                        <div className="flex bg-zinc-900 rounded-md p-0.5 border border-white/5">
+                            <button 
+                                type="button"
+                                onClick={() => setExecutionMode('limit')}
+                                className={`px-2 py-0.5 text-[7px] font-black uppercase rounded-[4px] transition-all ${executionMode === 'limit' ? 'bg-zinc-800 text-white' : 'text-zinc-600'}`}
+                            >
+                                Limit
+                            </button>
+                            <button 
+                                type="button"
+                                onClick={() => setExecutionMode('market')}
+                                className={`px-2 py-0.5 text-[7px] font-black uppercase rounded-[4px] transition-all ${executionMode === 'market' ? 'bg-zinc-800 text-white' : 'text-zinc-600'}`}
+                            >
+                                Market
+                            </button>
+                        </div>
+                    </div>
                     <span className="text-[9px] font-mono font-bold text-zinc-800">INR</span>
                  </div>
                  <div className="relative group">
                     <input 
                         type="number" 
                         step="0.01" 
-                        value={price} 
+                        value={executionMode === 'market' ? '' : price} 
                         onChange={(e) => setPrice(e.target.value)}
-                        className="w-full bg-zinc-950/50 border border-white/5 h-12 px-5 text-sm font-mono focus:border-white/20 focus:bg-zinc-950 transition-all focus:outline-none rounded-xl text-white placeholder:text-zinc-800"
-                        placeholder="0.00"
+                        disabled={executionMode === 'market'}
+                        className={`w-full bg-zinc-950/50 border border-white/5 h-12 px-5 text-sm font-mono focus:border-white/20 focus:bg-zinc-950 transition-all focus:outline-none rounded-xl text-white placeholder:text-zinc-800 ${executionMode === 'market' ? 'opacity-50 cursor-not-allowed italic' : ''}`}
+                        placeholder={executionMode === 'market' ? "BEST AVAILABLE PRICE" : "0.00"}
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <TrendingUp size={14} className="text-zinc-800 group-focus-within:text-zinc-600 transition-colors" />
+                        <TrendingUp size={14} className={`${executionMode === 'market' ? 'text-zinc-900' : 'text-zinc-800'} group-focus-within:text-zinc-600 transition-colors`} />
                     </div>
                  </div>
             </div>
@@ -177,7 +198,9 @@ const TradeForm = ({
              <div className="flex items-center justify-between relative z-10">
                  <div className="space-y-0.5">
                     <p className="text-[8px] uppercase font-black text-zinc-700 tracking-[0.2em]">Total Commitment</p>
-                    <p className="text-sm font-mono font-black text-white">₹{((parseFloat(price) || 0) * (parseInt(quantity) || 0)).toLocaleString()}</p>
+                    <p className="text-sm font-mono font-black text-white">
+                        {executionMode === 'market' ? 'ESTIMATED' : `₹${((parseFloat(price) || 0) * (parseInt(quantity) || 0)).toLocaleString()}`}
+                    </p>
                  </div>
                  <Zap size={16} className="text-zinc-800 group-hover:text-primary-500/20 transition-colors" />
              </div>
@@ -401,9 +424,11 @@ const TradingRoom = () => {
   
   // UI State
   const [orderType, setOrderType] = useState('buy');
+  const [executionMode, setExecutionMode] = useState('limit'); // limit or market
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
   const [isPlacing, setIsPlacing] = useState(false);
+  const refreshTimerRef = React.useRef(null);
   
   const [chartTimeframe, setChartTimeframe] = useState('1h');
   const [chartType, setChartType] = useState('candlestick');
@@ -485,12 +510,19 @@ const TradingRoom = () => {
   useEffect(() => {
     if (!selectedProject) return;
 
+    const debouncedRefresh = () => {
+        if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+        refreshTimerRef.current = setTimeout(() => {
+            refreshLiveData();
+        }, 500);
+    };
+
     const tradeChannel = supabase
       .channel('public:trades')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'trades', filter: `project_id=eq.${selectedProject.id}` },
-        () => refreshLiveData()
+        () => debouncedRefresh()
       )
       .subscribe();
 
@@ -499,11 +531,12 @@ const TradingRoom = () => {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders', filter: `project_id=eq.${selectedProject.id}` },
-        () => refreshLiveData()
+        () => debouncedRefresh()
       )
       .subscribe();
 
     return () => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
       supabase.removeChannel(tradeChannel);
       supabase.removeChannel(orderChannel);
     };
@@ -511,7 +544,12 @@ const TradingRoom = () => {
 
 
   const buyOrders = useMemo(() => {
-    const orders = publicOrderBook.filter(o => o.order_type === 'buy').sort((a,b) => b.price_per_brick - a.price_per_brick);
+    const orders = publicOrderBook.filter(o => o.order_type === 'buy').sort((a,b) => {
+        if (a.price_per_brick === null && b.price_per_brick === null) return 0;
+        if (a.price_per_brick === null) return -1;
+        if (b.price_per_brick === null) return 1;
+        return b.price_per_brick - a.price_per_brick;
+    });
     let total = 0;
     return orders.map(o => {
         total += o.unfilled_quantity;
@@ -520,7 +558,12 @@ const TradingRoom = () => {
   }, [publicOrderBook]);
 
   const sellOrders = useMemo(() => {
-    const orders = publicOrderBook.filter(o => o.order_type === 'sell').sort((a,b) => a.price_per_brick - b.price_per_brick);
+    const orders = publicOrderBook.filter(o => o.order_type === 'sell').sort((a,b) => {
+        if (a.price_per_brick === null && b.price_per_brick === null) return 0;
+        if (a.price_per_brick === null) return -1;
+        if (b.price_per_brick === null) return 1;
+        return a.price_per_brick - b.price_per_brick;
+    });
     let total = 0;
     return orders.map(o => {
         total += o.unfilled_quantity;
@@ -536,8 +579,11 @@ const TradingRoom = () => {
 
   const marketSpread = useMemo(() => {
     if (buyOrders.length === 0 || sellOrders.length === 0) return { spread: 0, percent: 0 };
-    const highestBid = buyOrders[0].price_per_brick;
-    const lowestAsk = sellOrders[0].price_per_brick;
+    const highestBid = buyOrders.find(o => o.price_per_brick !== null)?.price_per_brick;
+    const lowestAsk = sellOrders.find(o => o.price_per_brick !== null)?.price_per_brick;
+    
+    if (!highestBid || !lowestAsk) return { spread: 0, percent: 0 };
+    
     const spread = lowestAsk - highestBid;
     const percent = (spread / lowestAsk) * 100;
     return { spread, percent };
@@ -576,12 +622,16 @@ const TradingRoom = () => {
   }, [ohlcvData]);
 
   const priceChartContainerRef = React.useRef(null);
-  const volChartContainerRef = React.useRef(null);
+  const chartInstanceRef = React.useRef(null);
+  const mainSeriesRef = React.useRef(null);
+  const volumeSeriesRef = React.useRef(null);
+  const currentChartTypeRef = React.useRef(chartType);
 
+  // Initialize Chart Instance
   useEffect(() => {
-    if (!priceChartContainerRef.current || formattedChartData.price.length === 0) return;
-    
-    const priceChart = createChart(priceChartContainerRef.current, {
+    if (!priceChartContainerRef.current || loading) return;
+
+    const chart = createChart(priceChartContainerRef.current, {
       layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: '#71717a' },
       grid: { vertLines: { color: 'rgba(255, 255, 255, 0.02)' }, horzLines: { color: 'rgba(255, 255, 255, 0.02)' } },
       width: priceChartContainerRef.current.clientWidth,
@@ -590,75 +640,80 @@ const TradingRoom = () => {
       rightPriceScale: { borderVisible: false }
     });
 
-    let mainSeries;
-    if (chartType === 'candlestick') {
-      mainSeries = priceChart.addSeries(CandlestickSeries, {
-        upColor: '#22c55e',
-        downColor: '#ef4444',
-        borderVisible: false,
-        wickUpColor: '#22c55e',
-        wickDownColor: '#ef4444',
-        priceLineVisible: true,
-        priceLineWidth: 1,
-        priceLineColor: '#22c55e',
-        priceLineStyle: 2,
-      });
-    } else if (chartType === 'line') {
-      mainSeries = priceChart.addSeries(LineSeries, {
-        color: '#fff',
-        lineWidth: 1.5,
-      });
-    } else {
-      mainSeries = priceChart.addSeries(AreaSeries, {
-        lineColor: '#fff',
-        topColor: 'rgba(255, 255, 255, 0.05)',
-        bottomColor: 'rgba(255, 255, 255, 0)',
-        lineWidth: 1.5,
-        priceLineVisible: false
-      });
-    }
-    mainSeries.setData(formattedChartData.price);
-
-    // Volume Series (Unified Overlay)
-    const volumeSeries = priceChart.addSeries(HistogramSeries, {
-        color: 'rgba(34, 197, 94, 0.15)',
-        priceFormat: { type: 'volume' },
-        priceScaleId: '', 
-    });
-    volumeSeries.setData(formattedChartData.volume);
-    
-    // Position volume at the bottom (15% of height for desktop)
-    volumeSeries.priceScale().applyOptions({
-        scaleMargins: {
-            top: 0.85,
-            bottom: 0,
-        },
-    });
-
-    // Smart Spacing: Avoid "Fat Candles" for low data points
-    if (formattedChartData.price.length < 50) {
-        priceChart.timeScale().applyOptions({
-            barSpacing: 10,
-        });
-    } else {
-        priceChart.timeScale().fitContent();
-    }
+    chartInstanceRef.current = chart;
 
     const resizeObserver = new ResizeObserver(entries => {
-      if (entries[0].contentRect) {
-        priceChart.applyOptions({ 
+      if (entries[0].contentRect && chartInstanceRef.current) {
+        chartInstanceRef.current.applyOptions({ 
           width: entries[0].contentRect.width, 
           height: entries[0].contentRect.height 
         });
       }
     });
     resizeObserver.observe(priceChartContainerRef.current);
-    
+
     return () => {
-      resizeObserver.disconnect();
-      priceChart.remove();
+      if (resizeObserver) resizeObserver.disconnect();
+      if (chart) chart.remove();
+      chartInstanceRef.current = null;
     };
-  }, [formattedChartData.price, formattedChartData.volume, chartType, mobileTab]);
+  }, [loading]);
+
+  // Sync Data & Handle Type Changes
+  useEffect(() => {
+    if (!chartInstanceRef.current) return;
+
+    const chart = chartInstanceRef.current;
+
+    // Handle Series Type Changes (Candle vs Line vs Area)
+    if (mainSeriesRef.current && currentChartTypeRef.current !== chartType) {
+        chart.removeSeries(mainSeriesRef.current);
+        mainSeriesRef.current = null;
+    }
+
+    if (!mainSeriesRef.current) {
+        if (chartType === 'candlestick') {
+            mainSeriesRef.current = chart.addSeries(CandlestickSeries, {
+                upColor: '#22c55e', downColor: '#ef4444', borderVisible: false,
+                wickUpColor: '#22c55e', wickDownColor: '#ef4444',
+                priceLineVisible: true, priceLineWidth: 1, priceLineColor: '#22c55e', priceLineStyle: 2,
+            });
+        } else if (chartType === 'line') {
+            mainSeriesRef.current = chart.addSeries(LineSeries, { color: '#fff', lineWidth: 1.5 });
+        } else {
+            mainSeriesRef.current = chart.addSeries(AreaSeries, {
+                lineColor: '#fff', topColor: 'rgba(255, 255, 255, 0.05)', bottomColor: 'rgba(255, 255, 255, 0)',
+                lineWidth: 1.5, priceLineVisible: false
+            });
+        }
+        currentChartTypeRef.current = chartType;
+    }
+
+    // Initialize/Update Volume Series
+    if (!volumeSeriesRef.current) {
+        volumeSeriesRef.current = chart.addSeries(HistogramSeries, {
+            color: 'rgba(34, 197, 94, 0.15)',
+            priceFormat: { type: 'volume' },
+            priceScaleId: '', 
+        });
+        volumeSeriesRef.current.priceScale().applyOptions({
+            scaleMargins: { top: 0.85, bottom: 0 },
+        });
+    }
+
+    // Push Data
+    if (formattedChartData.price.length > 0) {
+        mainSeriesRef.current.setData(formattedChartData.price);
+        volumeSeriesRef.current.setData(formattedChartData.volume);
+
+        // Smart Spacing
+        if (formattedChartData.price.length < 50) {
+            chart.timeScale().applyOptions({ barSpacing: 10 });
+        } else {
+            chart.timeScale().fitContent();
+        }
+    }
+  }, [formattedChartData, chartType, mobileTab]);
 
   // Combined Price & Volume Metrics
 
@@ -680,16 +735,17 @@ const TradingRoom = () => {
     return { quantity: activeHolding.quantity, pnl, percent, avgPrice };
   }, [activeHolding, latestPrice]);
 
-  const handlePlaceOrder = async (e) => {
+   const handlePlaceOrder = async (e) => {
     e.preventDefault();
-    if (!selectedProject || !quantity || !price) return;
+    if (!selectedProject || !quantity || (executionMode === 'limit' && !price)) return;
     try {
       setIsPlacing(true);
       await exchangeService.placeOrder({
         project_id: selectedProject.id,
         order_type: orderType,
+        execution_type: executionMode,
         quantity: parseInt(quantity),
-        price_per_brick: parseFloat(price)
+        price_per_brick: executionMode === 'market' ? null : parseFloat(price)
       });
       showToast(`${orderType.toUpperCase()} order placed successfully`, "success");
       setQuantity('');
@@ -703,7 +759,13 @@ const TradingRoom = () => {
   };
 
   const handleQuickFillPrice = (val) => {
-    setPrice(val.toString());
+    if (val === null) {
+      setExecutionMode('market');
+      setPrice('');
+    } else {
+      setExecutionMode('limit');
+      setPrice(val.toString());
+    }
   };
 
   const handleQuickFillQuantity = (percentage) => {
@@ -854,11 +916,12 @@ const TradingRoom = () => {
                 <motion.div 
                     key="terminal"
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="h-full flex flex-col md:flex-row pb-20 md:pb-0 min-h-0"
+                    className="h-full flex flex-col md:flex-row pb-20 md:pb-0 overflow-y-auto md:overflow-hidden custom-scrollbar"
                 >
                         {/* Left Column: Charts */}
                         {/* Left Column: Unified Technical Chart */}
-                        <div className={`flex-1 flex flex-col border-r border-white/5 overflow-hidden ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
+                        {/* Left Column: Unified Technical Chart */}
+                        <div className={`flex-[0_0_62vh] md:flex-1 flex flex-col border-r border-white/5 shrink-0 md:shrink-1 ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
                             <div className="flex-1 flex flex-col h-full bg-black/20 relative">
                                 {/* Chart Header / Timeframes */}
                                 <div className="h-8 border-b border-white/5 px-4 flex items-center justify-between shrink-0 bg-zinc-950/20">
@@ -924,7 +987,7 @@ const TradingRoom = () => {
                         </div>
 
                         {/* Middle Column: Multi-Mode Terminal Section */}
-                        <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-white/5 bg-black/20 shrink-0 ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
+                        <div className={`w-full md:w-80 lg:w-96 md:flex-1 md:h-full flex flex-col border-r border-white/5 bg-black/20 shrink-0 ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
                             {/* Horizontal Mode Slider */}
                             <div className="flex items-center justify-around py-2 border-b border-white/5 bg-zinc-950/40 relative">
                                 {[
@@ -1072,7 +1135,7 @@ const TradingRoom = () => {
                                             <motion.div 
                                                 key="vault"
                                                 initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                                                className="p-6 space-y-6"
+                                                className="flex-1 overflow-y-auto p-6 space-y-6"
                                             >
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl">
@@ -1123,7 +1186,7 @@ const TradingRoom = () => {
                                             <motion.div 
                                                 key="dao"
                                                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                                                className="p-6 space-y-6"
+                                                className="flex-1 overflow-y-auto p-6 space-y-6"
                                             >
                                                 <div className="p-5 bg-primary-500/5 border border-primary-500/10 rounded-xl space-y-3">
                                                     <div className="flex items-center gap-2">
@@ -1154,6 +1217,8 @@ const TradingRoom = () => {
                                         <TradeForm 
                                             orderType={orderType}
                                             setOrderType={setOrderType}
+                                            executionMode={executionMode}
+                                            setExecutionMode={setExecutionMode}
                                             price={price}
                                             setPrice={setPrice}
                                             quantity={quantity}
@@ -1196,6 +1261,8 @@ const TradingRoom = () => {
                 <TradeForm 
                     orderType={orderType}
                     setOrderType={setOrderType}
+                    executionMode={executionMode}
+                    setExecutionMode={setExecutionMode}
                     price={price}
                     setPrice={setPrice}
                     quantity={quantity}

@@ -96,19 +96,39 @@ class ExchangeService:
         if project.status == 'halted':
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Trading is currently halted for this project by administration.")
             
-        ExchangeService._enforce_circuit_breakers(project, Decimal(str(order_data.price_per_brick)), db)
-        
         order_type = order_data.order_type.lower()
         if order_type not in ['buy', 'sell']:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order must be 'buy' or 'sell'.")
+
+        execution_type = (order_data.execution_type or 'limit').lower()
+        if execution_type not in ['limit', 'market']:
+             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Execution type must be 'limit' or 'market'.")
+
+        price_val = Decimal(str(order_data.price_per_brick)) if order_data.price_per_brick else None
+        
+        # Determine circuit limits for market buy locking
+        base_price = CandleService.get_circuit_breaker_base(db, str(project.id), project.ipo_price)
+        upper_limit = base_price * Decimal('1.20')
+        
+        if execution_type == 'limit':
+            if price_val is None:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Limit orders require a price.")
+            ExchangeService._enforce_circuit_breakers(project, price_val, db)
             
         user = db.query(User).filter(User.id == user_id).with_for_update().first()
         
         # 1. Escrow Assets (Mathematically strict pre-deduction)
         if order_type == 'buy':
-            total_escrow_needed = Decimal(str(order_data.quantity)) * Decimal(str(order_data.price_per_brick))
+            # For Market Buy, we lock at the UPPER circuit limit to ensure user has enough for any matched price
+            lock_price = price_val if execution_type == 'limit' else upper_limit
+            total_escrow_needed = Decimal(str(order_data.quantity)) * lock_price
+            
             if user.wallet_balance < total_escrow_needed:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient Wallet Balance to lock Buy Order.")
+                msg = "Insufficient Wallet Balance to lock Buy Order."
+                if execution_type == 'market':
+                    msg += f" Market buys lock funds at the upper circuit limit (₹{upper_limit:,.2f}) to ensure settlement."
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
+            
             user.wallet_balance -= total_escrow_needed # Freeze Fiat
         else:
             holding = db.query(BrickHolding).filter(BrickHolding.user_id == user_id, BrickHolding.project_id == str(project.id)).with_for_update().first()
@@ -121,7 +141,8 @@ class ExchangeService:
             user_id=user_id,
             project_id=str(project.id),
             order_type=order_type,
-            price_per_brick=Decimal(str(order_data.price_per_brick)),
+            execution_type=execution_type,
+            price_per_brick=price_val, # None for market
             quantity=order_data.quantity,
             unfilled_quantity=order_data.quantity,
             status='open'
@@ -172,12 +193,20 @@ class ExchangeService:
             Order.status.in_(['open', 'partial'])
         )
         
-        if new_order.order_type == 'buy':
-            query = query.filter(Order.price_per_brick <= new_order.price_per_brick)
-            query = query.order_by(Order.price_per_brick.asc(), Order.created_at.asc())
+        if new_order.execution_type == 'limit':
+            if new_order.order_type == 'buy':
+                query = query.filter(Order.price_per_brick <= new_order.price_per_brick)
+                query = query.order_by(Order.price_per_brick.asc(), Order.created_at.asc())
+            else:
+                query = query.filter(Order.price_per_brick >= new_order.price_per_brick)
+                query = query.order_by(Order.price_per_brick.desc(), Order.created_at.asc())
         else:
-            query = query.filter(Order.price_per_brick >= new_order.price_per_brick)
-            query = query.order_by(Order.price_per_brick.desc(), Order.created_at.asc())
+            # Market Orders ignore price constraints on the counter-party
+            # We sort NULLS FIRST for market-to-market matching priority if counter-parties are also market
+            if new_order.order_type == 'buy':
+                query = query.order_by(Order.price_per_brick.asc().nullsfirst(), Order.created_at.asc())
+            else:
+                query = query.order_by(Order.price_per_brick.desc().nullsfirst(), Order.created_at.asc())
             
         counter_orders = query.with_for_update().all()
         
@@ -195,8 +224,17 @@ class ExchangeService:
                 break
                 
             trade_qty = min(new_order.unfilled_quantity, counter_order.unfilled_quantity)
-            execution_price = counter_order.price_per_brick
-            executed_at = execution_price
+            
+            # Price Discovery:
+            # 1. If counter_order is LIMIT, use its price.
+            # 2. If counter_order is MARKET, use new_order price (if new_order is LIMIT).
+            # 3. If BOTH are MARKET, use latest project price or IPO price.
+            if counter_order.price_per_brick is not None:
+                execution_price = counter_order.price_per_brick
+            elif new_order.price_per_brick is not None:
+                execution_price = new_order.price_per_brick
+            else:
+                execution_price = project.market_value or project.ipo_price
             
             buyer_id = new_order.user_id if new_order.order_type == 'buy' else counter_order.user_id
             seller_id = counter_order.user_id if new_order.order_type == 'buy' else new_order.user_id
@@ -217,7 +255,20 @@ class ExchangeService:
             
             # Asset Flow Calculations
             seller_fiat_value = Decimal(str(trade_qty)) * execution_price
-            buyer_locked_fiat = Decimal(str(trade_qty)) * buy_order.price_per_brick
+            
+            # For Buyer Refund:
+            # If Limit Buy: refund = trade_qty * (buy_order.price - execution_price)
+            # If Market Buy: refund = trade_qty * (upper_limit - execution_price)
+            # Note: For Buy Orders, we already locked the funds at either buy_order.price or upper_limit.
+            
+            if buy_order.execution_type == 'limit':
+                locked_price_per_brick = buy_order.price_per_brick
+            else:
+                # Need upper limit for market buy refund
+                base_p = CandleService.get_circuit_breaker_base(db, str(project.id), project.ipo_price)
+                locked_price_per_brick = base_p * Decimal('1.20')
+
+            buyer_locked_fiat = Decimal(str(trade_qty)) * locked_price_per_brick
             refund_fiat = buyer_locked_fiat - seller_fiat_value
             
             # Aggregate balance deltas
@@ -315,8 +366,15 @@ class ExchangeService:
         
         # Calculate assets to return
         if order.order_type == 'buy':
-            # Balance locked at order.price_per_brick
-            refund_amount = Decimal(str(order.unfilled_quantity)) * order.price_per_brick
+            # Balance locked at order.price_per_brick (Limit) or upper_limit (Market)
+            if order.execution_type == 'limit':
+                refund_amount = Decimal(str(order.unfilled_quantity)) * order.price_per_brick
+            else:
+                project = db.query(Project).filter(Project.id == order.project_id).first()
+                base_p = CandleService.get_circuit_breaker_base(db, str(project.id), project.ipo_price)
+                upper_limit = base_p * Decimal('1.20')
+                refund_amount = Decimal(str(order.unfilled_quantity)) * upper_limit
+            
             user.wallet_balance += refund_amount
             db.add(WalletTransaction(
                 user_id=user.id, 

@@ -17,8 +17,9 @@ class Order(Base):
     project_id = Column(UUID(as_uuid=True), ForeignKey('projects.id', ondelete='CASCADE'), nullable=False, index=True)
     
     order_type = Column(String(20), nullable=False, index=True) # 'buy' or 'sell'
+    execution_type = Column(String(20), default='limit', nullable=False) # 'limit' or 'market'
     
-    price_per_brick = Column(DECIMAL(18, 2), nullable=False)
+    price_per_brick = Column(DECIMAL(18, 2), nullable=True)
     quantity = Column(Integer, nullable=False)
     unfilled_quantity = Column(Integer, nullable=False) # Starts equal to quantity. Depletes to 0 upon fill.
     

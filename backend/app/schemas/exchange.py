@@ -20,7 +20,8 @@ class BrickHoldingResponse(BaseModel):
 class OrderCreate(BaseModel):
     project_id: UUID
     order_type: str = Field(..., description="Must be exactly 'buy' or 'sell'")
-    price_per_brick: condecimal(max_digits=18, decimal_places=2, gt=0) # type: ignore
+    execution_type: str = Field("limit", description="'limit' or 'market'")
+    price_per_brick: Optional[condecimal(max_digits=18, decimal_places=2, gt=0)] = None # type: ignore
     quantity: int = Field(..., gt=0)
 
 class OrderResponse(BaseModel):
@@ -28,7 +29,8 @@ class OrderResponse(BaseModel):
     project_id: UUID
     user_id: UUID
     order_type: str
-    price_per_brick: float
+    execution_type: str
+    price_per_brick: Optional[float] = None
     quantity: int
     unfilled_quantity: int
     status: str
@@ -49,7 +51,8 @@ class TradeResponse(BaseModel):
 
 class PublicOrderResponse(BaseModel):
     order_type: str
-    price_per_brick: float
+    execution_type: str = "limit"
+    price_per_brick: Optional[float] = None
     unfilled_quantity: int
     created_at: datetime
 
