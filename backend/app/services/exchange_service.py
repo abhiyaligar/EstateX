@@ -57,7 +57,6 @@ class ExchangeService:
         project.funding_raised += total_cost
         project.total_escrow_held += total_cost
         
-        print(f"DEBUG: IPO Subscription Attempt - User: {user_id}, Project: {project_id}, Qty: {quantity}")
         
         # Allocate bricks natively to the investor's Portfolio
         # Using .all() and merging to handle any legacy duplicates from before the UniqueConstraint
@@ -74,13 +73,11 @@ class ExchangeService:
             
             # Legacy cleanup: merge and delete extras
             if len(holdings) > 1:
-                print(f"DEBUG: Cleanup - Merging {len(holdings)} duplicate records for user {user_id}")
                 for extra in holdings[1:]:
                     holding.quantity += extra.quantity
                     holding.total_cost_basis += extra.total_cost_basis
                     db.delete(extra)
         else:
-            print(f"DEBUG: Creating NEW holding for user {user_id}")
             holding = BrickHolding(
                 user_id=UUID(str(user_id)), 
                 project_id=UUID(str(project_id)), 
@@ -161,14 +158,12 @@ class ExchangeService:
         else:
             uid = UUID(str(user_id))
             pid = project.id 
-            print(f"DEBUG: Place Sell Order - User: {uid}, Project: {pid}, Requested: {order_data.quantity}")
             
             holding = db.query(BrickHolding).filter(
                 BrickHolding.user_id == uid, 
                 BrickHolding.project_id == pid
             ).with_for_update().first()
             
-            print(f"DEBUG: Holding in DB: {holding.quantity if holding else 'None'}")
             
             if not holding or holding.quantity < order_data.quantity:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient Bricks in Portfolio to lock Sell Order.")

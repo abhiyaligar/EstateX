@@ -68,6 +68,7 @@ EstateX creates a secure, transparent, and technologically advanced crowdfunding
 ✅ **Investor Analytics**: Real-time portfolio tracking, ROI projections, and Asset Allocation breakdown  
 ✅ **Dual Wallet Architecture**: Strict separation of investor personal funds and builder business ledger  
 ✅ **Strict Compliance**: Manual KYC review policy, RERA validation, SEBI-aligned structure  
+✅ **Social Authentication**: Google OAuth integration via Supabase  
 ✅ **Social Interaction Circles (In Development)**: Investment pooling and community forums  
 
 ---
@@ -361,6 +362,6 @@ This project is developed as an academic capstone and is protected under intelle
 
 ---
 
-**Version**: 1.4  
-**Last Updated**: April 26, 2026  
-**Status**: Manual KYC Policy, Macro Intelligence Admin Suite & Social Feature Roadmap Active
+**Version**: 1.5  
+**Last Updated**: April 26, 2026 (21:40)  
+**Status**: Manual KYC Policy, Google OAuth Integration & Social Feature Roadmap Active

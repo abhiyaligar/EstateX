@@ -165,6 +165,34 @@ Logout and invalidate tokens.
 }
 ```
 
+### POST /auth/oauth-sync
+
+Synchronize user metadata from Supabase OAuth (Google/Apple) to the local PostgreSQL database. This ensures that users who sign in via social login for the first time have a valid local account.
+
+**Request**:
+```json
+{
+  "supabase_id": "uuid-from-supabase",
+  "email": "user@google.com",
+  "full_name": "John Doe",
+  "avatar_url": "https://..."
+}
+```
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid-123",
+    "email": "user@google.com",
+    "role": "investor",
+    "kyc_status": "pending",
+    "created_at": "2024-04-26T00:00:00Z"
+  }
+}
+```
+
 ### POST /auth/forgot-password
 
 Generates a 6-digit OTP for the given email to reset password.

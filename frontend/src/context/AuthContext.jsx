@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
+import { supabase } from '../utils/supabaseClient';
 
 const AuthContext = createContext();
 
@@ -10,25 +11,65 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
 
-  // Initialize auth state
+  // Initialize auth state and listen to Supabase auth changes
   useEffect(() => {
     const initAuth = async () => {
-      if (token) {
+      // 1. Check for existing Supabase session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        const accessToken = session.access_token;
+        setToken(accessToken);
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('refreshToken', session.refresh_token);
+        
         try {
-          // Get user profile using the token
-          const response = await api.get('/auth/me');
+          const response = await api.get('/auth/me', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
           setUser(response.data);
           localStorage.setItem('user', JSON.stringify(response.data));
         } catch (error) {
-          console.error("Failed to verify token", error);
-          logout();
+          if (error.response?.status === 401) {
+            logout();
+          }
         }
       }
       setLoading(false);
     };
 
     initAuth();
-  }, [token]);
+
+    // 2. Listen for auth state changes (OAuth login, logout, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const accessToken = session.access_token;
+        setToken(accessToken);
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('refreshToken', session.refresh_token);
+        
+        // Fetch user profile
+        try {
+          const response = await api.get('/auth/me', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
+          setUser(response.data);
+          localStorage.setItem('user', JSON.stringify(response.data));
+        } catch (error) {
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const login = async (email, password) => {
     try {
@@ -69,7 +110,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const loginWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/auth/callback'
+        }
+      });
+      if (error) throw error;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
@@ -84,6 +140,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!token,
     login,
     register,
+    loginWithGoogle,
     logout
   };
 

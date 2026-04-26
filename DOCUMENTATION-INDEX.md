@@ -10,8 +10,8 @@ Comprehensive Technical Documentation Suite
 This documentation suite provides complete technical specifications, architectural design, implementation guides, and user guides for the EstateX platform.
 
 **Total Documentation**: ~42,000 lines  
-**Last Updated**: April 26, 2026  
-**Version**: 1.7
+**Last Updated**: April 26, 2026 (21:40)  
+**Version**: 1.8
 
 ---
 
@@ -44,6 +44,7 @@ This documentation suite provides complete technical specifications, architectur
 - **Strict Manual Review**: Deployed a human-in-the-loop verification policy where auto-approval is disabled for all user roles.
 - **Admin Queue Management**: Implemented a "Claim/Release" ticket system in the Admin Portal to prevent review collisions between multiple administrators.
 - **Full Identity Audit**: Enhanced `KYCRecord` to track Aadhaar verification timestamps, PAN validation history, and admin reviewer identity.
+- **Google OAuth Integration**: Implemented seamless social login via Supabase with a custom backend synchronization bridge (`/auth/oauth-sync`) to maintain local PostgreSQL user consistency.
 - **High-Performance Exchange & Vault**: Refactored the trading core for optimized UUID handling and atomic `BrickHolding` settlements.
 - **Real-time Price Sync**: Implemented an automated "ticker sync" logic that updates the global `Project.market_value` after every trade, ensuring UI consistency across all views.
 - **Social Feature Roadmap**: Initialized the database schema for "Social Interaction Circles" and updated project scope to include community-driven investment features.
@@ -637,7 +638,7 @@ Admin:
 
 ---
 
-**EstateX Documentation Suite v1.7**  
+**EstateX Documentation Suite v1.8**  
 **Status**: Complete & Production Ready  
 **Total Lines**: ~42,000  
 **Documents**: 10 major files

@@ -132,7 +132,6 @@ const AdminPortal = () => {
   const fetchInitialData = async () => {
     try {
       setLoading(true);
-      console.log("Initializing Admin Protocols...");
       
       const results = await Promise.allSettled([
         adminService.getDashboardStats(),

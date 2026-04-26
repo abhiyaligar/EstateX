@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.schemas.auth import UserCreate, UserLogin, Token, User
+from app.schemas.auth import UserCreate, UserLogin, Token, User, OAuthSyncRequest
 from app.services.auth_service import AuthService
 from app.middleware.auth import get_current_user
 from app.core.db import get_db
@@ -62,3 +62,17 @@ def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
     """
     AuthService.reset_password(data.email, data.otp, data.new_password, db)
     return {"message": "Password reset successfully"}
+@router.post("/oauth-sync", response_model=User)
+def oauth_sync(data: OAuthSyncRequest, db: Session = Depends(get_db)):
+    """
+    Synchronize OAuth user data with the local PostgreSQL database.
+    Called by the frontend after a successful OAuth login.
+    """
+    user = AuthService.sync_oauth_user(data, db)
+    return User(
+        id=str(user.id),
+        email=user.email,
+        role=user.role,
+        kyc_status=user.kyc_status,
+        created_at=str(user.created_at)
+    )

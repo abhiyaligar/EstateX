@@ -10,6 +10,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
+import AuthCallback from '../pages/AuthCallback';
 import Properties from '../pages/Properties';
 import PropertyDetails from '../pages/PropertyDetails';
 import Dashboard from '../pages/Dashboard';
@@ -57,6 +58,7 @@ const AppRoutes = () => {
             <Route path="/properties/:id" element={<PropertyDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/unauthorized" element={<div className="p-20 text-center">Unauthorized Access</div>} />
           </Route>

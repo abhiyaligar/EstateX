@@ -50,7 +50,7 @@ def place_secondary_market_order(
     try:
         ExchangeService.run_matching_engine(new_order.id)
     except Exception as e:
-        print(f"SYNC MATCHING WARNING: {e}")
+        pass
 
     # 2. Fire the matching engine in a background task as a fallback
     background_tasks.add_task(ExchangeService.run_matching_engine, new_order.id)
@@ -68,9 +68,6 @@ def get_investor_holdings(
     # Ensure string ID from middleware is cast to UUID for the query
     uid = UUID(str(current_user.id))
     results = db.query(BrickHolding).filter(BrickHolding.user_id == uid).all()
-    print(f"DEBUG: Portfolio fetch for {uid} - Found {len(results)} assets")
-    for r in results:
-        print(f"  -> Project: {r.project_id}, Qty: {r.quantity}")
     return results
 
 @router.get("/orders", response_model=List[OrderResponse])

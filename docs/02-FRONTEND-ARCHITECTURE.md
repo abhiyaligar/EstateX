@@ -24,13 +24,13 @@
 
 ## Frontend Overview
 
-The EstateX frontend is a modern, responsive web application built with **Next.js 14** and **React 18**, designed to serve three distinct user types with specialized interfaces:
+The EstateX frontend is a modern, responsive web application built with **Vite 6** and **React 19**, designed to serve three distinct user types with specialized interfaces:
 
 1. **Investor Dashboard**: Browse projects, manage investments, track portfolio
 2. **Builder Portal**: Create projects, manage fundraising, track construction progress
 3. **Admin Console**: Approve projects, verify KYC, monitor compliance
 
-The application is fully responsive, works on mobile devices, and integrates blockchain wallet connectivity for token management.
+The application is fully responsive, works on mobile devices, and integrates **Supabase Auth** for both traditional and social (OAuth) login.
 
 ---
 
@@ -38,12 +38,11 @@ The application is fully responsive, works on mobile devices, and integrates blo
 
 ### Core Framework
 ```
-Next.js 14
-├── React 18 (UI component library)
-├── SSR/SSG for optimal performance
-├── API routes for backend integration
-├── Built-in image optimization
-└── Incremental Static Regeneration (ISR)
+Vite 6
+├── React 19 (UI component library)
+├── Single Page Application (SPA) architecture
+├── React Router 7 for client-side routing
+└── Tailwind CSS 4 for utility-first styling
 ```
 
 ### Styling & UI
@@ -759,19 +758,25 @@ function PortfolioPage() {
 
 ## Authentication Flow
 
-### Login Process
+### Login Process (Traditional)
 
-```
 1. User enters email & password → Click Login
 2. Frontend validates input
 3. POST /api/auth/login {email, password}
-4. Backend validates credentials
-5. Backend generates JWT token (expires in 24h)
-6. Backend returns {token, user, refresh_token}
-7. Frontend stores token in localStorage
-8. Redux dispatch SET_USER action
-9. Redirect to /investor/dashboard or /builder/dashboard
-```
+4. Backend validates credentials via Supabase
+5. Backend returns JWT token
+6. Frontend stores token in localStorage and AuthContext
+7. Redirect to Dashboard
+
+### Login Process (Google OAuth)
+
+1. User clicks "Continue with Google"
+2. Frontend triggers `supabase.auth.signInWithOAuth`
+3. Redirect to Google Consent Screen
+4. User approves → Redirect back to `/auth/callback`
+5. `AuthCallback.jsx` detects session and calls POST `/auth/oauth-sync`
+6. Backend ensures local PostgreSQL `users` record exists
+7. Frontend redirects to Dashboard
 
 ### Protected Routes
 
