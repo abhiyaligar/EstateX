@@ -11,6 +11,11 @@ export const adminService = {
     return response.data;
   },
 
+  getPendingKYC: async (skip = 0, limit = 50) => {
+    const response = await api.get(`/admin/kyc-applications?status=pending&skip=${skip}&limit=${limit}`);
+    return response.data;
+  },
+
   claimKYC: async (kycId) => {
     const response = await api.post(`/admin/kyc-applications/${kycId}/claim`);
     return response.data;

@@ -21,6 +21,22 @@ class AdminService:
         
         total_users = sum(role_counts.values())
         
+        # User Growth (last 6 months)
+        from datetime import datetime, timedelta, timezone
+        six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
+        
+        user_growth = db.query(
+            func.date_trunc('month', DBUser.created_at).label('month'),
+            func.count(DBUser.id).label('count')
+        ).filter(DBUser.created_at >= six_months_ago).group_by('month').order_by('month').all()
+        
+        # Volume Growth (last 6 months from DailyCandle)
+        from app.models.exchange import DailyCandle
+        volume_growth = db.query(
+            func.date_trunc('month', DailyCandle.date).label('month'),
+            func.sum(DailyCandle.volume).label('volume')
+        ).filter(DailyCandle.date >= six_months_ago.date()).group_by('month').order_by('month').all()
+
         pending_kyc = db.query(func.count(KYCRecord.id)).filter(
             KYCRecord.status.in_(['pending', 'otp_verified']) 
             if hasattr(KYCRecord, 'status') else True
@@ -35,6 +51,23 @@ class AdminService:
         total_investments_locked_inr = db.query(func.sum(Project.funding_raised)).scalar() or 0.0
         total_platform_escrow = db.query(func.sum(Project.total_escrow_held)).scalar() or 0.0
         
+        # Format growth data for frontend
+        growth_data = []
+        # Create a combined map of months to count/volume
+        months_map = {}
+        for month, count in user_growth:
+            m_str = month.strftime('%b')
+            months_map[m_str] = {"name": m_str, "users": count, "volume": 0}
+            
+        for month, volume in volume_growth:
+            m_str = month.strftime('%b')
+            if m_str in months_map:
+                months_map[m_str]["volume"] = float(volume or 0)
+            else:
+                months_map[m_str] = {"name": m_str, "users": 0, "volume": float(volume or 0)}
+        
+        growth_data = sorted(months_map.values(), key=lambda x: datetime.strptime(x["name"], '%b').month)
+
         return DashboardStatsResponse(
             total_users=total_users,
             total_investors=role_counts.get('investor', 0),
@@ -45,7 +78,8 @@ class AdminService:
             projects_active=projects_active,
             projects_completed=projects_completed,
             total_investments_locked_inr=float(total_investments_locked_inr),
-            total_platform_escrow=float(total_platform_escrow)
+            total_platform_escrow=float(total_platform_escrow),
+            growth_history=growth_data
         )
 
     @staticmethod

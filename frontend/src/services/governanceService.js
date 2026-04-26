@@ -1,53 +1,34 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return { Authorization: `Bearer ${token}` };
-};
+import api from './api';
 
 const governanceService = {
   // Investor Routes
   getProposals: async (projectId) => {
-    const response = await axios.get(`${API_URL}/governance/proposals/${projectId}`, {
-      headers: getAuthHeader()
-    });
+    const response = await api.get(`/governance/proposals/${projectId}`);
     return response.data;
   },
 
   castVote: async (proposalId, optionIndex) => {
-    const response = await axios.post(`${API_URL}/governance/proposals/${proposalId}/vote`, 
-      { option_index: optionIndex },
-      { headers: getAuthHeader() }
-    );
+    const response = await api.post(`/governance/proposals/${proposalId}/vote`, { 
+      option_index: optionIndex 
+    });
     return response.data;
   },
 
   // Admin Routes
   getAllProposals: async () => {
-    const response = await axios.get(`${API_URL}/governance/admin/proposals`, {
-      headers: getAuthHeader()
-    });
+    const response = await api.get('/governance/admin/proposals');
     return response.data;
   },
 
   createProposal: async (proposalData) => {
-    const response = await axios.post(`${API_URL}/governance/admin/proposals`, 
-      proposalData,
-      { headers: getAuthHeader() }
-    );
+    const response = await api.post('/governance/admin/proposals', proposalData);
     return response.data;
   },
 
   updateProposalStatus: async (proposalId, status, resultIndex = null) => {
-    const response = await axios.put(`${API_URL}/governance/admin/proposals/${proposalId}/status`, 
-      null,
-      { 
-        params: { status, result_index: resultIndex },
-        headers: getAuthHeader() 
-      }
-    );
+    const response = await api.put(`/governance/admin/proposals/${proposalId}/status`, null, {
+      params: { status, result_index: resultIndex }
+    });
     return response.data;
   }
 };

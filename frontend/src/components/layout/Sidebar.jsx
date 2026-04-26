@@ -36,7 +36,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
       : []),
     { name: 'Settings', path: '/dashboard/settings', icon: Settings },
     ...(user?.role === 'admin' 
-      ? [{ name: 'Admin Portal', path: '/dashboard/admin', icon: ShieldCheck }] 
+      ? [{ name: 'Admin Portal', path: '/admin', icon: ShieldCheck }] 
       : []),
   ];
 

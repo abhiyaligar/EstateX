@@ -14,6 +14,7 @@ class DashboardStatsResponse(BaseModel):
     projects_active: int
     projects_completed: int
     total_platform_escrow: float
+    growth_history: List[dict] = []
 
 class KYCReviewRequest(BaseModel):
     status: Literal['approved', 'rejected']

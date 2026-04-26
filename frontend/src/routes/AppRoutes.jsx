@@ -111,15 +111,14 @@ const AppRoutes = () => {
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="admin" 
-              element={
-                <ProtectedRoute roles={['admin']}>
-                  <AdminPortal />
-                </ProtectedRoute>
-              } 
-            />
           </Route>
+
+          {/* Admin Portal (Full Screen) */}
+          <Route path="/admin" element={
+            <ProtectedRoute roles={['admin']}>
+              <AdminPortal />
+            </ProtectedRoute>
+          } />
 
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to="/" replace />} />
