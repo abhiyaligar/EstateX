@@ -36,11 +36,17 @@ import { Input } from '../components/ui/Input';
 import exchangeService from '../services/exchangeService';
 import propertyService from '../services/propertyService';
 import governanceService from '../services/governanceService';
+import { walletService } from '../services/walletService';
+import Toast from '../components/ui/Toast';
+import { Modal } from '../components/ui/Modal';
 
 // --- Sub-Components ---
 
-const OrderBookRow = ({ price, quantity, type, isHeader = false, total = 0, maxTotal = 1 }) => (
-  <div className="relative group overflow-hidden">
+const OrderBookRow = ({ price, quantity, type, isHeader = false, total = 0, maxTotal = 1, onClick }) => (
+  <div 
+    className="relative group overflow-hidden cursor-pointer"
+    onClick={() => !isHeader && onClick && onClick(price)}
+  >
     {/* Relative depth bar background */}
     {!isHeader && (
       <div 
@@ -82,13 +88,23 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-4 bg-zinc-900/50 border border-white/5 px-4 md:px-6 py-4 rounded-xl hover:border-white/20 transition-all group w-full md:w-auto hover:bg-zinc-900"
+        className="flex items-center gap-5 px-2 py-1 group transition-all relative"
       >
-        <Search size={18} className="text-zinc-500 group-hover:text-white transition-colors" />
-        <div className="text-left">
-          <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-bold leading-none mb-1">Active Cluster</p>
-          <h2 className="text-base font-bold uppercase tracking-tight text-white">{selectedProject?.title || 'Search Properties...'}</h2>
+        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/5 group-hover:border-white/20 group-hover:bg-white/5 transition-all">
+          <Search size={18} className="text-zinc-500 group-hover:text-white transition-colors" />
         </div>
+        <div className="text-left">
+          <p className="text-[8px] uppercase tracking-[0.3em] text-zinc-600 font-black leading-none mb-1.5 group-hover:text-zinc-400 transition-colors">Asset Identifier</p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-black uppercase tracking-tighter text-white group-hover:text-primary-400 transition-colors">
+              {selectedProject?.title || 'Select Asset'}
+            </h2>
+            <ChevronDown size={14} className="text-zinc-700 group-hover:text-white transition-all group-hover:translate-y-0.5" />
+          </div>
+        </div>
+        
+        {/* Subtle hover indicator */}
+        <div className="absolute -bottom-2 left-0 w-0 h-0.5 bg-primary-500 group-hover:w-full transition-all duration-500 opacity-50" />
       </button>
 
       <AnimatePresence>
@@ -271,12 +287,25 @@ const TradingRoom = () => {
   const [chartTimeframe, setChartTimeframe] = useState('1h');
   const [chartType, setChartType] = useState('candlestick');
 
+  // Phase One UI State
+  const [toast, setToast] = useState({ isOpen: false, message: '', type: 'success' });
+  const [confirmCancel, setConfirmCancel] = useState({ isOpen: false, orderId: null });
+  const [walletBalance, setWalletBalance] = useState(0);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ isOpen: true, message, type });
+  };
+
   useEffect(() => {
     const initFetch = async () => {
       try {
         setLoading(true);
-        const projectsData = await propertyService.getProperties('active');
+        const [projectsData, walletData] = await Promise.all([
+          propertyService.getProperties('active'),
+          walletService.getWalletContext().catch(() => ({ balance: 0 }))
+        ]);
         setProjects(projectsData);
+        setWalletBalance(walletData.balance || 0);
         if (projectsData.length > 0) {
           setSelectedProject(projectsData[0]);
         }
@@ -292,19 +321,21 @@ const TradingRoom = () => {
   const refreshLiveData = async () => {
     if (!selectedProject) return;
     try {
-      const [history, book, ohlcv, govProposals, userPortfolio, orders] = await Promise.all([
+      const [history, book, ohlcv, govProposals, userPortfolio, orders, walletData] = await Promise.all([
         exchangeService.getTradeHistory(selectedProject.id),
         exchangeService.getPublicOrderBook(selectedProject.id),
         exchangeService.getOHLCV(selectedProject.id, chartTimeframe.toLowerCase()),
         governanceService.getProposals(selectedProject.id).catch(() => []),
         exchangeService.getPortfolio().catch(() => []),
-        exchangeService.getOpenOrders().catch(() => [])
+        exchangeService.getOpenOrders().catch(() => []),
+        walletService.getWalletContext().catch(() => ({ balance: 0 }))
       ]);
       setTradeHistory(history);
       setPublicOrderBook(book);
       setOhlcvData(ohlcv);
       setProposals(govProposals);
       setOpenOrders(orders);
+      setWalletBalance(walletData.balance || 0);
 
       const holding = userPortfolio.find(h => h.project_id === selectedProject.id);
       setIsHolder(holding && holding.quantity > 0);
@@ -500,22 +531,55 @@ const TradingRoom = () => {
         quantity: parseInt(quantity),
         price_per_brick: parseFloat(price)
       });
+      showToast(`${orderType.toUpperCase()} order placed successfully`, "success");
       setQuantity('');
-      // Notification would go here
     } catch (err) {
       console.error(err);
+      showToast(err.response?.data?.detail || "Failed to place order", "error");
     } finally {
       setIsPlacing(false);
       refreshLiveData();
     }
   };
 
+  const handleQuickFillPrice = (val) => {
+    setPrice(val.toString());
+  };
+
+  const handleQuickFillQuantity = (percentage) => {
+    if (!selectedProject) return;
+    
+    if (orderType === 'buy') {
+      if (!price || parseFloat(price) <= 0) {
+        showToast("Please enter a price first", "error");
+        return;
+      }
+      const maxQty = Math.floor(walletBalance / parseFloat(price));
+      setQuantity(Math.floor(maxQty * (percentage / 100)).toString());
+    } else {
+      const holding = holdings.find(h => h.project_id === selectedProject.id);
+      const maxQty = holding ? holding.quantity : 0;
+      setQuantity(Math.floor(maxQty * (percentage / 100)).toString());
+    }
+  };
+
   const handleCancelOrder = async (orderId) => {
-    if (!window.confirm("Are you sure you want to withdraw this intent and unlock your assets?")) return;
+    setConfirmCancel({ isOpen: true, orderId });
+  };
+
+  const executeCancelOrder = async () => {
+    const orderId = confirmCancel.orderId;
+    if (!orderId) return;
+    
     try {
       await exchangeService.cancelOrder(orderId);
+      showToast("Order cancelled successfully", "success");
+      setConfirmCancel({ isOpen: false, orderId: null });
       refreshLiveData();
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+      showToast("Failed to cancel order", "error");
+    }
   };
 
   const handleModifyExecute = async (orderId, newPrice, newQty) => {
@@ -559,28 +623,18 @@ const TradingRoom = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans overflow-hidden relative">
-        {/* Header Bar */}
-        <header className="h-auto md:h-20 border-b border-white/5 px-4 md:px-6 py-4 md:py-0 flex flex-col md:flex-row items-center justify-between gap-4 bg-black/50 backdrop-blur-xl shrink-0 z-30">
-            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-12 w-full md:w-auto">
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
+        {/* Header Bar - Re-imagined for Premium Look */}
+        <header className="h-auto md:h-20 border-b border-white/10 px-4 md:px-8 py-4 md:py-0 flex flex-col md:flex-row items-center justify-between gap-6 bg-[#080808]/80 backdrop-blur-2xl sticky top-0 z-[60] shadow-[0_1px_20px_rgba(0,0,0,0.5)]">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full md:w-auto">
+                <button 
                     onClick={() => navigate(-1)} 
-                    className="mr-2 border border-white/5 bg-white/5 hover:bg-white/10 hidden md:flex"
-                    leftIcon={<ArrowLeft size={14} />}
+                    className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-zinc-400 hover:text-white"
                 >
-                    Return
-                </Button>
+                    <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Return</span>
+                </button>
 
-                {/* Mobile Navigation Header */}
-                <div className="flex items-center justify-between w-full md:hidden mb-2">
-                    <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-zinc-400">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-800 border border-white/10 text-white font-bold text-xs">
-                        EX
-                    </div>
-                </div>
+                <div className="h-10 w-px bg-white/5 hidden lg:block" />
                 
                 <PropertySearchModal 
                     projects={projects} 
@@ -588,37 +642,57 @@ const TradingRoom = () => {
                     onSelect={setSelectedProject} 
                 />
                 
-                <div className="flex gap-6 md:gap-12 border-l border-white/5 pl-6 md:pl-12 w-full md:w-auto overflow-x-auto">
+                <div className="flex gap-8 md:gap-10 items-center w-full md:w-auto overflow-x-auto no-scrollbar">
                     <div className="space-y-1 hidden lg:block">
-                        <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-bold">24h Vol</p>
-                        <span className="text-sm font-mono font-medium text-zinc-300">{volume24h.toLocaleString()} BK</span>
+                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-bold">Volume 24h</p>
+                        <span className="text-xs font-mono font-bold text-zinc-400">{volume24h.toLocaleString()} <span className="text-[10px] text-zinc-600 font-normal">BK</span></span>
                     </div>
+                    
+                    <div className="h-6 w-px bg-white/5 hidden lg:block" />
+
                     <div className="space-y-1 shrink-0">
-                        <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 font-bold">Mark Price</p>
-                        <div className="flex items-center gap-2">
-                             <span className="text-base md:text-lg font-mono font-bold tracking-tighter">₹{latestPrice.toLocaleString()}</span>
-                             <span className={`text-[10px] font-bold ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                {parseFloat(priceChange) >= 0 ? '+' : ''}{priceChange}%
-                             </span>
+                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-bold">Mark Price</p>
+                        <div className="flex items-center gap-2.5">
+                             <span className="text-base md:text-xl font-mono font-black tracking-tighter text-white">₹{latestPrice.toLocaleString()}</span>
+                             <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[9px] font-black ${parseFloat(priceChange) >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                {parseFloat(priceChange) >= 0 ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
+                                {Math.abs(parseFloat(priceChange))}%
+                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="flex bg-zinc-900/50 p-0.5 border border-white/5 rounded-lg overflow-hidden">
-                   <button onClick={() => setActiveTab('exchange')} className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'exchange' ? 'bg-primary-600 text-white shadow-lg' : 'text-zinc-500 hover:text-white'}`}>Exchange</button>
-                   <button onClick={() => setActiveTab('holdings')} className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'holdings' ? 'bg-primary-600 text-white shadow-lg' : 'text-zinc-500 hover:text-white'}`}>My Vault</button>
-                   {proposals.length > 0 && (
-                      <button onClick={() => setActiveTab('governance')} className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold transition-all ${activeTab === 'governance' ? 'bg-primary-600 text-white shadow-lg' : 'text-zinc-500 hover:text-white'} flex items-center gap-2`}>
-                        <Shield size={10} /> GOVERNANCE
-                      </button>
-                   )}
+            <div className="flex items-center gap-6">
+                {/* Modern Segmented Control */}
+                <div className="flex bg-zinc-950 p-1 border border-white/5 rounded-xl">
+                   {[
+                     { id: 'exchange', label: 'Exchange' },
+                     { id: 'holdings', label: 'My Vault' },
+                     { id: 'governance', label: 'DAO', icon: <Shield size={10} /> }
+                   ].filter(t => t.id !== 'governance' || proposals.length > 0).map((tab) => (
+                     <button 
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)} 
+                        className={`relative px-5 py-2.5 text-[9px] uppercase tracking-[0.2em] font-black transition-all rounded-lg flex items-center gap-2 ${activeTab === tab.id ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                     >
+                        {activeTab === tab.id && (
+                          <motion.div 
+                            layoutId="activeTabHeader" 
+                            className="absolute inset-0 bg-white/10 rounded-lg border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)]" 
+                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                          />
+                        )}
+                        <span className="relative z-10 flex items-center gap-2">
+                          {tab.icon} {tab.label}
+                        </span>
+                     </button>
+                   ))}
                 </div>
 
-                <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-white/5 rounded-full hidden lg:flex">
-                    <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-[9px] uppercase tracking-[0.2em] text-zinc-400 font-bold">Live</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/5 border border-green-500/10 rounded-full hidden lg:flex">
+                    <div className="h-1.5 w-1.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-green-500/80 font-black">Live Matcher</span>
                 </div>
             </div>
         </header>
@@ -667,6 +741,12 @@ const TradingRoom = () => {
                                 </div>
                                 <div className="flex-1 p-6 relative">
                                     <div ref={priceChartContainerRef} className="absolute inset-6 [&_a]:hidden" />
+                                    {formattedChartData.price.length === 0 && (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px] z-10">
+                                            <Activity size={32} className="text-zinc-700 mb-3 animate-pulse" />
+                                            <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">Waiting for market data...</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -677,6 +757,11 @@ const TradingRoom = () => {
                                 </div>
                                 <div className="flex-1 px-6 py-4 relative">
                                     <div ref={volChartContainerRef} className="absolute inset-0 px-6 py-4 [&_a]:hidden" />
+                                    {formattedChartData.volume.length === 0 && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                            <p className="text-[8px] uppercase tracking-[0.3em] text-zinc-800 font-bold">No volume recorded</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -703,6 +788,7 @@ const TradingRoom = () => {
                                             type="sell" 
                                             total={o.cumulativeTotal}
                                             maxTotal={maxDepth}
+                                            onClick={handleQuickFillPrice}
                                         />
                                     ))}
                                 </div>
@@ -726,6 +812,7 @@ const TradingRoom = () => {
                                             type="buy" 
                                             total={o.cumulativeTotal}
                                             maxTotal={maxDepth}
+                                            onClick={handleQuickFillPrice}
                                         />
                                     ))}
                                 </div>
@@ -779,6 +866,18 @@ const TradingRoom = () => {
                                             className="w-full bg-[#111] border border-white/5 h-14 px-6 text-base font-mono focus:border-white/20 transition-all focus:outline-none"
                                             placeholder="0"
                                          />
+                                         <div className="grid grid-cols-4 gap-2 mt-2">
+                                            {[25, 50, 75, 100].map((p) => (
+                                                <button
+                                                    key={p}
+                                                    type="button"
+                                                    onClick={() => handleQuickFillQuantity(p)}
+                                                    className="py-2 text-[8px] font-bold border border-white/5 bg-zinc-900/50 hover:bg-white/10 text-zinc-500 hover:text-white transition-all uppercase tracking-widest rounded-sm"
+                                                >
+                                                    {p === 100 ? 'MAX' : `${p}%`}
+                                                </button>
+                                            ))}
+                                         </div>
                                     </div>
 
                                     <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-lg border border-white/5 border-dashed">
@@ -992,6 +1091,45 @@ const TradingRoom = () => {
           onClose={() => setModifyingOrder(null)} 
           order={modifyingOrder} 
           onModify={handleModifyExecute} 
+        />
+
+        {/* Cancel Confirmation Modal */}
+        <Modal
+          isOpen={confirmCancel.isOpen}
+          onClose={() => setConfirmCancel({ isOpen: false, orderId: null })}
+          title="Confirm Cancellation"
+        >
+          <div className="space-y-6">
+            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+              <p className="text-sm text-red-500 leading-relaxed">
+                Are you sure you want to withdraw this intent? This will unlock your assets and move them back to your digital vault. If you re-place this order later, it will be placed at the back of the queue.
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <Button 
+                variant="outline" 
+                className="flex-1" 
+                onClick={() => setConfirmCancel({ isOpen: false, orderId: null })}
+              >
+                KEEP ORDER
+              </Button>
+              <Button 
+                variant="danger" 
+                className="flex-1" 
+                onClick={executeCancelOrder}
+              >
+                CANCEL ORDER
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Toast Notification */}
+        <Toast 
+          isOpen={toast.isOpen}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, isOpen: false })}
         />
     </div>
   );

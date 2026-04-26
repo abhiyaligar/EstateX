@@ -1,3 +1,5 @@
+import logging
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 try:
@@ -7,8 +9,6 @@ except ImportError as e:
     raise e
 
 from app.core.config import settings
-import logging
-import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
