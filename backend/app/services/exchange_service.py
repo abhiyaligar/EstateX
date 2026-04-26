@@ -320,6 +320,11 @@ class ExchangeService:
             
             counter_order.status = 'fulfilled' if counter_order.unfilled_quantity == 0 else 'partial'
             new_order.status = 'fulfilled' if new_order.unfilled_quantity == 0 else 'partial'
+            
+            # 3.5 Update the project's global market value to the last execution price
+            # This ensures the 'ticker' in the UI (Depth/Header) stays in sync with the Chart
+            from app.models.project import Project
+            db.query(Project).filter(Project.id == project.id).update({Project.market_value: execution_price})
 
         # 4. Settlement Phase (Bulk Database Persistence)
         if trades_to_create:

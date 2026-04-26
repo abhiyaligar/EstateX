@@ -511,7 +511,7 @@ const TradingRoom = () => {
     if (!selectedProject) return;
     try {
       const [history, book, ohlcv, govProposals, userPortfolio, orders, walletData, projectDetails] = await Promise.all([
-        (bookMode === 'history' || tradeHistory.length === 0) ? exchangeService.getTradeHistory(selectedProject.id) : Promise.resolve(tradeHistory),
+        exchangeService.getTradeHistory(selectedProject.id),
         exchangeService.getPublicOrderBook(selectedProject.id),
         exchangeService.getOHLCV(selectedProject.id, chartTimeframe.toLowerCase()),
         governanceService.getProposals(selectedProject.id).catch(() => []),
@@ -759,7 +759,7 @@ const TradingRoom = () => {
 
   // Combined Price & Volume Metrics
 
-  const latestPrice = currentPrice || (tradeHistory.length > 0 ? tradeHistory[0].price : (selectedProject?.financial?.market_value || selectedProject?.financial?.ipo_price || 0));
+  const latestPrice = (tradeHistory.length > 0 ? tradeHistory[0].price : (currentPrice || selectedProject?.financial?.market_value || selectedProject?.financial?.ipo_price || 0));
   const priceChange = tradeHistory.length > 1 ? ((tradeHistory[0].price - tradeHistory[1].price) / tradeHistory[1].price * 100).toFixed(2) : 0;
 
   // Auto-sync price input on project switch
