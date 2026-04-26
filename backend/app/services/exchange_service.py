@@ -15,6 +15,9 @@ from app.services.candle_service import CandleService
 
 from sqlalchemy import func
 from app.core.db import SessionLocal
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ExchangeService:
     @staticmethod
@@ -330,9 +333,19 @@ class ExchangeService:
         # 4. Settlement Phase (Bulk Database Persistence)
         if trades_to_create:
             # Update the project's global market value to the last execution price
-            # Using the last execution price from the loop
-            project.market_value = Decimal(str(trades_to_create[-1].price))
+            last_price = Decimal(str(trades_to_create[-1].price))
+            project.market_value = last_price
             
+            # Update today's OHLCV candle (high/low/close/volume) atomically
+            total_qty_traded = sum(t.quantity for t in trades_to_create)
+            CandleService.update_live_candle(
+                db,
+                str(project.id),
+                last_price,
+                total_qty_traded,
+                project.ipo_price
+            )
+
             # Save ALL trades in one batch
             db.bulk_save_objects(trades_to_create)
 
@@ -378,21 +391,6 @@ class ExchangeService:
                     reduction_factor = Decimal(str(seller_holding.quantity)) / Decimal(str(old_total_qty))
                     seller_holding.total_cost_basis = seller_holding.total_cost_basis * reduction_factor
 
-            # Push final market ticker + update live candle
-            if executed_at:
-                project.market_value = executed_at
-                # Initialize previous_close_price on first-ever trade (legacy compat)
-                if project.previous_close_price is None:
-                    project.previous_close_price = executed_at
-                # Update today's OHLCV candle (high/low/close/volume) atomically
-                total_qty_traded = sum(t.quantity for t in trades_to_create)
-                CandleService.update_live_candle(
-                    db,
-                    str(project.id),
-                    executed_at,
-                    total_qty_traded,
-                    project.ipo_price
-                )
 
     @staticmethod
     def cancel_order(user_id: str, order_id: str, db: Session):
