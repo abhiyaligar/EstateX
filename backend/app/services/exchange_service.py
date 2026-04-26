@@ -261,11 +261,6 @@ class ExchangeService:
             if new_order.unfilled_quantity <= 0:
                 break
                 
-            # 3.0 Self-Matching Prevention
-            # We skip orders from the same user to prevent circular balance/holding updates
-            if str(new_order.user_id) == str(counter_order.user_id):
-                continue
-
             trade_qty = min(new_order.unfilled_quantity, counter_order.unfilled_quantity)
             
             # Price Discovery:
@@ -315,6 +310,7 @@ class ExchangeService:
             refund_fiat = buyer_locked_fiat - seller_fiat_value
             
             # Aggregate balance deltas
+            # Use Decimal('0') as default to handle same-user wash trades correctly
             user_balance_deltas[seller_id] = user_balance_deltas.get(seller_id, Decimal('0')) + seller_fiat_value
             if refund_fiat > 0:
                 user_balance_deltas[buyer_id] = user_balance_deltas.get(buyer_id, Decimal('0')) + refund_fiat
