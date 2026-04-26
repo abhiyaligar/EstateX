@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, Integer, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Numeric
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.models.user import Base
@@ -16,6 +16,7 @@ class BrickHolding(Base):
     project_id = Column(UUID(as_uuid=True), ForeignKey('projects.id', ondelete='CASCADE'), nullable=False, index=True)
     
     quantity = Column(Integer, nullable=False, default=0) # Must never strictly drop below 0
+    total_cost_basis = Column(Numeric(precision=20, scale=2), nullable=False, default=0) # Total INR spent to acquire these bricks
     
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

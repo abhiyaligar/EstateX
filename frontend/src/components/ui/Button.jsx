@@ -21,11 +21,12 @@ export const Button = React.forwardRef(({
   const baseStyles = "inline-flex items-center justify-center rounded-[var(--radius)] font-semibold tracking-tight uppercase text-[10px] transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-red disabled:pointer-events-none disabled:opacity-50";
   
   const variants = {
-    primary: "bg-white text-black hover:bg-neutral-200",
-    secondary: "bg-secondary-800 text-white hover:bg-secondary-700",
+    primary: "bg-green-500 text-black hover:bg-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]",
+    secondary: "bg-white text-black hover:bg-zinc-200",
     outline: "border border-white/20 text-white hover:bg-white/10",
     ghost: "text-white/70 hover:text-white hover:bg-white/5",
-    danger: "bg-accent-red text-white hover:bg-red-700",
+    danger: "bg-red-500 text-white hover:bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.2)]",
+    success: "bg-green-500 text-black hover:bg-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]",
   };
 
   const sizes = {

@@ -17,22 +17,25 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+        className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" 
         onClick={onClose}
       />
       
       {/* Modal Content */}
-      <div className="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-white dark:bg-slate-950 p-6 shadow-2xl transition-all border border-secondary-100 dark:border-secondary-800">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-secondary-900 dark:text-white font-heading">
-            {title}
-          </h3>
+      <div className="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-[#050505] p-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all border border-white/10">
+        <div className="flex items-center justify-between mb-8">
+          <div className="space-y-1">
+            <p className="text-[7px] uppercase tracking-[0.4em] text-zinc-600 font-black leading-none">Security Protocol Active</p>
+            <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-tighter">
+                {title}
+            </h3>
+          </div>
           <button 
             onClick={onClose}
-            className="rounded-full p-2 text-secondary-400 hover:bg-secondary-50 dark:hover:bg-slate-900 transition-colors"
+            className="rounded-full h-10 w-10 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/5 transition-all border border-white/5 hover:border-white/20"
           >
             <X size={20} />
           </button>

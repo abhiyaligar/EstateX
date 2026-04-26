@@ -154,6 +154,8 @@ def get_project_ohlcv(
         '1m': timedelta(minutes=1),
         '5m': timedelta(minutes=5),
         '1h': timedelta(hours=1),
+        '1w': timedelta(days=7),
+        '1M': timedelta(days=30),
     }
     td = interval_map.get(interval, timedelta(hours=1))
     

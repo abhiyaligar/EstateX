@@ -10,6 +10,7 @@ class BrickHoldingResponse(BaseModel):
     user_id: UUID
     project_id: UUID
     quantity: int
+    total_cost_basis: float
     created_at: datetime
     project: Optional[ProjectListResponse] = None
     

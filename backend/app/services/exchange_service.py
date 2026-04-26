@@ -57,8 +57,9 @@ class ExchangeService:
         holding = db.query(BrickHolding).filter(BrickHolding.user_id == user_id, BrickHolding.project_id == project_id).first()
         if holding:
             holding.quantity += quantity
+            holding.total_cost_basis += total_cost_basis
         else:
-            holding = BrickHolding(user_id=user_id, project_id=project_id, quantity=quantity)
+            holding = BrickHolding(user_id=user_id, project_id=project_id, quantity=quantity, total_cost_basis=total_cost_basis)
             db.add(holding)
             
         db.commit()
@@ -251,9 +252,35 @@ class ExchangeService:
                     BrickHolding.project_id == str(project.id)
                 ).with_for_update().first()
                 if existing:
+                    # Update cost basis for buyer (add spent amount)
                     existing.quantity += qty_delta
+                    existing.total_cost_basis += (Decimal(str(qty_delta)) * execution_price)
                 else:
-                    db.add(BrickHolding(user_id=u_id, project_id=str(project.id), quantity=qty_delta))
+                    db.add(BrickHolding(
+                        user_id=u_id, 
+                        project_id=str(project.id), 
+                        quantity=qty_delta,
+                        total_cost_basis=(Decimal(str(qty_delta)) * execution_price)
+                    ))
+
+            # Apply aggregated Basis updates for Sellers (Pro-rata reduction)
+            # We need to fetch sellers specifically to reduce their basis based on how much they sold
+            # (In a real high-perf engine this would be part of the accumulation logic, 
+            # but for simplicity we do it here)
+            unique_sellers = set(t.seller_id for t in trades_to_create)
+            for s_id in unique_sellers:
+                total_sold = sum(t.quantity for t in trades_to_create if t.seller_id == s_id)
+                seller_holding = db.query(BrickHolding).filter(
+                    BrickHolding.user_id == s_id,
+                    BrickHolding.project_id == str(project.id)
+                ).with_for_update().first()
+                if seller_holding and seller_holding.quantity + total_sold > 0:
+                    # Basis reduction: new_basis = old_basis * (remaining / (remaining + sold))
+                    # Note: bricks were already deducted from 'quantity' when the order was PLACED.
+                    # So seller_holding.quantity is already the 'remaining' amount.
+                    old_total_qty = seller_holding.quantity + total_sold
+                    reduction_factor = Decimal(str(seller_holding.quantity)) / Decimal(str(old_total_qty))
+                    seller_holding.total_cost_basis = seller_holding.total_cost_basis * reduction_factor
 
             # Push final market ticker + update live candle
             if executed_at:

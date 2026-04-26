@@ -54,12 +54,12 @@ const OrderBookRow = ({ price, quantity, type, isHeader = false, total = 0, maxT
         style={{ transform: `scaleX(${total / maxTotal})` }}
       />
     )}
-    <div className={`grid grid-cols-2 relative z-10 text-[10px] py-1.5 px-4 transition-colors ${!isHeader ? 'hover:bg-white/5' : 'text-zinc-600 uppercase tracking-widest font-bold'}`}>
-      <span className={isHeader ? '' : type === 'buy' ? 'text-green-400 font-mono font-bold' : 'text-red-400 font-mono font-bold'}>
-        {isHeader ? 'Price' : `₹${price.toLocaleString()}`}
+    <div className="flex justify-between items-center h-7 px-3 md:px-5 relative z-10">
+      <span className={`text-[10px] md:text-[11px] font-mono font-bold ${isHeader ? 'text-zinc-600' : type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>
+        {isHeader ? 'PRICE' : `₹${price.toLocaleString()}`}
       </span>
-      <span className={`text-right ${isHeader ? '' : 'text-zinc-400 font-mono'}`}>
-         {isHeader ? 'Quantity' : `${quantity} BK`}
+      <span className={`text-[10px] md:text-[11px] font-mono font-bold ${isHeader ? 'text-zinc-600' : 'text-zinc-300'}`}>
+        {isHeader ? 'QUANTITY' : quantity.toLocaleString()}
       </span>
     </div>
   </div>
@@ -74,6 +74,125 @@ const TradeHistoryRow = ({ price, quantity, time, type }) => (
      <span className="text-zinc-500 font-mono">{quantity} BK</span>
      <span className="text-zinc-700 text-[8px] font-medium">{time}</span>
   </div>
+);
+
+const TradeForm = ({ 
+    orderType, 
+    setOrderType, 
+    price, 
+    setPrice, 
+    quantity, 
+    setQuantity, 
+    handlePlaceOrder, 
+    isPlacing, 
+    handleQuickFillQuantity,
+    latestPrice
+}) => (
+    <form onSubmit={handlePlaceOrder} className="space-y-6">
+        {/* Buy/Sell Segmented Switcher */}
+        <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/5">
+            <button 
+                type="button"
+                onClick={() => setOrderType('buy')} 
+                className={`flex-1 py-2.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-lg relative ${orderType === 'buy' ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+            >
+                {orderType === 'buy' && (
+                    <motion.div layoutId="orderTypeBg" className="absolute inset-0 bg-green-500/10 border border-green-500/20 rounded-lg shadow-[0_0_20px_rgba(34,197,94,0.1)]" />
+                )}
+                <span className="relative z-10">Acquisition</span>
+            </button>
+            <button 
+                type="button"
+                onClick={() => setOrderType('sell')} 
+                className={`flex-1 py-2.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-lg relative ${orderType === 'sell' ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+            >
+                 {orderType === 'sell' && (
+                    <motion.div layoutId="orderTypeBg" className="absolute inset-0 bg-red-500/10 border border-red-500/20 rounded-lg shadow-[0_0_20px_rgba(239,68,68,0.1)]" />
+                )}
+                <span className="relative z-10">Divestment</span>
+            </button>
+        </div>
+
+        <div className="space-y-4">
+            {/* Price Input */}
+            <div className="space-y-1.5">
+                 <div className="flex justify-between items-end px-1">
+                    <label className="text-[8px] uppercase font-black text-zinc-600 tracking-[0.3em]">Price Limit</label>
+                    <span className="text-[9px] font-mono font-bold text-zinc-800">INR</span>
+                 </div>
+                 <div className="relative group">
+                    <input 
+                        type="number" 
+                        step="0.01" 
+                        value={price} 
+                        onChange={(e) => setPrice(e.target.value)}
+                        className="w-full bg-zinc-950/50 border border-white/5 h-12 px-5 text-sm font-mono focus:border-white/20 focus:bg-zinc-950 transition-all focus:outline-none rounded-xl text-white placeholder:text-zinc-800"
+                        placeholder="0.00"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <TrendingUp size={14} className="text-zinc-800 group-focus-within:text-zinc-600 transition-colors" />
+                    </div>
+                 </div>
+            </div>
+
+            {/* Quantity Input */}
+            <div className="space-y-1.5">
+                 <div className="flex justify-between items-end px-1">
+                    <label className="text-[8px] uppercase font-black text-zinc-600 tracking-[0.3em]">Quantity</label>
+                    <span className="text-[9px] font-mono font-bold text-zinc-800">BRICKS</span>
+                 </div>
+                 <div className="relative group">
+                    <input 
+                        type="number" 
+                        value={quantity} 
+                        onChange={(e) => setQuantity(e.target.value)}
+                        className="w-full bg-zinc-950/50 border border-white/5 h-12 px-5 text-sm font-mono focus:border-white/20 focus:bg-zinc-950 transition-all focus:outline-none rounded-xl text-white placeholder:text-zinc-800"
+                        placeholder="0"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <Layers size={14} className="text-zinc-800 group-focus-within:text-zinc-600 transition-colors" />
+                    </div>
+                 </div>
+                 
+                 {/* Quick Percent Buttons */}
+                 <div className="grid grid-cols-4 gap-1.5 mt-3">
+                    {[25, 50, 75, 100].map((p) => (
+                        <button
+                            key={p}
+                            type="button"
+                            onClick={() => handleQuickFillQuantity(p)}
+                            className="py-2 text-[9px] font-black border border-white/5 bg-zinc-950/50 hover:bg-white/5 hover:border-white/10 text-zinc-600 hover:text-zinc-300 transition-all uppercase tracking-widest rounded-lg"
+                        >
+                            {p === 100 ? 'MAX' : `${p}%`}
+                        </button>
+                    ))}
+                 </div>
+            </div>
+        </div>
+
+        {/* Trade Summary Card */}
+        <div className="p-4 bg-zinc-950/80 rounded-xl border border-white/5 border-dashed relative overflow-hidden group">
+             <div className="flex items-center justify-between relative z-10">
+                 <div className="space-y-0.5">
+                    <p className="text-[8px] uppercase font-black text-zinc-700 tracking-[0.2em]">Total Commitment</p>
+                    <p className="text-sm font-mono font-black text-white">₹{((parseFloat(price) || 0) * (parseInt(quantity) || 0)).toLocaleString()}</p>
+                 </div>
+                 <Zap size={16} className="text-zinc-800 group-hover:text-primary-500/20 transition-colors" />
+             </div>
+             {/* Subtle animated background glow */}
+             <div className="absolute inset-0 bg-gradient-to-br from-primary-500/0 to-primary-500/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+
+        <Button 
+            type="submit" 
+            size="lg"
+            isLoading={isPlacing}
+            variant={orderType === 'buy' ? 'primary' : 'danger'} 
+            className={`w-full shadow-2xl tracking-[0.4em] font-black py-5 text-[10px] rounded-xl transition-all ${orderType === 'buy' ? 'hover:shadow-green-500/10' : 'hover:shadow-red-500/10'}`}
+        >
+            {orderType === 'buy' ? 'PLACE ACQUISITION ORDER' : 'PLACE DIVESTMENT ORDER'}
+        </Button>
+    </form>
 );
 
 const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
@@ -94,12 +213,12 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
           <Search size={18} className="text-zinc-500 group-hover:text-white transition-colors" />
         </div>
         <div className="text-left">
-          <p className="text-[8px] uppercase tracking-[0.3em] text-zinc-600 font-black leading-none mb-1.5 group-hover:text-zinc-400 transition-colors">Asset Identifier</p>
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-black uppercase tracking-tighter text-white group-hover:text-primary-400 transition-colors">
+          <p className="text-[7px] uppercase tracking-[0.3em] text-zinc-600 font-black leading-none mb-1 group-hover:text-zinc-400 transition-colors hidden md:block">Asset Identifier</p>
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-base md:text-lg font-black uppercase tracking-tighter text-white group-hover:text-primary-400 transition-colors truncate max-w-[120px] md:max-w-none">
               {selectedProject?.title || 'Select Asset'}
             </h2>
-            <ChevronDown size={14} className="text-zinc-700 group-hover:text-white transition-all group-hover:translate-y-0.5" />
+            <ChevronDown size={10} className="text-zinc-700 group-hover:text-white transition-all group-hover:translate-y-0.5" />
           </div>
         </div>
         
@@ -286,6 +405,8 @@ const TradingRoom = () => {
   
   const [chartTimeframe, setChartTimeframe] = useState('1h');
   const [chartType, setChartType] = useState('candlestick');
+  const [mobileTab, setMobileTab] = useState('chart');
+  const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
 
   // Phase One UI State
   const [toast, setToast] = useState({ isOpen: false, message: '', type: 'success' });
@@ -398,6 +519,15 @@ const TradingRoom = () => {
     return Math.max(buyTotal, sellTotal, 1);
   }, [buyOrders, sellOrders]);
 
+  const marketSpread = useMemo(() => {
+    if (buyOrders.length === 0 || sellOrders.length === 0) return { spread: 0, percent: 0 };
+    const highestBid = buyOrders[0].price_per_brick;
+    const lowestAsk = sellOrders[0].price_per_brick;
+    const spread = lowestAsk - highestBid;
+    const percent = (spread / lowestAsk) * 100;
+    return { spread, percent };
+  }, [buyOrders, sellOrders]);
+
   const formattedChartData = useMemo(() => {
     if (!ohlcvData || !ohlcvData.length) return { price: [], volume: [] };
     
@@ -453,6 +583,10 @@ const TradingRoom = () => {
         borderVisible: false,
         wickUpColor: '#22c55e',
         wickDownColor: '#ef4444',
+        priceLineVisible: true,
+        priceLineWidth: 1,
+        priceLineColor: '#22c55e',
+        priceLineStyle: 2,
       });
     } else if (chartType === 'line') {
       mainSeries = priceChart.addSeries(LineSeries, {
@@ -469,53 +603,49 @@ const TradingRoom = () => {
       });
     }
     mainSeries.setData(formattedChartData.price);
-    priceChart.timeScale().fitContent();
 
-    const handleResizePrice = () => {
-      if (priceChartContainerRef.current) {
-         priceChart.applyOptions({ width: priceChartContainerRef.current.clientWidth, height: priceChartContainerRef.current.clientHeight });
-      }
-    };
-    window.addEventListener('resize', handleResizePrice);
-
-    return () => {
-      window.removeEventListener('resize', handleResizePrice);
-      priceChart.remove();
-    };
-  }, [formattedChartData.price, chartType, activeTab]);
-
-  useEffect(() => {
-    if (!volChartContainerRef.current || formattedChartData.volume.length === 0 || activeTab !== 'exchange') return;
-    
-    const volChart = createChart(volChartContainerRef.current, {
-      layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: '#71717a' },
-      grid: { vertLines: { visible: false }, horzLines: { visible: false } },
-      width: volChartContainerRef.current.clientWidth,
-      height: volChartContainerRef.current.clientHeight,
-      timeScale: { visible: false },
-      rightPriceScale: { visible: false }
-    });
-
-    const volumeSeries = volChart.addSeries(HistogramSeries, {
-      color: '#18181b',
-      priceFormat: { type: 'volume' },
-      priceScaleId: ''
+    // Volume Series (Unified Overlay)
+    const volumeSeries = priceChart.addSeries(HistogramSeries, {
+        color: 'rgba(34, 197, 94, 0.15)',
+        priceFormat: { type: 'volume' },
+        priceScaleId: '', 
     });
     volumeSeries.setData(formattedChartData.volume);
-    volChart.timeScale().fitContent();
+    
+    // Position volume at the bottom (15% of height for desktop)
+    volumeSeries.priceScale().applyOptions({
+        scaleMargins: {
+            top: 0.85,
+            bottom: 0,
+        },
+    });
 
-    const handleResizeVol = () => {
-      if (volChartContainerRef.current) {
-         volChart.applyOptions({ width: volChartContainerRef.current.clientWidth, height: volChartContainerRef.current.clientHeight });
+    // Smart Spacing: Avoid "Fat Candles" for low data points
+    if (formattedChartData.price.length < 50) {
+        priceChart.timeScale().applyOptions({
+            barSpacing: 10,
+        });
+    } else {
+        priceChart.timeScale().fitContent();
+    }
+
+    const resizeObserver = new ResizeObserver(entries => {
+      if (entries[0].contentRect) {
+        priceChart.applyOptions({ 
+          width: entries[0].contentRect.width, 
+          height: entries[0].contentRect.height 
+        });
       }
-    };
-    window.addEventListener('resize', handleResizeVol);
-
+    });
+    resizeObserver.observe(priceChartContainerRef.current);
+    
     return () => {
-      window.removeEventListener('resize', handleResizeVol);
-      volChart.remove();
+      resizeObserver.disconnect();
+      priceChart.remove();
     };
-  }, [formattedChartData.volume, activeTab]);
+  }, [formattedChartData.price, formattedChartData.volume, chartType, activeTab, mobileTab]);
+
+  // Combined Price & Volume Metrics
 
   const latestPrice = tradeHistory.length > 0 ? tradeHistory[0].price : (selectedProject?.market_price || 0);
   const priceChange = tradeHistory.length > 1 ? ((tradeHistory[0].price - tradeHistory[1].price) / tradeHistory[1].price * 100).toFixed(2) : 0;
@@ -623,47 +753,70 @@ const TradingRoom = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans overflow-hidden relative">
-        {/* Header Bar - Re-imagined for Premium Look */}
-        <header className="h-auto md:h-20 border-b border-white/10 px-4 md:px-8 py-4 md:py-0 flex flex-col md:flex-row items-center justify-between gap-6 bg-[#080808]/80 backdrop-blur-2xl sticky top-0 z-[60] shadow-[0_1px_20px_rgba(0,0,0,0.5)]">
-            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full md:w-auto">
+        {/* Mobile-Optimized Header (Groww Style) */}
+        <header className="h-16 md:h-20 border-b border-white/10 px-4 md:px-8 flex items-center justify-between bg-[#080808]/95 backdrop-blur-3xl sticky top-0 z-[110] shadow-2xl">
+            <div className="flex items-center gap-3">
                 <button 
                     onClick={() => navigate(-1)} 
-                    className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-zinc-400 hover:text-white"
+                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/10 text-zinc-400 md:hidden"
                 >
-                    <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Return</span>
+                    <ArrowLeft size={18} />
                 </button>
+                
+                <div className="hidden md:block">
+                        <button 
+                        onClick={() => navigate(-1)} 
+                        className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-zinc-400 hover:text-white"
+                    >
+                        <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Return</span>
+                    </button>
+                </div>
 
-                <div className="h-10 w-px bg-white/5 hidden lg:block" />
+                <div className="h-8 w-px bg-white/5 hidden lg:block" />
                 
                 <PropertySearchModal 
                     projects={projects} 
                     selectedProject={selectedProject} 
                     onSelect={setSelectedProject} 
                 />
-                
-                <div className="flex gap-8 md:gap-10 items-center w-full md:w-auto overflow-x-auto no-scrollbar">
-                    <div className="space-y-1 hidden lg:block">
-                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-bold">Volume 24h</p>
-                        <span className="text-xs font-mono font-bold text-zinc-400">{volume24h.toLocaleString()} <span className="text-[10px] text-zinc-600 font-normal">BK</span></span>
-                    </div>
-                    
-                    <div className="h-6 w-px bg-white/5 hidden lg:block" />
+            </div>
 
-                    <div className="space-y-1 shrink-0">
-                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-bold">Mark Price</p>
-                        <div className="flex items-center gap-2.5">
-                             <span className="text-base md:text-xl font-mono font-black tracking-tighter text-white">₹{latestPrice.toLocaleString()}</span>
-                             <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[9px] font-black ${parseFloat(priceChange) >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                                {parseFloat(priceChange) >= 0 ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
-                                {Math.abs(parseFloat(priceChange))}%
-                             </div>
-                        </div>
-                    </div>
+            {/* Price Metrics - Mobile Right Side */}
+            <div className="flex md:hidden flex-col items-end">
+                <span className="text-base font-mono font-black tracking-tighter text-white leading-none">₹{latestPrice.toLocaleString()}</span>
+                <div className={`flex items-center gap-1 mt-1 text-[9px] font-black ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {parseFloat(priceChange) >= 0 ? '▲' : '▼'} {Math.abs(parseFloat(priceChange))}%
                 </div>
             </div>
 
-            <div className="flex items-center gap-6">
+                {/* Desktop Metrics HUD */}
+                <div className="hidden md:flex items-center gap-10 overflow-x-auto no-scrollbar ml-6 border-l border-white/5 pl-10">
+                    <div className="space-y-1">
+                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-black">24h Change</p>
+                        <div className={`flex items-center gap-1.5 text-[11px] font-mono font-bold ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {parseFloat(priceChange) >= 0 ? '+' : ''}{priceChange}%
+                        </div>
+                    </div>
+
+                    <div className="space-y-1">
+                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-black">24h High</p>
+                        <span className="text-[11px] font-mono font-bold text-zinc-400">₹{(latestPrice * 1.05).toFixed(2)}</span>
+                    </div>
+
+                    <div className="space-y-1">
+                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-black">24h Low</p>
+                        <span className="text-[11px] font-mono font-bold text-zinc-400">₹{(latestPrice * 0.92).toFixed(2)}</span>
+                    </div>
+
+                    <div className="space-y-1">
+                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-black">24h Volume</p>
+                        <span className="text-[11px] font-mono font-bold text-zinc-400">{volume24h.toLocaleString()} <span className="text-[9px] text-zinc-700">BK</span></span>
+                    </div>
+                </div>
+
+
+            <div className="flex items-center gap-6 hidden md:flex">
                 {/* Modern Segmented Control */}
                 <div className="flex bg-zinc-950 p-1 border border-white/5 rounded-xl">
                    {[
@@ -690,7 +843,7 @@ const TradingRoom = () => {
                    ))}
                 </div>
 
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/5 border border-green-500/10 rounded-full hidden lg:flex">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/5 border border-green-500/10 rounded-full">
                     <div className="h-1.5 w-1.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
                     <span className="text-[9px] uppercase tracking-[0.2em] text-green-500/80 font-black">Live Matcher</span>
                 </div>
@@ -704,73 +857,80 @@ const TradingRoom = () => {
                     <motion.div 
                         key="exchange"
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="h-full w-full flex"
+                        className="flex-1 flex flex-col md:flex-row pb-20 md:pb-0 min-h-0"
                     >
                         {/* Left Column: Charts */}
-                        <div className="flex-1 flex flex-col border-r border-white/5 overflow-hidden">
-                            {/* Price Chart Section */}
-                            <div className="flex-1 flex flex-col min-h-0 bg-black/20">
-                                <div className="h-12 border-b border-white/5 px-6 flex items-center justify-between shrink-0">
-                                    <div className="flex gap-4">
-                                        <div className="flex gap-1 bg-[#111] border border-white/5 p-0.5 rounded-sm">
-                                            {['1m', '5m', '1h', '1d'].map(tf => (
-                                                <button 
-                                                    key={tf}
-                                                    onClick={() => setChartTimeframe(tf)}
-                                                    className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all ${chartTimeframe === tf ? 'bg-primary-600 text-white' : 'text-zinc-600 hover:text-white'}`}
-                                                >
-                                                    {tf}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        <div className="flex gap-1 bg-[#111] border border-white/5 p-0.5 rounded-sm">
-                                            {['area', 'line', 'candlestick'].map(type => (
-                                                <button 
-                                                    key={type}
-                                                    onClick={() => setChartType(type)}
-                                                    className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all ${chartType === type ? 'bg-primary-600 text-white' : 'text-zinc-600 hover:text-white'}`}
-                                                >
-                                                    {type}
-                                                </button>
-                                            ))}
-                                        </div>
+                        {/* Left Column: Unified Technical Chart */}
+                        <div className={`flex-1 flex flex-col border-r border-white/5 overflow-hidden ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
+                            <div className="flex-1 flex flex-col min-h-0 bg-black/20 relative">
+                                {/* Chart Header / Timeframes */}
+                                <div className="h-8 border-b border-white/5 px-4 flex items-center justify-between shrink-0 bg-zinc-950/20">
+                                    <div className="flex bg-zinc-900/50 rounded-md border border-white/5 relative">
+                                        {['1m', '5m', '1h', '1D', '1W', '1M'].map((tf) => (
+                                            <button 
+                                                key={tf}
+                                                onClick={() => setChartTimeframe(tf)}
+                                                className={`relative px-3 py-1 text-[9px] font-black tracking-tighter transition-all z-10 ${chartTimeframe === tf ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                            >
+                                                {chartTimeframe === tf && (
+                                                    <motion.div 
+                                                        layoutId="activeTimeframe"
+                                                        className="absolute inset-0 bg-white/10 rounded-md border border-white/5"
+                                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                                    />
+                                                )}
+                                                <span className="relative z-20">{tf}</span>
+                                            </button>
+                                        ))}
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                         <button className="text-zinc-600 hover:text-white transition-colors"><Maximize2 size={14} /></button>
+                                    <div className="flex items-center gap-2 border-l border-white/5 pl-4 ml-2">
+                                         <button 
+                                            onClick={() => setChartType('candlestick')}
+                                            className={`p-1.5 rounded-md transition-all ${chartType === 'candlestick' ? 'bg-white/10 text-white shadow-lg' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                            title="Candlestick Chart"
+                                         >
+                                            <TrendingUp size={12} />
+                                         </button>
+                                         <button 
+                                            onClick={() => setChartType('line')}
+                                            className={`p-1.5 rounded-md transition-all ${chartType === 'line' ? 'bg-white/10 text-white shadow-lg' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                            title="Line Chart"
+                                         >
+                                            <LineChart size={12} />
+                                         </button>
+                                         <div className="w-px h-4 bg-white/5 mx-1" />
+                                         <button className="text-zinc-600 hover:text-white transition-colors p-1.5"><Maximize2 size={12} /></button>
                                     </div>
                                 </div>
-                                <div className="flex-1 p-6 relative">
-                                    <div ref={priceChartContainerRef} className="absolute inset-6 [&_a]:hidden" />
-                                    {formattedChartData.price.length === 0 && (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px] z-10">
-                                            <Activity size={32} className="text-zinc-700 mb-3 animate-pulse" />
-                                            <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">Waiting for market data...</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
 
-                            {/* Volume Section */}
-                            <div className="h-40 border-t border-white/5 bg-black/40 shrink-0 flex flex-col">
-                                <div className="h-8 px-6 flex items-center border-b border-white/5 shrink-0">
-                                    <p className="text-[8px] uppercase tracking-[0.3em] text-zinc-700 font-bold">Transaction Volume</p>
-                                </div>
-                                <div className="flex-1 px-6 py-4 relative">
-                                    <div ref={volChartContainerRef} className="absolute inset-0 px-6 py-4 [&_a]:hidden" />
-                                    {formattedChartData.volume.length === 0 && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                            <p className="text-[8px] uppercase tracking-[0.3em] text-zinc-800 font-bold">No volume recorded</p>
+                                {/* Unified Chart Area */}
+                                <div className="flex-1 min-h-[350px] md:min-h-0 relative overflow-hidden bg-[#050505]">
+                                    <div ref={priceChartContainerRef} className="absolute inset-0 [&_a]:hidden" />
+                                    
+                                    {/* Real-time Status Overlay */}
+                                    <div className="absolute top-3 left-4 flex flex-col gap-1 pointer-events-none z-10">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
+                                            <p className="text-[8px] uppercase tracking-[0.2em] text-white font-black">{selectedProject?.title}</p>
+                                        </div>
+                                        <p className="text-[7px] text-zinc-600 font-mono">VOL 24H: {volume24h.toLocaleString()}</p>
+                                    </div>
+
+                                    {formattedChartData.price.length === 0 && (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-20">
+                                            <Activity size={24} className="text-zinc-800 mb-2 animate-pulse" />
+                                            <p className="text-[8px] uppercase tracking-[0.3em] text-zinc-600 font-black">Syncing Market Data...</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Middle Column: Orderbook */}
-                        <div className="w-80 flex flex-col border-r border-white/5 bg-black/40 shrink-0">
-                            <div className="h-12 border-b border-white/5 px-6 flex items-center shrink-0">
-                                <h3 className="text-[10px] uppercase font-bold tracking-[0.3em] flex items-center gap-2">
-                                    <BarChart3 size={12} className="text-zinc-600" />
+                        {/* Middle Column: Orderbook (Visible below chart on Mobile) */}
+                        <div className={`w-full md:w-64 lg:w-72 flex flex-col border-r border-white/5 bg-black/20 shrink-0 ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
+                            <div className="h-10 border-b border-white/5 px-4 flex items-center justify-between shrink-0 bg-zinc-950/20">
+                                <h3 className="text-[9px] uppercase font-black tracking-[0.2em] flex items-center gap-2 text-zinc-500">
+                                    <BarChart3 size={12} className="text-zinc-700" />
                                     Orderbook
                                 </h3>
                             </div>
@@ -780,7 +940,7 @@ const TradingRoom = () => {
                                 
                                 {/* Sell Orders (Asks) - Red */}
                                 <div className="overflow-hidden flex flex-col-reverse justify-end">
-                                    {sellOrders.map((o, i) => (
+                                    {sellOrders.slice(-5).map((o, i) => (
                                         <OrderBookRow 
                                             key={i} 
                                             price={o.price_per_brick} 
@@ -794,17 +954,26 @@ const TradingRoom = () => {
                                 </div>
 
                                 {/* Spread Section */}
-                                <div className="py-4 my-2 border-y border-white/5 bg-black/60 flex flex-col items-center justify-center">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-xl font-mono font-bold tracking-tighter text-white">₹{latestPrice.toLocaleString()}</span>
-                                        <div className={`h-2 w-2 rounded-full ${parseFloat(priceChange) >= 0 ? 'bg-green-500 animate-pulse' : 'bg-red-500 animate-pulse'}`} />
+                                <div className="py-2 border-y border-white/5 bg-zinc-950/40 flex flex-col items-center justify-center relative">
+                                    <div className="flex items-center gap-4">
+                                        <span className={`text-xl font-mono font-black tracking-tighter ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                            ₹{latestPrice.toLocaleString()}
+                                        </span>
+                                        <div className="flex flex-col items-start leading-none">
+                                            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Spread</span>
+                                            <span className="text-[10px] font-mono font-bold text-zinc-400">
+                                                {marketSpread.spread > 0 ? `₹${marketSpread.spread.toFixed(2)} (${marketSpread.percent.toFixed(2)}%)` : '0.00 (0%)'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <p className="text-[9px] uppercase tracking-widest text-zinc-600 font-bold mt-1">Real-time Matcher Spread</p>
-                                </div>
+                                    
+                                    {/* Small signal bar */}
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary-600/20" />
+                                 </div>
 
                                 {/* Buy Orders (Bids) - Green */}
                                 <div className="overflow-hidden">
-                                     {buyOrders.map((o, i) => (
+                                     {buyOrders.slice(0, 5).map((o, i) => (
                                         <OrderBookRow 
                                             key={i} 
                                             price={o.price_per_brick} 
@@ -819,83 +988,23 @@ const TradingRoom = () => {
                             </div>
                         </div>
 
-                        {/* Right Column: Trade Input & Recent Trades */}
-                        <div className="w-96 flex flex-col bg-black shrink-0">
-                            {/* Trade Form */}
-                            <div className="p-8 border-b border-white/5">
-                                <div className="flex bg-zinc-900 p-1 rounded-lg border border-white/5 mb-8">
-                                    <button 
-                                        onClick={() => setOrderType('buy')} 
-                                        className={`flex-1 py-4 text-[10px] font-bold uppercase rounded-md tracking-[0.2em] transition-all ${orderType === 'buy' ? 'bg-primary-600 text-white shadow-2xl shadow-primary-900/40' : 'text-zinc-500 hover:text-zinc-300'}`}
-                                    >
-                                        BUY BRICK
-                                    </button>
-                                    <button 
-                                        onClick={() => setOrderType('sell')} 
-                                        className={`flex-1 py-4 text-[10px] font-bold uppercase rounded-md tracking-[0.2em] transition-all ${orderType === 'sell' ? 'bg-red-500 text-white shadow-2xl' : 'text-zinc-500 hover:text-zinc-300'}`}
-                                    >
-                                        SELL BRICK
-                                    </button>
-                                </div>
-
-                                <form onSubmit={handlePlaceOrder} className="space-y-6">
-                                    <div className="space-y-2">
-                                         <div className="flex justify-between">
-                                            <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest">Price Limit</label>
-                                            <span className="text-[10px] font-mono text-zinc-700">₹ INR</span>
-                                         </div>
-                                         <input 
-                                            type="number" 
-                                            step="0.01" 
-                                            value={price} 
-                                            onChange={(e) => setPrice(e.target.value)}
-                                            className="w-full bg-[#111] border border-white/5 h-14 px-6 text-base font-mono focus:border-white/20 transition-all focus:outline-none"
-                                            placeholder="0.00"
-                                         />
+                                {/* Right Column: Trade Input & Recent Trades */}
+                                <div className="hidden md:flex w-full md:w-80 lg:w-96 flex flex-col bg-black/20 shrink-0">
+                                    {/* Trade Form */}
+                                    <div className="p-5 md:p-6 border-b border-white/5 bg-zinc-950/20">
+                                        <TradeForm 
+                                            orderType={orderType}
+                                            setOrderType={setOrderType}
+                                            price={price}
+                                            setPrice={setPrice}
+                                            quantity={quantity}
+                                            setQuantity={setQuantity}
+                                            handlePlaceOrder={handlePlaceOrder}
+                                            isPlacing={isPlacing}
+                                            handleQuickFillQuantity={handleQuickFillQuantity}
+                                            latestPrice={latestPrice}
+                                        />
                                     </div>
-
-                                    <div className="space-y-2">
-                                         <div className="flex justify-between">
-                                            <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest">Quantity</label>
-                                            <span className="text-[10px] font-mono text-zinc-700">BK BRICK</span>
-                                         </div>
-                                         <input 
-                                            type="number" 
-                                            value={quantity} 
-                                            onChange={(e) => setQuantity(e.target.value)}
-                                            className="w-full bg-[#111] border border-white/5 h-14 px-6 text-base font-mono focus:border-white/20 transition-all focus:outline-none"
-                                            placeholder="0"
-                                         />
-                                         <div className="grid grid-cols-4 gap-2 mt-2">
-                                            {[25, 50, 75, 100].map((p) => (
-                                                <button
-                                                    key={p}
-                                                    type="button"
-                                                    onClick={() => handleQuickFillQuantity(p)}
-                                                    className="py-2 text-[8px] font-bold border border-white/5 bg-zinc-900/50 hover:bg-white/10 text-zinc-500 hover:text-white transition-all uppercase tracking-widest rounded-sm"
-                                                >
-                                                    {p === 100 ? 'MAX' : `${p}%`}
-                                                </button>
-                                            ))}
-                                         </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-lg border border-white/5 border-dashed">
-                                         <p className="text-[10px] uppercase font-bold text-zinc-600 tracking-widest">Total Position</p>
-                                         <p className="text-sm font-mono font-bold text-white">₹{((parseFloat(price) || 0) * (parseInt(quantity) || 0)).toLocaleString()}</p>
-                                    </div>
-
-                                    <Button 
-                                        type="submit" 
-                                        size="lg"
-                                        isLoading={isPlacing}
-                                        variant={orderType === 'buy' ? 'primary' : 'danger'} 
-                                        className="w-full shadow-2xl tracking-[0.3em] font-bold py-8 text-xs"
-                                    >
-                                        {orderType === 'buy' ? 'Execute Acquisition' : 'Execute Divestment'}
-                                    </Button>
-                                </form>
-                            </div>
 
                             {/* Ledger / Recent Trades */}
                             <div className="flex-1 flex flex-col min-h-0">
@@ -986,21 +1095,42 @@ const TradingRoom = () => {
                                       <thead>
                                         <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-zinc-600 bg-black/20">
                                           <th className="p-6">Asset Cluster</th>
-                                          <th className="p-6">Volume</th>
-                                          <th className="p-6">Inventory Value</th>
+                                          <th className="p-6 text-center">Volume</th>
+                                          <th className="p-6 text-center">Inventory Value</th>
+                                          <th className="p-6 text-center">P&L Status</th>
                                           <th className="p-6 text-right">Ops</th>
                                         </tr>
                                       </thead>
                                       <tbody>
                                         {holdings.length === 0 ? (
-                                          <tr><td colSpan="4" className="p-20 text-center text-zinc-600 uppercase tracking-widest text-xs">Vault empty. Begin acquisition on the exchange.</td></tr>
+                                          <tr><td colSpan="5" className="p-20 text-center text-zinc-600 uppercase tracking-widest text-xs">Vault empty. Begin acquisition on the exchange.</td></tr>
                                         ) : holdings.map(h => {
                                            const proj = projects.find(p => p.id === h.project_id);
+                                           const currentVal = h.quantity * (proj?.market_price || 0);
+                                           const costBasis = h.total_cost_basis || 0;
+                                           const pnl = currentVal - costBasis;
+                                           const roi = costBasis > 0 ? (pnl / costBasis) * 100 : 0;
+
                                            return (
                                              <tr key={h.id} className="border-b border-white/5 hover:bg-white/[0.01]">
-                                               <td className="p-6 font-bold uppercase text-sm text-white">{proj?.title || h.project_id}</td>
-                                               <td className="p-6 font-mono text-zinc-400">{h.quantity} BK</td>
-                                               <td className="p-6 font-mono font-bold text-white">₹{(h.quantity * (proj?.market_price || 0)).toLocaleString()}</td>
+                                               <td className="p-6 font-bold uppercase text-sm text-white">
+                                                   <div className="flex flex-col">
+                                                       {proj?.title || h.project_id}
+                                                       <span className="text-[10px] font-mono text-zinc-600 font-normal">AVG COST: ₹{(costBasis / (h.quantity || 1)).toFixed(2)}</span>
+                                                   </div>
+                                               </td>
+                                               <td className="p-6 font-mono text-zinc-400 text-center">{h.quantity} BK</td>
+                                               <td className="p-6 font-mono font-bold text-white text-center">₹{currentVal.toLocaleString()}</td>
+                                               <td className="p-6 font-mono font-bold text-center">
+                                                   <div className="flex flex-col">
+                                                       <span className={pnl >= 0 ? 'text-green-500' : 'text-red-500'}>
+                                                           {pnl >= 0 ? '+' : ''}₹{Math.abs(pnl).toLocaleString()}
+                                                       </span>
+                                                       <span className={`text-[10px] ${pnl >= 0 ? 'text-green-500/60' : 'text-red-500/60'}`}>
+                                                           {pnl >= 0 ? '+' : ''}{roi.toFixed(2)}%
+                                                       </span>
+                                                   </div>
+                                               </td>
                                                <td className="p-6 text-right">
                                                   <Button size="sm" variant="outline" onClick={() => { setSelectedProject(proj); setActiveTab('exchange'); }}>TRADE</Button>
                                                 </td>
@@ -1085,6 +1215,47 @@ const TradingRoom = () => {
                 )}
             </AnimatePresence>
         </div>
+
+        {/* Sticky Mobile Action Buttons (Groww Style) */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#050505]/80 backdrop-blur-xl border-t border-white/5 flex gap-3 z-[70]">
+            <button 
+                onClick={() => { setOrderType('buy'); setIsTradeModalOpen(true); }}
+                className="flex-1 py-4 bg-green-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.2)]"
+            >
+                BUY ASSET
+            </button>
+            <button 
+                onClick={() => { setOrderType('sell'); setIsTradeModalOpen(true); }}
+                className="flex-1 py-4 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+            >
+                SELL ASSET
+            </button>
+        </div>
+
+        {/* Mobile Trade Modal */}
+        <Modal 
+            isOpen={isTradeModalOpen} 
+            onClose={() => setIsTradeModalOpen(false)}
+            title={orderType === 'buy' ? 'Acquire Bricks' : 'Divest Bricks'}
+        >
+            <div className="p-1">
+                <TradeForm 
+                    orderType={orderType}
+                    setOrderType={setOrderType}
+                    price={price}
+                    setPrice={setPrice}
+                    quantity={quantity}
+                    setQuantity={setQuantity}
+                    handlePlaceOrder={(e) => {
+                        handlePlaceOrder(e);
+                        setIsTradeModalOpen(false);
+                    }}
+                    isPlacing={isPlacing}
+                    handleQuickFillQuantity={handleQuickFillQuantity}
+                    latestPrice={latestPrice}
+                />
+            </div>
+        </Modal>
 
         <ModifyOrderModal 
           isOpen={!!modifyingOrder} 
