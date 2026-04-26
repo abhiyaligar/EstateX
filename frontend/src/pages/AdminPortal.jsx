@@ -557,7 +557,7 @@ const AdminPortal = () => {
       </motion.aside>
 
       {/* Mobile Header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 z-[60] flex items-center justify-between px-6">
+      <header className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 z-[60] flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
            <Shield size={20} className="text-primary-500" />
            <span className="font-bold tracking-tighter uppercase italic">Estate<span className="text-primary-500">X</span></span>
@@ -617,7 +617,7 @@ const AdminPortal = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 min-h-0 relative overflow-hidden">
         {/* Top bar */}
-        <header className="hidden md:flex h-20 items-center justify-between px-10 border-b border-white/5 bg-[#050505]/50 backdrop-blur-md sticky top-0 z-40">
+        <header className="hidden md:flex h-20 items-center justify-between px-6 lg:px-10 border-b border-white/5 bg-[#050505]/50 backdrop-blur-md sticky top-0 z-40">
            <div>
               <h2 className="text-xs uppercase tracking-[0.4em] font-bold text-white/30 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
@@ -650,7 +650,7 @@ const AdminPortal = () => {
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-10 pt-20 md:pt-10 scroll-smooth">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 pt-20 md:pt-10 scroll-smooth">
           <AnimatePresence mode="wait">
             {activeTab === 'dashboard' && <DashboardTab stats={stats} />}
             {activeTab === 'kyc' && (

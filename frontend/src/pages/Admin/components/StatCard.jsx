@@ -19,8 +19,8 @@ const StatCard = ({ title, value, icon: Icon, color = "blue" }) => {
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 border ${colors[color]}`}>
           <Icon size={24} />
         </div>
-        <CardDescription className="uppercase tracking-widest text-[10px] mb-1">{title}</CardDescription>
-        <h3 className="text-3xl font-bold text-white tracking-tighter">{value}</h3>
+        <CardDescription className="uppercase tracking-widest text-[9px] mb-1 truncate">{title}</CardDescription>
+        <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-white tracking-tighter truncate">{value}</h3>
       </div>
     </Card>
   );

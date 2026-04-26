@@ -1,8 +1,8 @@
 import React from 'react';
 
 export const AdminTable = ({ children }) => (
-  <div className="overflow-x-auto scrollbar-hide -mx-8">
-    <table className="w-full text-left border-collapse">
+  <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+    <table className="w-full text-left border-collapse min-w-[800px]">
       {children}
     </table>
   </div>
@@ -14,7 +14,7 @@ export const AdminTableHeader = ({ columns }) => (
       {columns.map((col, idx) => (
         <th 
           key={idx} 
-          className={`p-6 md:p-8 text-[10px] uppercase tracking-[0.2em] font-bold text-white/30 ${col.align === 'right' ? 'text-right' : ''}`}
+          className={`px-4 py-6 md:px-6 md:py-8 text-[10px] uppercase tracking-[0.2em] font-bold text-white/30 ${col.align === 'right' ? 'text-right' : ''}`}
         >
           {col.label}
         </th>
@@ -33,7 +33,7 @@ export const AdminTableRow = ({ children, onClick }) => (
 );
 
 export const AdminTableCell = ({ children, align = 'left', className = '' }) => (
-  <td className={`p-6 md:p-8 ${align === 'right' ? 'text-right' : ''} ${className}`}>
+  <td className={`px-4 py-6 md:px-6 md:py-8 ${align === 'right' ? 'text-right' : ''} ${className}`}>
     {children}
   </td>
 );

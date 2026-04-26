@@ -72,7 +72,7 @@ const AnalyticsTab = ({ macroList, onNew, onEdit, onDelete }) => {
                   </div>
                 </AdminTableCell>
                 <AdminTableCell>
-                  <div className="flex items-center gap-4 w-40">
+                  <div className="flex items-center gap-4 min-w-[120px]">
                      <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                         <motion.div 
                           initial={{ width: 0 }}

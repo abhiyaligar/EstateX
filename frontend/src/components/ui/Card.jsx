@@ -6,7 +6,7 @@ export const Card = ({ className, children, noPadding = false, hover = false }) 
     <div 
       className={cn(
         "bg-[#141414] border border-white/5 overflow-hidden transition-all duration-500",
-        !noPadding && "p-8 md:p-12",
+        !noPadding && "p-4 md:p-6 lg:p-10",
         hover && "hover:border-white/20",
         className
       )}
