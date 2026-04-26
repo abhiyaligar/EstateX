@@ -385,6 +385,7 @@ const TradingRoom = () => {
   // Data State
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [currentPrice, setCurrentPrice] = useState(0);
   const [publicOrderBook, setPublicOrderBook] = useState([]);
   const [tradeHistory, setTradeHistory] = useState([]);
   const [ohlcvData, setOhlcvData] = useState([]);
@@ -429,6 +430,7 @@ const TradingRoom = () => {
         setWalletBalance(walletData.balance || 0);
         if (projectsData.length > 0) {
           setSelectedProject(projectsData[0]);
+          setCurrentPrice(projectsData[0].market_price || 0);
         }
       } catch (error) {
         console.error("Initialization failed", error);
@@ -442,14 +444,15 @@ const TradingRoom = () => {
   const refreshLiveData = async () => {
     if (!selectedProject) return;
     try {
-      const [history, book, ohlcv, govProposals, userPortfolio, orders, walletData] = await Promise.all([
+      const [history, book, ohlcv, govProposals, userPortfolio, orders, walletData, projectDetails] = await Promise.all([
         (bookMode === 'history' || tradeHistory.length === 0) ? exchangeService.getTradeHistory(selectedProject.id) : Promise.resolve(tradeHistory),
         exchangeService.getPublicOrderBook(selectedProject.id),
         exchangeService.getOHLCV(selectedProject.id, chartTimeframe.toLowerCase()),
         governanceService.getProposals(selectedProject.id).catch(() => []),
         exchangeService.getPortfolio().catch(() => []),
         exchangeService.getOpenOrders().catch(() => []),
-        walletService.getWalletContext().catch(() => ({ balance: 0 }))
+        walletService.getWalletContext().catch(() => ({ balance: 0 })),
+        propertyService.getPropertyById(selectedProject.id).catch(() => null)
       ]);
       setTradeHistory(history);
       setPublicOrderBook(book);
@@ -457,6 +460,9 @@ const TradingRoom = () => {
       setProposals(govProposals);
       setOpenOrders(orders);
       setWalletBalance(walletData.balance || 0);
+      if (projectDetails) {
+          setCurrentPrice(projectDetails.market_price || 0);
+      }
 
       const holding = userPortfolio.find(h => h.project_id === selectedProject.id);
       setIsHolder(holding && holding.quantity > 0);
@@ -656,7 +662,7 @@ const TradingRoom = () => {
 
   // Combined Price & Volume Metrics
 
-  const latestPrice = tradeHistory.length > 0 ? tradeHistory[0].price : (selectedProject?.market_price || 0);
+  const latestPrice = currentPrice || (tradeHistory.length > 0 ? tradeHistory[0].price : (selectedProject?.market_price || 0));
   const priceChange = tradeHistory.length > 1 ? ((tradeHistory[0].price - tradeHistory[1].price) / tradeHistory[1].price * 100).toFixed(2) : 0;
 
   // Portfolio & Holding Stats
