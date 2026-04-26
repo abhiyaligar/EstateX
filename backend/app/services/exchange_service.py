@@ -57,9 +57,9 @@ class ExchangeService:
         holding = db.query(BrickHolding).filter(BrickHolding.user_id == user_id, BrickHolding.project_id == project_id).first()
         if holding:
             holding.quantity += quantity
-            holding.total_cost_basis += total_cost_basis
+            holding.total_cost_basis += total_cost
         else:
-            holding = BrickHolding(user_id=user_id, project_id=project_id, quantity=quantity, total_cost_basis=total_cost_basis)
+            holding = BrickHolding(user_id=user_id, project_id=project_id, quantity=quantity, total_cost_basis=total_cost)
             db.add(holding)
             
         db.commit()
