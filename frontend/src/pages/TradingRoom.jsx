@@ -23,7 +23,9 @@ import {
   History,
   Shield,
   ArrowLeft,
-  Search
+  Search,
+  Newspaper,
+  Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createChart, ColorType, AreaSeries, HistogramSeries, CandlestickSeries, LineSeries } from 'lightweight-charts';
@@ -391,6 +393,8 @@ const TradingRoom = () => {
   
   // Vault & Governance State
   const [activeTab, setActiveTab] = useState('exchange');
+  const [bookMode, setBookMode] = useState('book'); // book, news, dao, vault
+  const [mobileTab, setMobileTab] = useState('chart');
   const [holdings, setHoldings] = useState([]);
   const [openOrders, setOpenOrders] = useState([]);
   const [proposals, setProposals] = useState([]);
@@ -405,7 +409,6 @@ const TradingRoom = () => {
   
   const [chartTimeframe, setChartTimeframe] = useState('1h');
   const [chartType, setChartType] = useState('candlestick');
-  const [mobileTab, setMobileTab] = useState('chart');
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
 
   // Phase One UI State
@@ -926,64 +929,176 @@ const TradingRoom = () => {
                             </div>
                         </div>
 
-                        {/* Middle Column: Orderbook (Visible below chart on Mobile) */}
-                        <div className={`w-full md:w-64 lg:w-72 flex flex-col border-r border-white/5 bg-black/20 shrink-0 ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
-                            <div className="h-10 border-b border-white/5 px-4 flex items-center justify-between shrink-0 bg-zinc-950/20">
-                                <h3 className="text-[9px] uppercase font-black tracking-[0.2em] flex items-center gap-2 text-zinc-500">
-                                    <BarChart3 size={12} className="text-zinc-700" />
-                                    Orderbook
-                                </h3>
+                        {/* Middle Column: Multi-Mode Terminal Section */}
+                        <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-white/5 bg-black/20 shrink-0 ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
+                            {/* Horizontal Mode Slider */}
+                            <div className="flex items-center justify-around py-2 border-b border-white/5 bg-zinc-950/40 relative">
+                                {[
+                                    { id: 'book', icon: <BarChart3 size={14} />, label: 'Depth' },
+                                    { id: 'news', icon: <Newspaper size={14} />, label: 'News' },
+                                    { id: 'vault', icon: <Lock size={14} />, label: 'Vault' },
+                                    { id: 'dao', icon: <Shield size={14} />, label: 'DAO' }
+                                ].map((mode) => (
+                                    <button
+                                        key={mode.id}
+                                        onClick={() => setBookMode(mode.id)}
+                                        className={`relative px-4 py-1.5 flex flex-col items-center gap-1 transition-all z-10 ${bookMode === mode.id ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                    >
+                                        {bookMode === mode.id && (
+                                            <motion.div 
+                                                layoutId="activeBookMode"
+                                                className="absolute inset-0 bg-white/5 border border-white/10 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+                                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                            />
+                                        )}
+                                        <div className="relative z-20">{mode.icon}</div>
+                                        <span className="text-[7px] uppercase font-black tracking-widest relative z-20">{mode.label}</span>
+                                    </button>
+                                ))}
                             </div>
-                            
-                            <div className="flex-1 flex flex-col overflow-hidden">
-                                <OrderBookRow isHeader />
-                                
-                                {/* Sell Orders (Asks) - Red */}
-                                <div className="overflow-hidden flex flex-col-reverse justify-end">
-                                    {sellOrders.slice(-5).map((o, i) => (
-                                        <OrderBookRow 
-                                            key={i} 
-                                            price={o.price_per_brick} 
-                                            quantity={o.unfilled_quantity} 
-                                            type="sell" 
-                                            total={o.cumulativeTotal}
-                                            maxTotal={maxDepth}
-                                            onClick={handleQuickFillPrice}
-                                        />
-                                    ))}
+
+                            <div className="flex-1 flex flex-col min-w-0">
+                                <div className="h-8 border-b border-white/5 px-4 flex items-center justify-between shrink-0 bg-zinc-950/20">
+                                    <h3 className="text-[8px] uppercase font-black tracking-[0.2em] flex items-center gap-2 text-zinc-500">
+                                        {bookMode === 'book' && 'Market Depth (Top 5)'}
+                                        {bookMode === 'news' && 'Global Intelligence HUD'}
+                                        {bookMode === 'vault' && 'Asset Allocation Protocol'}
+                                        {bookMode === 'dao' && 'Governance Core Sync'}
+                                    </h3>
+                                    <div className="h-1 w-1 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)] animate-pulse" />
                                 </div>
+                                
+                                <div className="flex-1 flex flex-col overflow-hidden relative">
+                                    <AnimatePresence mode="wait">
+                                        {bookMode === 'book' && (
+                                            <motion.div 
+                                                key="book"
+                                                initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
+                                                className="flex-1 flex flex-col overflow-hidden"
+                                            >
+                                                <OrderBookRow isHeader />
+                                                
+                                                {/* Sell Orders (Asks) - Red */}
+                                                <div className="overflow-hidden flex flex-col-reverse justify-end">
+                                                    {sellOrders.slice(-5).map((o, i) => (
+                                                        <OrderBookRow 
+                                                            key={i} 
+                                                            price={o.price_per_brick} 
+                                                            quantity={o.unfilled_quantity} 
+                                                            type="sell" 
+                                                            total={o.cumulativeTotal}
+                                                            maxTotal={maxDepth}
+                                                            onClick={handleQuickFillPrice}
+                                                        />
+                                                    ))}
+                                                </div>
 
-                                {/* Spread Section */}
-                                <div className="py-2 border-y border-white/5 bg-zinc-950/40 flex flex-col items-center justify-center relative">
-                                    <div className="flex items-center gap-4">
-                                        <span className={`text-xl font-mono font-black tracking-tighter ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                            ₹{latestPrice.toLocaleString()}
-                                        </span>
-                                        <div className="flex flex-col items-start leading-none">
-                                            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Spread</span>
-                                            <span className="text-[10px] font-mono font-bold text-zinc-400">
-                                                {marketSpread.spread > 0 ? `₹${marketSpread.spread.toFixed(2)} (${marketSpread.percent.toFixed(2)}%)` : '0.00 (0%)'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Small signal bar */}
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary-600/20" />
-                                 </div>
+                                                {/* Spread Section */}
+                                                <div className="py-2 border-y border-white/5 bg-zinc-950/40 flex flex-col items-center justify-center relative">
+                                                    <div className="flex items-center gap-4">
+                                                        <span className={`text-xl font-mono font-black tracking-tighter ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                            ₹{latestPrice.toLocaleString()}
+                                                        </span>
+                                                        <div className="flex flex-col items-start leading-none">
+                                                            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Spread</span>
+                                                            <span className="text-[10px] font-mono font-bold text-zinc-400">
+                                                                {marketSpread.spread > 0 ? `₹${marketSpread.spread.toFixed(2)} (${marketSpread.percent.toFixed(2)}%)` : '0.00 (0%)'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary-600/20" />
+                                                 </div>
 
-                                {/* Buy Orders (Bids) - Green */}
-                                <div className="overflow-hidden">
-                                     {buyOrders.slice(0, 5).map((o, i) => (
-                                        <OrderBookRow 
-                                            key={i} 
-                                            price={o.price_per_brick} 
-                                            quantity={o.unfilled_quantity} 
-                                            type="buy" 
-                                            total={o.cumulativeTotal}
-                                            maxTotal={maxDepth}
-                                            onClick={handleQuickFillPrice}
-                                        />
-                                    ))}
+                                                {/* Buy Orders (Bids) - Green */}
+                                                <div className="overflow-hidden">
+                                                     {buyOrders.slice(0, 5).map((o, i) => (
+                                                        <OrderBookRow 
+                                                            key={i} 
+                                                            price={o.price_per_brick} 
+                                                            quantity={o.unfilled_quantity} 
+                                                            type="buy" 
+                                                            total={o.cumulativeTotal}
+                                                            maxTotal={maxDepth}
+                                                            onClick={handleQuickFillPrice}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )}
+
+                                        {bookMode === 'news' && (
+                                            <motion.div 
+                                                key="news"
+                                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                                className="p-6 space-y-6 overflow-y-auto"
+                                            >
+                                                <div className="space-y-4">
+                                                    {[
+                                                        { title: 'EstateX Market Liquidity Hits Record High', date: '2m ago', priority: 'high' },
+                                                        { title: 'New DAO Proposal: Infrastructure Upgrade', date: '1h ago', priority: 'medium' },
+                                                        { title: 'Global Real Estate Tokenization Outlook 2026', date: '3h ago', priority: 'low' }
+                                                    ].map((item, i) => (
+                                                        <div key={i} className="group cursor-pointer">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className={`h-1 w-1 rounded-full ${item.priority === 'high' ? 'bg-red-500' : 'bg-zinc-700'}`} />
+                                                                <span className="text-[7px] uppercase font-black tracking-widest text-zinc-500">{item.date}</span>
+                                                            </div>
+                                                            <p className="text-[11px] font-bold text-zinc-300 group-hover:text-white transition-colors leading-relaxed">{item.title}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )}
+
+                                        {bookMode === 'vault' && (
+                                            <motion.div 
+                                                key="vault"
+                                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                                className="p-6 space-y-6"
+                                            >
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl">
+                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">Owned</p>
+                                                        <p className="text-sm font-mono font-black text-white">450 BK</p>
+                                                    </div>
+                                                    <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl">
+                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">P&L 24H</p>
+                                                        <p className="text-sm font-mono font-black text-green-500">+₹1,240</p>
+                                                    </div>
+                                                </div>
+                                                <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl border-dashed">
+                                                     <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-2">Vault Utilization</p>
+                                                     <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                                                         <div className="h-full w-2/3 bg-primary-500 shadow-[0_0_10px_rgba(var(--primary-500),0.3)]" />
+                                                     </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+
+                                        {bookMode === 'dao' && (
+                                            <motion.div 
+                                                key="dao"
+                                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                                className="p-6 space-y-6"
+                                            >
+                                                <div className="p-5 bg-primary-500/5 border border-primary-500/10 rounded-xl space-y-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <Shield size={14} className="text-primary-500" />
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-white">Active Voting Session</span>
+                                                    </div>
+                                                    <p className="text-[10px] text-zinc-400 leading-relaxed">Proposal #EX-240: Implement automated market-making for secondary pools.</p>
+                                                    <Button size="sm" variant="outline" className="w-full text-[8px] h-8">Review Governance</Button>
+                                                </div>
+                                                <div className="space-y-4">
+                                                     <p className="text-[8px] uppercase tracking-[0.3em] text-zinc-700 font-black px-1">Your Influence</p>
+                                                     <div className="flex items-center justify-between px-1">
+                                                         <span className="text-[10px] text-zinc-500">Voting Power</span>
+                                                         <span className="text-[10px] font-mono text-white">4,500 VP</span>
+                                                     </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                             </div>
                         </div>
