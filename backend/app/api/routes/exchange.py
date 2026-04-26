@@ -13,7 +13,7 @@ from app.schemas.exchange import (
 )
 from app.models.portfolio import BrickHolding
 from app.models.exchange import Order, Trade, DailyCandle
-from app.middleware.auth import get_current_user
+from app.middleware.auth import get_current_user, get_verified_user
 from app.services.exchange_service import ExchangeService
 from app.core.db import get_db
 
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/exchange", tags=["Stock Broker Exchange"])
 def subscribe_to_primary_ipo(
     project_id: UUID,
     quantity: int = Query(..., gt=0),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_verified_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -35,7 +35,7 @@ def subscribe_to_primary_ipo(
 def place_secondary_market_order(
     order_data: OrderCreate,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_verified_user),
     db: Session = Depends(get_db)
 ):
     """

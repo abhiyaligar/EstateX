@@ -186,7 +186,7 @@ const AdminPortal = () => {
 
   const refreshKYC = async () => {
     const data = await adminService.getPendingKYC();
-    setKycApps(data);
+    setKycApps(data.items || []);
     refreshStats();
   };
 

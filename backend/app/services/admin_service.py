@@ -168,7 +168,8 @@ class AdminService:
         # Look up parent User and safely update their KYC cache Status
         user = db.query(DBUser).filter(DBUser.id == kyc_record.user_id).first()
         if user:
-            user.kyc_status = review_data.status
+            # Sync to 'verified' to match the security middleware requirements
+            user.kyc_status = 'verified' if review_data.status == 'approved' else review_data.status
             
         db.commit()
         

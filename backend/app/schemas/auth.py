@@ -21,6 +21,7 @@ class User(BaseModel):
     id: str
     email: str
     role: str | None = None
+    kyc_status: str | None = 'pending'
     created_at: str | None = None
 
 class ForgotPasswordRequest(BaseModel):

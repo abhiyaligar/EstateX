@@ -43,6 +43,7 @@ def get_current_user(
             id=str(db_user.id),
             email=db_user.email,
             role=db_user.role,
+            kyc_status=db_user.kyc_status,
             created_at=str(db_user.created_at)
         )
 
@@ -108,5 +109,17 @@ def get_investor_user(current_user: User = Depends(get_current_user)) -> User:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to perform this action. Investor role required."
+        )
+    return current_user
+
+def get_verified_user(current_user: User = Depends(get_current_user)) -> User:
+    """
+    STRICT SECURITY: Ensures the user has a 'verified' KYC status.
+    Must be used for all financial/trading actions.
+    """
+    if current_user.kyc_status not in ['verified', 'approved'] and current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="KYC Verification Required. You must complete your profile and be verified by an admin before you can participate in the Asset Allocation Protocol."
         )
     return current_user

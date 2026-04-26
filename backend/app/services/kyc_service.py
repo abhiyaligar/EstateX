@@ -91,21 +91,21 @@ class KYCService:
         if kyc_record.pan_number != pan_data.pan:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="PAN does not match the one provided during initiation")
 
-        # SIMULATION: Automatically approve the PAN
-        kyc_record.status = 'approved'
+        # Move to 'pending' status for manual Admin review instead of auto-approving
+        kyc_record.status = 'pending'
         kyc_record.pan_verified = True
         kyc_record.pan_verified_at = datetime.now(timezone.utc)
         
-        # Crucial Step: Update the parent User record as well
+        # Update the parent User record to pending as well
         user = db.query(DBUser).filter(DBUser.id == user_id).first()
         if user:
-            user.kyc_status = 'approved'
+            user.kyc_status = 'pending'
             
         db.commit()
         
         return {
-            "status": "approved",
-            "message": "KYC verification completed successfully"
+            "status": "pending",
+            "message": "Documents submitted successfully. Your identity is now under review by our compliance team."
         }
 
     @staticmethod
