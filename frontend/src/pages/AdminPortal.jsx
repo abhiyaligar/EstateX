@@ -470,7 +470,7 @@ const AdminPortal = () => {
   );
 
   return (
-    <div className="flex h-screen bg-[#050505] text-white overflow-hidden font-sans">
+    <div className="flex flex-col md:flex-row h-screen bg-[#050505] text-white overflow-hidden font-sans">
       {/* Desktop Sidebar */}
       <motion.aside 
         initial={false}
@@ -578,7 +578,7 @@ const AdminPortal = () => {
               <span className="font-bold tracking-tighter uppercase italic">Menu</span>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-white/60"><X size={24}/></button>
             </div>
-            <div className="flex-1 p-6 space-y-4">
+            <div className="flex-1 p-6 space-y-4 overflow-y-auto scrollbar-hide">
               {sidebarItems.map(item => (
                 <button
                   key={item.id}
@@ -615,7 +615,7 @@ const AdminPortal = () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 h-full relative">
+      <main className="flex-1 flex flex-col min-w-0 min-h-0 relative overflow-hidden">
         {/* Top bar */}
         <header className="hidden md:flex h-20 items-center justify-between px-10 border-b border-white/5 bg-[#050505]/50 backdrop-blur-md sticky top-0 z-40">
            <div>
@@ -650,7 +650,7 @@ const AdminPortal = () => {
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-24 md:pt-10 scroll-smooth">
+        <div className="flex-1 overflow-y-auto p-4 md:p-10 pt-20 md:pt-10 scroll-smooth">
           <AnimatePresence mode="wait">
             {activeTab === 'dashboard' && <DashboardTab stats={stats} />}
             {activeTab === 'kyc' && (

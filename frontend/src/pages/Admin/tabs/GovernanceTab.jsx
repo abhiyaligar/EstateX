@@ -1,3 +1,8 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Plus, Building2, Gavel, ShieldCheck } from 'lucide-react';
+import { Card } from '../../../components/ui/Card';
+import { Button } from '../../../components/ui/Button';
 import { AdminTable, AdminTableHeader, AdminTableRow, AdminTableCell, AdminStatusBadge } from '../components/AdminTable';
 
 const GovernanceTab = ({ proposalsList, projects, onNew, onStatusUpdate }) => {

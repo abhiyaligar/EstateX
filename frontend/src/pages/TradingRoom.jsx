@@ -951,6 +951,22 @@ const TradingRoom = () => {
 
         </header>
 
+        {/* Mobile Tab Switcher */}
+        <div className="md:hidden flex bg-[#080808] border-b border-white/5 p-1 shrink-0">
+            <button 
+                onClick={() => setMobileTab('chart')}
+                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${mobileTab === 'chart' ? 'bg-white/5 text-white' : 'text-zinc-600'}`}
+            >
+                Chart
+            </button>
+            <button 
+                onClick={() => setMobileTab('terminal')}
+                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${mobileTab === 'terminal' ? 'bg-white/5 text-white' : 'text-zinc-600'}`}
+            >
+                Terminal
+            </button>
+        </div>
+
         {/* Main Layout Area */}
         <div className="flex-1 h-full overflow-hidden relative">
             <AnimatePresence mode="wait">
@@ -962,7 +978,7 @@ const TradingRoom = () => {
                         {/* Left Column: Charts */}
                         {/* Left Column: Unified Technical Chart */}
                         {/* Left Column: Unified Technical Chart */}
-                        <div className={`flex-[0_0_62vh] md:flex-1 flex flex-col border-r border-white/5 shrink-0 md:shrink-1 ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
+                        <div className={`flex-[0_0_100%] md:flex-1 flex flex-col border-r border-white/5 shrink-0 md:shrink-1 ${mobileTab === 'chart' ? 'flex' : 'hidden md:flex'}`}>
                             <div className="flex-1 flex flex-col h-full bg-black/20 relative">
                                 {/* Chart Header / Timeframes */}
                                 <div className="h-8 border-b border-white/5 px-4 flex items-center justify-between shrink-0 bg-zinc-950/20">
@@ -1028,13 +1044,13 @@ const TradingRoom = () => {
                         </div>
 
                         {/* Middle Column: Multi-Mode Terminal Section */}
-                        <div className={`w-full md:w-80 lg:w-96 md:flex-1 md:h-full flex flex-col border-r border-white/5 bg-black/20 shrink-0 ${mobileTab !== 'chart' ? 'hidden md:flex' : 'flex'}`}>
+                        <div className={`w-full md:w-80 lg:w-96 md:flex-1 md:h-full flex flex-col border-r border-white/5 bg-black/20 shrink-0 ${mobileTab === 'terminal' ? 'flex' : 'hidden md:flex'}`}>
                             {/* Horizontal Mode Slider */}
-                            <div className="flex items-center justify-around py-2 border-b border-white/5 bg-zinc-950/40 relative">
+                            <div className="flex items-center justify-around md:justify-around py-2 border-b border-white/5 bg-zinc-950/40 relative overflow-x-auto no-scrollbar">
                                 {[
                                     { id: 'book', icon: <BarChart3 size={14} />, label: 'Depth' },
                                     { id: 'history', icon: <Clock size={14} />, label: 'History' },
-                                    { id: 'news', icon: <Newspaper size={14} />, label: 'News' },
+                                    { id: 'orders', icon: <History size={14} />, label: 'Orders' },
                                     { id: 'vault', icon: <Lock size={14} />, label: 'Vault' },
                                     { id: 'dao', icon: <Shield size={14} />, label: 'DAO' }
                                 ].map((mode) => (
@@ -1061,7 +1077,7 @@ const TradingRoom = () => {
                                     <h3 className="text-[8px] uppercase font-black tracking-[0.2em] flex items-center gap-2 text-zinc-500">
                                         {bookMode === 'book' && 'Market Depth (Top 5)'}
                                         {bookMode === 'history' && 'Market Settlement Ledger'}
-                                        {bookMode === 'news' && 'Global Intelligence HUD'}
+                                        {bookMode === 'orders' && 'Active Market Intents'}
                                         {bookMode === 'vault' && 'Asset Allocation Protocol'}
                                         {bookMode === 'dao' && 'Governance Core Sync'}
                                     </h3>
@@ -1172,6 +1188,55 @@ const TradingRoom = () => {
                                             </motion.div>
                                         )}
 
+                                        {bookMode === 'orders' && (
+                                            <motion.div 
+                                                key="orders"
+                                                initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
+                                                className="flex-1 overflow-y-auto"
+                                            >
+                                                <div className="p-4 space-y-3">
+                                                    {openOrders.length === 0 ? (
+                                                        <div className="py-20 text-center text-zinc-700 uppercase tracking-[0.2em] text-[10px] font-bold">No Active Intents Found</div>
+                                                    ) : openOrders.map(order => (
+                                                        <div key={order.id} className="p-4 bg-zinc-950 border border-white/5 rounded-xl group hover:border-white/10 transition-all">
+                                                            <div className="flex justify-between items-start mb-3">
+                                                                <div>
+                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest ${order.order_type === 'buy' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                                                            {order.order_type}
+                                                                        </span>
+                                                                        <span className="text-[10px] font-mono font-bold text-white">₹{order.price_per_brick?.toLocaleString() || 'MARKET'}</span>
+                                                                    </div>
+                                                                    <p className="text-[9px] text-zinc-500 font-mono">QTY: {order.unfilled_quantity} / {order.quantity} BK</p>
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                    <button 
+                                                                        onClick={() => setModifyingOrder(order)}
+                                                                        className="p-2 text-zinc-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                                                                        title="Modify"
+                                                                    >
+                                                                        <Edit2 size={14} />
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => handleCancelOrder(order.id)}
+                                                                        className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-all"
+                                                                        title="Cancel"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div className="h-1 w-full bg-zinc-900 rounded-full overflow-hidden">
+                                                                <div 
+                                                                    className={`h-full transition-all duration-1000 ${order.order_type === 'buy' ? 'bg-green-500/40' : 'bg-red-500/40'}`} 
+                                                                    style={{ width: `${((order.quantity - order.unfilled_quantity) / order.quantity) * 100}%` }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )}
                                         {bookMode === 'vault' && (
                                             <motion.div 
                                                 key="vault"
