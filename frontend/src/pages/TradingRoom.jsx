@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, 
@@ -25,7 +26,9 @@ import {
   ArrowLeft,
   Search,
   Newspaper,
-  Lock
+  Lock,
+  MapPin,
+  ChevronRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createChart, ColorType, AreaSeries, HistogramSeries, CandlestickSeries, LineSeries } from 'lightweight-charts';
@@ -224,9 +227,18 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-  const filteredProjects = projects.filter(p => 
-    p.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProjects = projects.filter(p => {
+    const query = searchQuery.toLowerCase();
+    const titleMatch = p.title?.toLowerCase().includes(query);
+    let locationMatch = false;
+    if (typeof p.location === 'string') {
+        locationMatch = p.location.toLowerCase().includes(query);
+    } else if (typeof p.location === 'object' && p.location !== null) {
+        locationMatch = (p.location.city?.toLowerCase().includes(query)) || 
+                        (p.location.state?.toLowerCase().includes(query));
+    }
+    return titleMatch || locationMatch;
+  });
   
   return (
     <>
@@ -249,94 +261,123 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
         </div>
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] px-4">
-            {/* Backdrop */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md"
-            />
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <div className="fixed inset-0 z-[10000] flex items-start md:items-start justify-center pt-0 md:pt-[10vh] px-0 md:px-4 pointer-events-none overflow-hidden">
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setIsOpen(false)}
+                className="absolute inset-0 bg-black/90 md:bg-black/80 backdrop-blur-xl md:backdrop-blur-md pointer-events-auto"
+              />
 
-            {/* Modal Content */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-zinc-950 border border-white/10 shadow-[0_0_100px_rgba(0,0,0,1)] rounded-2xl overflow-hidden"
-            >
-              {/* Search Header */}
-              <div className="p-6 border-b border-white/5 flex items-center gap-4">
-                <Search size={22} className="text-zinc-500" />
-                <input 
-                  type="text" 
-                  placeholder="Search by name, location, or asset code..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent text-xl font-medium focus:outline-none text-white placeholder:text-zinc-800"
-                  autoFocus
-                />
-                <button onClick={() => setIsOpen(false)} className="text-zinc-500 hover:text-white">
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Results */}
-              <div className="max-h-[60vh] overflow-y-auto">
-                {filteredProjects.length > 0 ? (
-                  <div className="p-4 grid grid-cols-1 gap-2">
-                    {filteredProjects.map(p => (
-                      <button
-                        key={p.id}
-                        onClick={() => { onSelect(p); setIsOpen(false); setSearchQuery(''); }}
-                        className={`w-full text-left p-4 rounded-xl flex items-center justify-between group transition-all ${selectedProject?.id === p.id ? 'bg-white/10 border border-white/10' : 'hover:bg-white/5 border border-transparent'}`}
-                      >
-                        <div className="flex items-center gap-4">
-                           <div className="h-12 w-12 bg-zinc-900 rounded-lg flex items-center justify-center border border-white/5">
-                              <Layers size={20} className={selectedProject?.id === p.id ? 'text-white' : 'text-zinc-600 group-hover:text-zinc-400'} />
-                           </div>
-                           <div>
-                              <p className="text-sm font-bold text-white group-hover:text-primary-400">{p.title}</p>
-                              <div className="flex items-center gap-3 mt-1">
-                                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono font-bold">₹{p.market_price?.toLocaleString()}</span>
-                                <span className="h-1 w-1 bg-zinc-800 rounded-full" />
-                                <span className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">
-                                  {typeof p.location === 'object' && p.location !== null 
-                                    ? `${p.location.city || ''}, ${p.location.state || ''}`.trim().replace(/^, |, $/g, '') || 'Prime Cluster'
-                                    : p.location || 'Prime Cluster'}
-                                </span>
-                              </div>
-                           </div>
-                        </div>
-                        {selectedProject?.id === p.id && (
-                          <div className="px-3 py-1 bg-primary-500/10 border border-primary-500/20 text-primary-400 text-[9px] font-bold uppercase tracking-widest rounded-full">Active</div>
-                        )}
-                      </button>
-                    ))}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.98, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: 20 }}
+                className="relative w-full md:max-w-2xl h-full md:h-auto md:max-h-[85vh] bg-[#080808] md:bg-zinc-950 md:border md:border-white/10 shadow-[0_0_100px_rgba(0,0,0,1)] md:rounded-2xl overflow-hidden flex flex-col pointer-events-auto"
+              >
+                <div className="p-5 md:p-8 border-b border-white/5 flex items-center gap-3 md:gap-5 bg-[#0a0a0a] md:bg-white/[0.01] shrink-0">
+                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center shrink-0">
+                    <Search size={18} className="text-primary-500 animate-pulse" />
                   </div>
-                ) : (
-                  <div className="py-24 text-center opacity-40">
-                    <History size={48} className="mx-auto mb-4" />
-                    <p className="text-sm uppercase tracking-[0.3em] font-bold">No results for "{searchQuery}"</p>
+                  <div className="flex-1 min-w-0">
+                    <input 
+                      type="text" 
+                      placeholder="Search name..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-transparent text-lg md:text-2xl font-black tracking-tight focus:outline-none text-white placeholder:text-zinc-600 uppercase"
+                      autoFocus
+                    />
+                    <p className="text-[7px] md:text-[8px] uppercase tracking-[0.2em] md:tracking-[0.3em] text-zinc-500 font-bold mt-0.5 truncate">Asset Discovery Protocol</p>
                   </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="p-4 bg-zinc-900/30 border-t border-white/5 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] font-bold text-zinc-600">
-                <div className="flex items-center gap-6">
-                  <span>ENTER to select</span>
-                  <span>ESC to close</span>
+                  <button 
+                      onClick={() => setIsOpen(false)} 
+                      className="h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full bg-white/5 text-zinc-500 hover:text-white hover:bg-white/10 transition-all shrink-0"
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
-                <span>{filteredProjects.length} Assets Found</span>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+
+                <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#080808] md:bg-transparent">
+                  {filteredProjects.length > 0 ? (
+                    <div className="p-2 md:p-4 grid grid-cols-1 gap-2">
+                      {filteredProjects.map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => { onSelect(p); setIsOpen(false); setSearchQuery(''); }}
+                          className={`w-full text-left p-3 md:p-4 rounded-xl flex items-center justify-between group transition-all ${selectedProject?.id === p.id ? 'bg-white/10 border border-white/10' : 'hover:bg-white/5 border border-transparent'}`}
+                        >
+                          <div className="flex items-center gap-3 md:gap-5 min-w-0">
+                            <div className="h-12 w-12 md:h-16 md:w-16 bg-zinc-900/50 rounded-xl md:rounded-2xl flex items-center justify-center border border-white/5 group-hover:border-primary-500/30 transition-all relative overflow-hidden shrink-0">
+                                <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <Layers size={20} className={selectedProject?.id === p.id ? 'text-primary-500' : 'text-zinc-700 group-hover:text-primary-400'} />
+                            </div>
+                            <div className="flex flex-col gap-0.5 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h3 className={`text-sm md:text-lg font-black uppercase tracking-tight truncate ${selectedProject?.id === p.id ? 'text-primary-400' : 'text-white'}`}>{p.title}</h3>
+                                  {selectedProject?.id === p.id && (
+                                      <div className="px-1 py-0.5 bg-primary-500/10 border border-primary-500/20 rounded text-[6px] md:text-[7px] font-black text-primary-500 tracking-widest uppercase">Active</div>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+                                  <div className="flex items-center gap-1">
+                                      <MapPin size={8} className="text-zinc-700" />
+                                      <span className="text-[8px] md:text-[10px] uppercase font-black tracking-widest text-zinc-500 truncate max-w-[80px] md:max-w-none">
+                                          {typeof p.location === 'object' && p.location !== null 
+                                              ? `${p.location.city || ''}, ${p.location.state || ''}`.trim().replace(/^, |, $/g, '') || 'Prime Cluster'
+                                              : p.location || 'Prime Cluster'}
+                                      </span>
+                                  </div>
+                                  <div className="h-1 w-1 bg-zinc-800 rounded-full hidden md:block" />
+                                  <div className="flex items-center gap-1">
+                                      <span className="text-[8px] md:text-[10px] font-mono font-bold text-zinc-400">₹{p.ipo_price?.toLocaleString()}</span>
+                                      <span className="text-[7px] md:text-[8px] uppercase font-black text-zinc-700 tracking-widest">Base</span>
+                                  </div>
+                                </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                              <div className="text-[9px] md:text-[11px] font-mono font-black text-white bg-white/5 px-1.5 md:px-2 py-0.5 md:py-1 rounded-lg">
+                                  EX-{String(p.id).slice(0, 4).toUpperCase()}
+                              </div>
+                              <ChevronRight size={12} className="text-zinc-800 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-24 flex flex-col items-center justify-center text-zinc-700 gap-4">
+                      <div className="h-16 w-16 rounded-full border-2 border-dashed border-zinc-900 flex items-center justify-center">
+                          <Activity size={24} className="animate-pulse" />
+                      </div>
+                      <p className="text-[10px] uppercase font-black tracking-[0.4em]">No matching neural assets found</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 bg-zinc-900/50 border-t border-white/5 flex items-center justify-between shrink-0">
+                  <div className="flex gap-2 md:gap-4 overflow-x-auto no-scrollbar">
+                      <div className="flex items-center gap-1 md:gap-2 whitespace-nowrap">
+                          <kbd className="px-1 md:px-1.5 py-0.5 rounded bg-zinc-800 text-[6px] md:text-[8px] font-black text-zinc-400 border border-white/5">↵</kbd>
+                          <span className="text-[6px] md:text-[8px] uppercase tracking-widest text-zinc-600 font-bold">Select</span>
+                      </div>
+                      <div className="flex items-center gap-1 md:gap-2 whitespace-nowrap">
+                          <kbd className="px-1 md:px-1.5 py-0.5 rounded bg-zinc-800 text-[6px] md:text-[8px] font-black text-zinc-400 border border-white/5">ESC</kbd>
+                          <span className="text-[6px] md:text-[8px] uppercase tracking-widest text-zinc-600 font-bold">Dismiss</span>
+                      </div>
+                  </div>
+                  <div className="text-[6px] md:text-[8px] uppercase tracking-[0.2em] text-zinc-600 font-black whitespace-nowrap ml-2">
+                      {filteredProjects.length} Assets
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 };
