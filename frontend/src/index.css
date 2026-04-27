@@ -90,4 +90,23 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Institutional Scrollbar Architecture */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #050505;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1a1a1a;
+    border-radius: 0px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #D4AF37;
+  }
 }

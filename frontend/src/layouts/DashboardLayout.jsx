@@ -19,13 +19,13 @@ const DashboardLayout = () => {
   return (
     <div className="flex min-h-screen flex-col bg-[#0a0a0a] text-white font-sans">
       <Navbar />
-      <div className="flex flex-1 pt-16 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar for Desktop */}
          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
         
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto w-full">
-           <div className="mx-auto max-w-7xl w-full">
+           <div className="mx-auto w-full">
               <Outlet />
            </div>
         </main>

@@ -1,26 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Home, Wallet, TrendingUp, ArrowUpRight, Clock, AlertCircle, CheckCircle2, Shield, Briefcase } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Home, Wallet, TrendingUp, ArrowUpRight, Clock, AlertCircle, CheckCircle2, Shield, Briefcase, ChevronRight, Bell, MapPin, Percent, Users, Loader2, ArrowLeft, ChevronLeft, X, ArrowDownRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
+import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Link } from 'react-router-dom';
 import dashboardService from '../services/dashboardService';
-import builderService from '../services/builderService';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [loading, setLoading] = React.useState(true);
-  const [dashboardData, setDashboardData] = React.useState({
+  const [loading, setLoading] = useState(true);
+  const [showFullAudit, setShowFullAudit] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dashboardData, setDashboardData] = useState({
     wallet: { balance: 0, recent_transactions: [] },
-    portfolio: []
+    portfolio: [],
+    builder_wallet: null,
+    builder_profile: null
   });
 
   const fetchDashboard = async () => {
     try {
       setLoading(true);
       const data = await dashboardService.getDashboardData(user?.role === 'builder');
-      setDashboardData(data);
+      
+      // Precision Valuation Mapping for Nested Relational Schema
+      const mappedPortfolio = (data.portfolio || []).map(item => {
+        const project = item.project;
+        const marketValue = project?.financial?.market_value || project?.financial?.ipo_price || 1000;
+        
+        return {
+          ...item,
+          current_valuation: item.quantity * marketValue,
+          display_location: project?.location 
+            ? `${project.location.city || ''}, ${project.location.state || ''}`
+            : 'Digital Ledger',
+          image_url: project?.images && project.images.length > 0 
+            ? project.images[0] 
+            : 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80'
+        };
+      });
+
+      setDashboardData({
+        ...data,
+        portfolio: mappedPortfolio
+      });
     } catch (error) {
       console.error("Failed to fetch dashboard data", error);
     } finally {
@@ -28,238 +53,254 @@ const Dashboard = () => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchDashboard();
-  }, []);
-
-  const handleSubmitForReview = async () => {
-    try {
-      setLoading(true);
-      await builderService.submitForReview();
-      await fetchDashboard();
-      alert("Profile submitted for Admin review successfully!");
-    } catch (error) {
-      alert(error.response?.data?.detail || "Failed to submit for review. Ensure all details are complete.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [user]);
 
   const chartData = [
-    { name: 'Jan', value: 400000 },
-    { name: 'Feb', value: 450000 },
-    { name: 'Mar', value: 420000 },
-    { name: 'Apr', value: 580000 },
-    { name: 'May', value: (dashboardData?.wallet?.balance || 0) > 0 ? (dashboardData.wallet.balance - 10000) : 510000 },
-    { name: 'Jun', value: dashboardData?.wallet?.balance || 680000 },
-  ];
-  
-  const stats = [
-    { 
-      title: 'Total Portfolio Value', 
-      value: loading ? '...' : `₹${((dashboardData?.wallet?.balance || 0) + ((dashboardData?.portfolio?.length || 0) * 10000)).toLocaleString()}`, 
-      icon: Wallet, 
-      change: '+0.0%', 
-      isPositive: true 
-    },
-    { 
-      title: user?.role === 'builder' ? 'Construction Revenue' : 'Properties Owned', 
-      value: loading ? '...' : (user?.role === 'builder' 
-        ? `₹${(dashboardData?.builder_wallet?.balance || 0).toLocaleString()}` 
-        : (dashboardData?.portfolio?.length || 0).toString()), 
-      icon: user?.role === 'builder' ? Briefcase : Home, 
-      change: user?.role === 'builder' ? 'Business Balance' : ((dashboardData?.portfolio?.length || 0) > 0 ? '+1 recently' : 'No assets'), 
-      isPositive: true 
-    },
-    { 
-      title: 'Current Wallet Balance', 
-      value: loading ? '...' : `₹${(dashboardData?.wallet?.balance || 0).toLocaleString()}`, 
-      icon: TrendingUp, 
-      change: 'Active', 
-      isPositive: true 
-    },
+    { name: 'Jan', value: 40000 },
+    { name: 'Feb', value: 48000 },
+    { name: 'Mar', value: 35000 },
+    { name: 'Apr', value: 52000 },
+    { name: 'May', value: 49000 },
+    { name: 'Jun', value: dashboardData?.wallet?.balance || 58000 },
   ];
 
-  const recentActivity = (dashboardData?.wallet?.recent_transactions || []).map(tx => ({
-    title: tx.transaction_type ? (tx.transaction_type.charAt(0).toUpperCase() + tx.transaction_type.slice(1).replace('_', ' ')) : 'Transaction',
-    desc: tx.description || `Ref: ${tx.id?.substring(0,8) || 'N/A'}`,
-    amount: tx.transaction_type === 'deposit' ? `+₹${tx.amount}` : `-₹${tx.amount}`,
-    time: tx.created_at ? new Date(tx.created_at).toLocaleDateString() : 'Recent',
-    type: tx.transaction_type === 'deposit' ? 'positive' : 'neutral'
-  })).slice(0, 3);
+  const allLedgerEvents = (dashboardData?.wallet?.recent_transactions || []).map(tx => ({
+    type: tx.transaction_type?.toUpperCase().replace('_', ' ') || 'TRANSACTION',
+    title: tx.description || `Transfer Ref: ${tx.id?.substring(0, 8)}`,
+    amount: tx.transaction_type === 'deposit' ? `+₹${tx.amount.toLocaleString()}` : `-₹${tx.amount.toLocaleString()}`,
+    date: tx.created_at ? new Date(tx.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent',
+    isPositive: tx.transaction_type === 'deposit'
+  }));
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(allLedgerEvents.length / itemsPerPage);
+  const paginatedEvents = allLedgerEvents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const isKYCPending = user?.kyc_status !== 'approved';
+
+  if (loading) {
+     return (
+       <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-6">
+             <Loader2 size={32} className="text-[#D4AF37] animate-spin" />
+             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Synchronizing Sovereign Ledger...</p>
+          </div>
+       </div>
+     );
+  }
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-      <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-        <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter text-white font-heading uppercase">
-            Sovereign <span className="opacity-30 italic">Session</span>
-          </h1>
-          <p className="mt-4 text-sm text-zinc-500 font-medium tracking-wide uppercase">
-            Identified: {user?.email || 'Premium Member'}
-          </p>
-        </div>
-        <div className="flex gap-4">
-           <Link to="/properties">
-             <Button variant="outline" className="px-8 border-white/10 hover:bg-white/5">Markets</Button>
-           </Link>
-           {user?.role === 'builder' && (
-             <div className="flex gap-4">
-                <Link to="/wallet">
-                  <Button variant="outline" className="px-8 border-white/10 hover:bg-white/5">Builder Wallet</Button>
-                </Link>
-                <Link to="/dashboard/add-property">
-                  <Button 
-                    className="px-8 shadow-2xl shadow-white/10" 
-                    disabled={dashboardData?.builder_profile?.verification_status !== 'approved'}
-                  >
-                    Deploy Asset
-                  </Button>
-                </Link>
-             </div>
-           )}
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37]/30 pb-20 relative overflow-x-hidden">
+      
+      {/* Quick Audit Sidebar Overlay */}
+      <AnimatePresence>
+        {showFullAudit && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowFullAudit(false)} className="fixed inset-0 z-[80] bg-black/80 backdrop-blur-md" />
+            <motion.div 
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-screen w-full max-w-[600px] z-[90] bg-[#050505] border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,1)] p-8 md:p-12 overflow-y-auto"
+            >
+               <div className="flex justify-between items-center mb-16">
+                  <div className="space-y-1">
+                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">Exhaustive Audit</p>
+                     <h2 className="text-2xl md:text-3xl font-bold tracking-tighter uppercase">Ledger <span className="text-white/20">Flow</span></h2>
+                  </div>
+                  <button onClick={() => setShowFullAudit(false)} className="p-3 text-zinc-600 hover:text-white transition-colors"><X size={24} /></button>
+               </div>
+               <div className="space-y-6">
+                  {paginatedEvents.map((event, i) => (
+                    <div key={i} className="group flex flex-col gap-2 p-6 border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] transition-all">
+                       <div className="flex justify-between items-start">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-[#D4AF37]">{event.type}</span>
+                          <span className="text-[9px] font-bold text-zinc-700">{event.date}</span>
+                       </div>
+                       <div className="flex justify-between items-end">
+                          <h4 className="text-sm font-bold max-w-[200px] leading-snug">{event.title}</h4>
+                          <span className={`text-base font-black tracking-tighter ${event.isPositive ? 'text-[#D4AF37]' : 'text-white'}`}>{event.amount}</span>
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
-      {/* Builder Verification Status Bar */}
-      {user?.role === 'builder' && (
-        <div className={`mb-8 border-l-4 p-6 ${
-          !dashboardData?.builder_profile ? 'bg-indigo-500/10 border-indigo-500' :
-          dashboardData.builder_profile.verification_status === 'approved' ? 'bg-green-500/10 border-green-500' :
-          dashboardData.builder_profile.verification_status === 'pending' ? 'bg-amber-500/10 border-amber-500' :
-          dashboardData.builder_profile.verification_status === 'rejected' ? 'bg-red-500/10 border-red-500' :
-          dashboardData.builder_profile.verification_status === 'revision_required' ? 'bg-blue-500/10 border-blue-500' :
-          'bg-indigo-500/10 border-indigo-500'
-        }`}>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-start gap-4">
-              <div className={`p-3 rounded-xl ${
-                !dashboardData?.builder_profile ? 'bg-indigo-500/20 text-indigo-500' :
-                dashboardData.builder_profile.verification_status === 'approved' ? 'bg-green-500/20 text-green-500' :
-                dashboardData.builder_profile.verification_status === 'pending' ? 'bg-amber-500/20 text-amber-500' :
-                dashboardData.builder_profile.verification_status === 'rejected' ? 'bg-red-500/20 text-red-500' :
-                dashboardData.builder_profile.verification_status === 'revision_required' ? 'bg-blue-500/20 text-blue-500' :
-                'bg-indigo-500/20 text-indigo-500'
-              }`}>
-                {!dashboardData?.builder_profile ? <Shield /> :
-                 dashboardData.builder_profile.verification_status === 'approved' ? <CheckCircle2 /> :
-                 dashboardData.builder_profile.verification_status === 'pending' ? <Clock /> :
-                 dashboardData.builder_profile.verification_status === 'rejected' ? <AlertCircle /> :
-                 dashboardData.builder_profile.verification_status === 'revision_required' ? <AlertCircle /> :
-                 <Shield />}
-              </div>
-              <div className="flex-1">
-                <h4 className="text-lg font-bold uppercase tracking-tight">
-                  {!dashboardData?.builder_profile ? 'Action Required: Set Up Profile' : 
-                   `Verification Status: ${dashboardData.builder_profile.verification_status.replace('_', ' ')}`}
-                </h4>
-                <p className="text-sm text-secondary-500 max-w-2xl">
-                  {!dashboardData?.builder_profile ? 'You haven\'t set up your builder profile yet. This is required before you can post properties.' :
-                   dashboardData.builder_profile.verification_status === 'approved' ? 'Your profile is fully verified. You can now post properties and manage projects.' :
-                   dashboardData.builder_profile.verification_status === 'pending' ? 'Your profile is currently under review by our administration. This typically takes 24-48 hours.' :
-                   dashboardData.builder_profile.verification_status === 'rejected' ? `Your profile was rejected. Reason: ${dashboardData.builder_profile.rejection_reason || 'See details below.'}` :
-                   dashboardData.builder_profile.verification_status === 'revision_required' ? `The administration has requested some revisions. Feedback: ${dashboardData.builder_profile.rejection_reason}` :
-                   'You need to submit your profile for admin approval before you can post properties.'}
-                </p>
-              </div>
-            </div>
-            
-            {(dashboardData.builder_profile?.verification_status !== 'approved' && dashboardData.builder_profile?.verification_status !== 'pending') && (
-              <Link to="/dashboard/verification" className="shrink-0">
-                <Button className="h-14 px-8 font-bold text-lg shadow-lg">
-                  {!dashboardData?.builder_profile || dashboardData.builder_profile.verification_status === 'details_required' ? 'Setup Profile' : 'Edit & Re-submit'}
-                </Button>
-              </Link>
-            )}
-          </div>
+      {/* Dynamic Header Alert */}
+      {isKYCPending && (
+        <div className="bg-[#D4AF37]/10 border-b border-[#D4AF37]/20 py-3 px-6 flex items-center justify-center gap-3 text-center">
+           <AlertCircle size={14} className="text-[#D4AF37] shrink-0" />
+           <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-[#D4AF37] leading-relaxed">
+             KYC Status: {user?.kyc_status?.toUpperCase().replace('_', ' ')}. Sovereign Permissions restricted.
+           </p>
         </div>
       )}
 
-      {/* Stats Overview */}
-      <div className="mb-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {stats.map((stat, i) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={i} className="flex flex-col p-6 md:p-8 bg-white/[0.02] border-white/5 backdrop-blur-3xl rounded-[var(--radius)]">
-              <div className="flex items-center justify-between mb-8">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-zinc-500">{stat.title}</span>
-                <div className="flex h-12 w-12 items-center justify-center rounded-[var(--radius)] bg-white/5 text-white border border-white/10">
-                  <Icon size={20} />
-                </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-white font-heading tracking-tighter">{stat.value}</span>
-              </div>
-              <div className="mt-4 flex items-center text-[10px] uppercase tracking-widest">
-                 <ArrowUpRight size={14} className="text-green-400 mr-2" />
-                 <span className="font-bold text-green-400">{stat.change}</span>
-                 <span className="text-zinc-600 ml-2">Delta / 30D</span>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 pt-8 md:pt-16">
+        <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 md:gap-12 mb-12 md:mb-16">
+          <div className="space-y-3 md:space-y-4">
+            <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Terminal</p>
+            <h1 className="text-3xl md:text-6xl font-bold tracking-tighter uppercase leading-none">
+              Sovereign <span className="text-[#D4AF37]">Session</span>
+            </h1>
+          </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Performance Chart */}
-        <Card className="lg:col-span-2 overflow-visible p-8 bg-white/[0.02] border-white/5 backdrop-blur-3xl rounded-[var(--radius)]">
-           <h3 className="text-xs font-bold text-zinc-500 mb-10 uppercase tracking-[0.3em]">Institutional Growth</h3>
-           <div className="w-full">
-             {!loading && (
-               <ResponsiveContainer width="100%" aspect={2.5}>
-                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                   <defs>
-                     <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                       <stop offset="5%" stopColor="#ffffff" stopOpacity={0.2}/>
-                       <stop offset="95%" stopColor="#ffffff" stopOpacity={0}/>
-                     </linearGradient>
-                   </defs>
-                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 255, 255, 0.05)" />
-                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#444', fontSize: 10, fontWeight: 600}} dy={10} />
-                   <YAxis axisLine={false} tickLine={false} tick={{fill: '#444', fontSize: 10, fontWeight: 600}} />
-                   <Tooltip 
-                     contentStyle={{ backgroundColor: '#0a0a0a', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}
-                     itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 600 }}
-                     cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
-                   />
-                   <Area type="monotone" dataKey="value" stroke="rgba(255,255,255,0.4)" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
-                 </AreaChart>
-               </ResponsiveContainer>
-             )}
-             {loading && (
-               <div className="w-full aspect-[2.5] flex items-center justify-center text-zinc-600 text-[10px] uppercase tracking-[0.4em] bg-white/[0.01] rounded-[var(--radius)] border border-white/5">
-                 Matrix Synchronization...
-               </div>
-             )}
-           </div>
-        </Card>
+          <div className="flex flex-col sm:flex-row gap-8 md:gap-20">
+             <div className="space-y-1 md:space-y-2">
+                <p className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 sm:text-right">Total Portfolio Value</p>
+                <p className="text-2xl md:text-5xl font-bold tracking-tighter">
+                  ₹{(dashboardData?.portfolio?.reduce((acc, p) => acc + (p.current_valuation || 0), 0) || 0).toLocaleString()}
+                </p>
+             </div>
+             <div className="space-y-1 md:space-y-2 border-t border-white/5 pt-4 sm:border-0 sm:pt-0">
+                <p className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 sm:text-right">Current Liquidity</p>
+                <p className="text-2xl md:text-5xl font-bold tracking-tighter text-[#D4AF37]">
+                  ₹{(dashboardData?.wallet?.balance || 0).toLocaleString()}
+                </p>
+             </div>
+          </div>
+        </header>
 
-        {/* Recent Activity */}
-        <Card className="p-8 bg-white/[0.02] border-white/5 backdrop-blur-3xl rounded-[var(--radius)]">
-           <h3 className="text-xs font-bold text-zinc-500 mb-10 uppercase tracking-[0.3em]">Ledger Events</h3>
-           <div className="space-y-8">
-               {(recentActivity.length > 0 ? recentActivity : [
-                 { title: 'No Ledger Events', desc: 'Awaiting first transaction sequence', amount: null, time: '', type: 'info' }
-               ]).map((activity, i) => (
-                 <div key={i} className="flex gap-6 items-start">
-                    <div className="bg-white/5 p-3 rounded-[var(--radius)] text-zinc-400 border border-white/5 h-10 w-10 flex items-center justify-center shrink-0">
-                       <Clock size={16} />
-                    </div>
-                    <div className="flex-1">
-                       <p className="text-sm font-bold text-white tracking-tight">{activity.title}</p>
-                       <p className="text-xs text-zinc-500 mt-1 font-medium">{activity.desc}</p>
-                       <p className="text-[10px] text-zinc-600 mt-2 font-bold uppercase tracking-widest">{activity.time}</p>
-                    </div>
-                    {activity.amount && (
-                       <div className={`text-sm font-bold tracking-tighter ${activity.type === 'positive' ? 'text-green-400' : 'text-white'}`}>
-                          {activity.amount}
-                       </div>
-                    )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-20 border-t border-white/5 pt-10 md:pt-12">
+          {/* Main Column */}
+          <div className="lg:col-span-2 space-y-12 md:space-y-16">
+            <div className="space-y-8">
+              <div className="flex justify-between items-center">
+                 <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Portfolio Performance</h3>
+                 <div className="flex gap-4 text-[8px] md:text-[9px] font-black uppercase tracking-widest text-zinc-700">
+                    <button className="hover:text-white transition-colors">1M</button>
+                    <button className="text-white border-b border-[#D4AF37] pb-1">1Y</button>
+                    <button className="hover:text-white transition-colors">ALL</button>
                  </div>
-              ))}
-           </div>
-           <Button variant="ghost" className="w-full mt-12 text-[10px] tracking-[0.3em] font-bold uppercase border border-white/5 hover:bg-white/5 py-6">Audit All Events</Button>
-        </Card>
+              </div>
+              <div className="relative h-[250px] md:h-[400px] w-full group">
+                <div className="absolute top-4 right-4 md:right-10 z-20 bg-[#D4AF37] text-black px-2 md:px-3 py-1 md:py-1.5 text-[8px] md:text-[9px] font-black uppercase tracking-widest shadow-2xl">
+                  {dashboardData?.portfolio?.length > 0 ? '+14.2% YTD' : '0.0% Delta'}
+                </div>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="#D4AF37" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 255, 255, 0.02)" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#333', fontSize: 9, fontWeight: 800}} dy={20}/>
+                    <YAxis hide />
+                    <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '0px' }} itemStyle={{ color: '#D4AF37', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' }} />
+                    <Area type="monotone" dataKey="value" stroke="#D4AF37" strokeWidth={1.5} fill="url(#goldGradient)" animationDuration={2000}/>
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Portfolio Section - List View Implementation */}
+            <div className="space-y-8 md:space-y-10 pt-4 md:pt-10">
+               <div className="flex justify-between items-center">
+                  <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Sovereign Bricks Portfolio</h3>
+                  <Link to="/properties" className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-[#D4AF37] hover:underline underline-offset-4">Browse Marketplace</Link>
+               </div>
+               {dashboardData?.portfolio?.length > 0 ? (
+                 <div className="space-y-6">
+                    {dashboardData.portfolio.map((item, i) => (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        key={i} 
+                        className="group flex flex-col md:flex-row gap-6 md:gap-10 p-6 bg-white/[0.01] border border-white/5 hover:border-[#D4AF37]/30 transition-all cursor-pointer"
+                      >
+                         {/* Asset Image Node - Fetched from DB */}
+                         <div className="w-full md:w-[200px] aspect-video md:aspect-square overflow-hidden shrink-0 border border-white/5">
+                            <img 
+                              src={item.image_url} 
+                              alt={item.project?.title} 
+                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" 
+                            />
+                         </div>
+                         
+                         {/* Asset Details Node */}
+                         <div className="flex-1 flex flex-col justify-between py-1">
+                            <div className="flex justify-between items-start mb-4">
+                               <div>
+                                  <h4 className="text-xl font-bold tracking-tight mb-1">{item.project?.title || 'Sovereign Asset'}</h4>
+                                  <p className="text-[10px] text-zinc-500 font-medium flex items-center gap-2">
+                                    <MapPin size={10} /> {item.display_location}
+                                  </p>
+                               </div>
+                               <div className="bg-[#D4AF37]/10 px-3 py-1 text-[8px] font-black uppercase tracking-widest text-[#D4AF37] border border-[#D4AF37]/20">
+                                  {item.project?.category || 'REAL ESTATE'}
+                               </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-6 border-t border-white/5">
+                               <div>
+                                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-1">Quantity</p>
+                                  <p className="text-sm font-bold">{item.quantity} Bricks</p>
+                               </div>
+                               <div>
+                                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-1">Equity Value</p>
+                                  <p className="text-sm font-bold text-[#D4AF37]">₹{item.current_valuation?.toLocaleString()}</p>
+                               </div>
+                               <div>
+                                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-1">Avg Cost</p>
+                                  <p className="text-sm font-bold">₹{(item.total_cost_basis / (item.quantity || 1)).toLocaleString()}</p>
+                               </div>
+                               <div>
+                                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-1">Yield Stake</p>
+                                  <div className="flex items-center gap-2">
+                                     <div className="flex-1 h-1 bg-white/5 overflow-hidden"><div className="h-full bg-green-500 w-full" /></div>
+                                     <span className="text-[10px] font-bold">100%</span>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                      </motion.div>
+                    ))}
+                 </div>
+               ) : (
+                 <div className="py-20 border border-white/5 bg-white/[0.01] flex flex-col items-center justify-center gap-4 text-center px-6">
+                    <Briefcase size={28} className="text-zinc-800" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-700">No Portfolio Assets Identified</p>
+                 </div>
+               )}
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-12 md:space-y-16 lg:border-l lg:border-white/5 lg:pl-12 xl:pl-20">
+            <div className="space-y-10">
+              <div className="flex justify-between items-center">
+                 <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Ledger Events</h3>
+                 <button onClick={() => setShowFullAudit(true)} className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-zinc-700 hover:text-white transition-colors flex items-center gap-2">Audit <ChevronRight size={10} /></button>
+              </div>
+              <div className="space-y-8 md:space-y-10">
+                 {allLedgerEvents.slice(0, 5).map((event, i) => (
+                   <div key={i} className="group relative flex flex-col gap-1 md:gap-2 pb-6 md:pb-8 border-b border-white/5 last:border-0">
+                      <div className="flex justify-between items-start mb-1">
+                         <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] text-[#D4AF37]">{event.type}</span>
+                         <span className="text-[8px] md:text-[9px] font-bold text-zinc-700">{event.date}</span>
+                      </div>
+                      <div className="flex justify-between items-end">
+                         <h5 className="text-xs md:text-sm font-bold text-white/90 max-w-[180px] md:max-w-[200px] leading-snug">{event.title}</h5>
+                         <span className={`text-xs md:text-sm font-black tracking-tighter ${event.isPositive ? 'text-[#D4AF37]' : 'text-white'}`}>{event.amount}</span>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+            </div>
+            <div className="bg-white/[0.01] md:bg-white/[0.02] border border-white/5 p-6 md:p-8 space-y-6">
+               <div className="flex items-center gap-3 mb-2"><Bell size={14} className="text-[#D4AF37]" /><h4 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em]">System Audit</h4></div>
+               {isKYCPending && <div className="p-4 bg-[#D4AF37]/5 border border-[#D4AF37]/10 rounded-none space-y-2"><p className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-[#D4AF37]">Identity Pending</p><p className="text-[10px] md:text-[11px] text-zinc-500 leading-relaxed font-medium">Sovereign trading permissions are currently restricted awaiting manual audit.</p></div>}
+               <div className="p-4 bg-white/5 border border-white/10 rounded-none space-y-2 opacity-50"><p className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-zinc-400">Node Sync</p><p className="text-[10px] md:text-[11px] text-zinc-600 leading-relaxed font-medium">Connected to high-performance private ledger node.</p></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

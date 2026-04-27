@@ -1,19 +1,25 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
+import Sidebar from '../components/layout/Sidebar';
 import Footer from '../components/layout/Footer';
 
 const MainLayout = () => {
   return (
-    <div className="flex min-h-screen flex-col bg-[#0a0a0a] text-white font-sans">
+    <div className="flex min-h-screen flex-col bg-[#0a0a0a] text-white font-sans selection:bg-[#D4AF37]/30">
       <Navbar />
-      <main className="flex-grow pt-16">
-        {/* pt-16 accounts for fixed navbar height */}
-        <div className="mx-auto w-full max-w-7xl">
-          <Outlet />
-        </div>
-      </main>
-      <Footer />
+      <div className="flex flex-1 overflow-hidden">
+        {/* Universal Sidebar Node */}
+        <Sidebar />
+        
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto w-full scrollbar-hide">
+          <div className="mx-auto w-full">
+            <Outlet />
+          </div>
+          <Footer />
+        </main>
+      </div>
     </div>
   );
 };

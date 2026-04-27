@@ -6,8 +6,8 @@ export const userService = {
     return response.data;
   },
 
-  updateProfile: async (profileData) => {
-    const response = await api.patch('/users/profile', profileData);
+  updateProfile: async (data) => {
+    const response = await api.patch('/users/profile', data);
     return response.data;
   },
 
@@ -16,32 +16,13 @@ export const userService = {
     return response.data;
   },
 
-  addBankAccount: async (bankData) => {
-    const response = await api.post('/users/bank-accounts', bankData);
+  addBankAccount: async (data) => {
+    const response = await api.post('/users/bank-accounts', data);
     return response.data;
   },
 
   removeBankAccount: async (bankId) => {
     const response = await api.delete(`/users/bank-accounts/${bankId}`);
-    return response.data;
-  },
-
-  requestPasswordReset: async (email) => {
-    const response = await api.post('/auth/forgot-password', { email });
-    return response.data;
-  },
-
-  resetPassword: async (email, otp, newPassword) => {
-    const response = await api.post('/auth/reset-password', {
-      email,
-      otp,
-      new_password: newPassword
-    });
-    return response.data;
-  },
-
-  refreshToken: async (refreshToken) => {
-    const response = await api.post('/auth/refresh', { refresh_token: refreshToken });
     return response.data;
   }
 };

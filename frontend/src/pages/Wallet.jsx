@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
 import { walletService } from '../services/walletService';
 import { userService } from '../services/userService';
-import { Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Plus, Building, Trash2, Clock, Loader2, Minus, Shield } from 'lucide-react';
-import { Loader } from '../components/ui/Loader';
+import { Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Plus, Building, Trash2, Clock, Loader2, Minus, Shield, X, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
 import AddBankAccountModal from '../components/profile/AddBankAccountModal';
 
 const Wallet = () => {
@@ -44,17 +43,14 @@ const Wallet = () => {
   const handleDeposit = async (e) => {
     e.preventDefault();
     if (!depositAmount || bankAccounts.length === 0) return;
-    
     setIsDepositing(true);
     try {
       await walletService.depositFunds(parseFloat(depositAmount), bankAccounts[0].id);
       setDepositAmount('');
       setShowDepositModal(false);
-      await fetchData(); // Refresh
-      alert("Deposit successful!");
+      await fetchData(true);
     } catch (error) {
       console.error("Deposit failed", error);
-      alert("Deposit failed. Check your bank connection.");
     } finally {
       setIsDepositing(false);
     }
@@ -63,224 +59,243 @@ const Wallet = () => {
   const handleWithdraw = async (e) => {
     e.preventDefault();
     if (!withdrawAmount || bankAccounts.length === 0) return;
-    
     setIsWithdrawing(true);
     try {
       await walletService.withdrawFunds(parseFloat(withdrawAmount), bankAccounts[0].id);
       setWithdrawAmount('');
       setShowWithdrawModal(false);
-      await fetchData(); // Refresh
-      alert("Withdrawal successful!");
+      await fetchData(true);
     } catch (error) {
       console.error("Withdrawal failed", error);
-      alert("Withdrawal failed. Check your balance.");
     } finally {
       setIsWithdrawing(false);
     }
   };
 
-  if (loading) return <div className="py-24"><Loader size={48} text="Loading your wallet..." /></div>;
+  if (loading) {
+    return (
+      <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
+         <div className="flex flex-col items-center gap-6">
+            <Loader2 size={32} className="text-[#D4AF37] animate-spin" />
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Synchronizing Liquidity Node...</p>
+         </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white font-heading">
-          My Wallet
-        </h1>
-        <p className="mt-2 text-secondary-600 dark:text-secondary-400">
-          Manage your funds, linked bank accounts, and view transaction history.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Balance Card */}
-        <div className="lg:col-span-2 space-y-8">
-          <Card className="bg-gradient-to-br from-primary-600 to-indigo-700 text-white border-none shadow-xl shadow-primary-500/20">
-            <CardContent className="p-8">
-              <div className="flex justify-between items-start mb-10">
-                <div>
-                  <p className="text-primary-100 text-sm font-medium mb-1">Liquid Balance</p>
-                  <h2 className="text-5xl font-bold font-heading text-white">
-                    ₹{(walletData?.balance || 0).toLocaleString()}
-                  </h2>
+    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37]/30 pb-20 px-6 md:px-12 pt-10">
+      <div className="max-w-[1600px] mx-auto">
+        
+        {/* Institutional Header */}
+        <header className="mb-16 space-y-8 border-b border-white/5 pb-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+             <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                   <WalletIcon size={14} className="text-[#D4AF37]" />
+                   <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Capital Ledger</p>
                 </div>
-                <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
-                  <WalletIcon size={32} />
-                </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <Button 
-                  className="bg-white text-primary-700 hover:bg-primary-50 border-none px-8"
-                  onClick={() => setShowDepositModal(true)}
-                >
-                  <Plus size={18} className="mr-2" /> Deposit
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="border-white/30 text-white hover:bg-white/10 hover:border-white"
-                  onClick={() => setShowWithdrawModal(true)}
-                >
-                  <Minus size={18} className="mr-2" /> Withdraw
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Transaction History */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>Your latest financial activities</CardDescription>
-              </div>
-              <Clock className="text-secondary-400" size={20} />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1">
-                {walletData?.recent_transactions?.length > 0 ? (
-                  walletData.recent_transactions.map((tx) => (
-                    <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-secondary-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-full ${tx.transaction_type === 'deposit' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-secondary-100 text-secondary-600 dark:bg-slate-800 dark:text-secondary-400'}`}>
-                          {tx.transaction_type === 'deposit' ? <ArrowDownRight size={20} /> : <ArrowUpRight size={20} />}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-secondary-900 dark:text-white capitalize">{tx.transaction_type.replace('_', ' ')}</p>
-                          <p className="text-xs text-secondary-500 dark:text-secondary-400">
-                            {new Date(tx.created_at).toLocaleDateString()} • {tx.description || 'System Transaction'}
-                          </p>
-                        </div>
-                      </div>
-                      <p className={`font-bold ${tx.transaction_type === 'deposit' ? 'text-green-600 dark:text-green-400' : 'text-secondary-900 dark:text-white'}`}>
-                        {tx.transaction_type === 'deposit' ? '+' : '-'}₹{tx.amount.toLocaleString()}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-12 text-secondary-500">
-                    No transactions yet.
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar - Bank Accounts & Quick Actions */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Bank Accounts</CardTitle>
-              <CardDescription>Linked sources for funds</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {bankAccounts.length > 0 ? (
-                bankAccounts.map((bank) => (
-                  <div key={bank.id} className="flex items-center justify-between p-3 border border-secondary-100 dark:border-secondary-800 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <Building className="text-secondary-400" size={18} />
-                      <div>
-                        <p className="text-sm font-semibold text-secondary-900 dark:text-white">{bank.bank_name}</p>
-                        <p className="text-xs text-secondary-500">****{bank.account_number.slice(-4)}</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20">
-                      <Trash2 size={16} />
-                    </Button>
-                  </div>
-                ))
-              ) : (
-                <div className="text-sm text-secondary-500 text-center py-4 italic border-2 border-dashed border-secondary-100 dark:border-secondary-800 rounded-xl">
-                  No bank accounts linked.
-                </div>
-              )}
-              <Button 
-                variant="outline" 
-                className="w-full mt-2 border-primary-100 text-primary-600 hover:bg-primary-50 dark:border-primary-900/30 dark:text-primary-400"
-                onClick={() => setShowAddBankModal(true)}
-              >
-                <Plus size={16} className="mr-2" /> Add Bank Account
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-secondary-900 text-white overflow-hidden relative">
-            <CardContent className="p-6">
-              <div className="relative z-10">
-                <h3 className="text-lg font-bold mb-2">Need Help?</h3>
-                <p className="text-secondary-400 text-sm mb-4 leading-relaxed">
-                  Our support team is available 24/7 for any financial or account-related inquiries.
+                <h1 className="text-4xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
+                  Sovereign <span className="text-[#D4AF37]">Liquidity</span>
+                </h1>
+                <p className="text-sm md:text-lg text-zinc-500 max-w-2xl leading-relaxed">
+                  Real-time auditing of your liquid capital nodes. Securely deploy or liquidate funds across the verified institutional network.
                 </p>
-                <Button className="w-full bg-white text-secondary-900 hover:bg-secondary-100 border-none">
-                  Contact Support
-                </Button>
-              </div>
-              <div className="absolute -right-8 -bottom-8 opacity-10">
-                <Shield size={120} />
-              </div>
-            </CardContent>
-          </Card>
+             </div>
+             
+             <div className="flex gap-4">
+                <button 
+                  onClick={() => setShowDepositModal(true)}
+                  className="bg-white text-black px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#D4AF37] transition-all flex items-center gap-3"
+                >
+                  <Plus size={14} /> Deposit Capital
+                </button>
+                <button 
+                  onClick={() => setShowWithdrawModal(true)}
+                  className="border border-white/10 text-white px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 transition-all flex items-center gap-3"
+                >
+                  <Minus size={14} /> Withdraw Funds
+                </button>
+             </div>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-20">
+          {/* Main Financial Audit Column */}
+          <div className="lg:col-span-2 space-y-16">
+             {/* Balance Node */}
+             <div className="p-8 md:p-12 bg-white/[0.01] border border-white/5 relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all duration-500">
+                <div className="relative z-10 space-y-8">
+                   <div className="flex justify-between items-center">
+                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Liquid Balance Node</p>
+                      <div className="bg-white/[0.03] p-3 border border-white/5">
+                         <Shield size={20} className="text-[#D4AF37]" />
+                      </div>
+                   </div>
+                   <h2 className="text-5xl md:text-8xl font-bold tracking-tighter">
+                     ₹{(walletData?.balance || 0).toLocaleString()}
+                   </h2>
+                   <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-[#D4AF37]">
+                      <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
+                      Audited & Verified
+                   </div>
+                </div>
+                {/* Background Grid Pattern */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#D4AF37 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }} />
+             </div>
+
+             {/* Ledger Audit */}
+             <div className="space-y-10">
+                <div className="flex justify-between items-center">
+                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Ledger Audit Sequence</h3>
+                   <div className="flex gap-4 text-[8px] font-black uppercase tracking-widest text-zinc-700">
+                      <span>Live Sync Active</span>
+                   </div>
+                </div>
+                <div className="space-y-4">
+                   {walletData?.recent_transactions?.length > 0 ? (
+                     walletData.recent_transactions.slice(0, 5).map((tx, i) => (
+                       <motion.div 
+                         initial={{ opacity: 0, x: -10 }}
+                         animate={{ opacity: 1, x: 0 }}
+                         transition={{ delay: i * 0.05 }}
+                         key={tx.id} 
+                         className="flex items-center justify-between p-6 bg-white/[0.01] border border-white/5 hover:bg-white/[0.02] transition-all group"
+                       >
+                         <div className="flex items-center gap-6">
+                            <div className={`w-10 h-10 flex items-center justify-center border ${tx.transaction_type === 'deposit' ? 'border-green-500/20 text-green-500 bg-green-500/5' : 'border-zinc-800 text-zinc-500 bg-white/5'}`}>
+                               {tx.transaction_type === 'deposit' ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
+                            </div>
+                            <div>
+                               <p className="text-sm font-bold text-white uppercase tracking-tight mb-1">{tx.transaction_type.replace('_', ' ')}</p>
+                               <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600">
+                                 {new Date(tx.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })} // {tx.description || 'System Audit'}
+                               </p>
+                            </div>
+                         </div>
+                         <div className="text-right">
+                            <p className={`text-lg font-black tracking-tighter ${tx.transaction_type === 'deposit' ? 'text-[#D4AF37]' : 'text-white'}`}>
+                               {tx.transaction_type === 'deposit' ? '+' : '-'}₹{tx.amount.toLocaleString()}
+                            </p>
+                            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-800">Success</p>
+                         </div>
+                       </motion.div>
+                     ))
+                   ) : (
+                     <div className="py-20 text-center border border-white/5 bg-white/[0.01]">
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-800">Zero Transaction Data Identified</p>
+                     </div>
+                   )}
+                </div>
+             </div>
+          </div>
+
+          {/* Bank & Security Column */}
+          <div className="space-y-16">
+             {/* Bank Nodes */}
+             <div className="space-y-10">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Linked Bank Nodes</h3>
+                <div className="space-y-4">
+                   {bankAccounts.length > 0 ? (
+                     bankAccounts.map((bank) => (
+                       <div key={bank.id} className="p-6 bg-white/[0.01] border border-white/5 space-y-4 group hover:border-white/10 transition-all">
+                          <div className="flex justify-between items-start">
+                             <div className="flex items-center gap-4">
+                                <Building size={16} className="text-[#D4AF37]" />
+                                <div>
+                                   <p className="text-xs font-bold text-white uppercase tracking-tight">{bank.bank_name}</p>
+                                   <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700">Audit Node: ****{bank.account_number.slice(-4)}</p>
+                                </div>
+                             </div>
+                             <button className="text-zinc-800 hover:text-red-500 transition-colors p-1"><Trash2 size={14} /></button>
+                          </div>
+                       </div>
+                     ))
+                   ) : (
+                     <div className="py-10 text-center border-2 border-dashed border-white/5 text-zinc-700">
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em]">No Bank Nodes Connected</p>
+                     </div>
+                   )}
+                   <button 
+                     onClick={() => setShowAddBankModal(true)}
+                     className="w-full py-4 border border-white/5 text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-3"
+                   >
+                     <Plus size={14} /> Connect New Node
+                   </button>
+                </div>
+             </div>
+
+             {/* Security Signature */}
+             <div className="p-8 bg-white/[0.01] border border-white/5 space-y-6 relative overflow-hidden">
+                <div className="relative z-10 space-y-4">
+                   <div className="flex items-center gap-3"><Shield size={14} className="text-[#D4AF37]" /><p className="text-[9px] font-black uppercase tracking-[0.3em]">Institutional Grade Security</p></div>
+                   <p className="text-[11px] text-zinc-500 leading-relaxed font-medium">
+                     Your capital ledger is secured by bank-grade encryption nodes. All deployments are audited in real-time by the Sovereign compliance engine.
+                   </p>
+                   <button className="text-[9px] font-black uppercase tracking-widest text-white hover:text-[#D4AF37] transition-colors flex items-center gap-2">Audit Compliance Node <ArrowRight size={10} /></button>
+                </div>
+             </div>
+          </div>
         </div>
       </div>
 
-      {/* Add Bank Account Modal */}
-      <AddBankAccountModal 
-        isOpen={showAddBankModal}
-        onClose={() => setShowAddBankModal(false)}
-        onSuccess={() => fetchData(true)}
-      />
-
-      {/* Deposit Modal */}
-      <Modal 
-        isOpen={showDepositModal} 
-        onClose={() => setShowDepositModal(false)}
-        title="Deposit Funds"
-      >
-        <form onSubmit={handleDeposit} className="space-y-6">
-          <Input 
-            label="Amount (INR)"
-            type="number"
-            placeholder="Enter amount"
-            value={depositAmount}
-            onChange={(e) => setDepositAmount(e.target.value)}
-            required
-          />
-          <div className="p-4 bg-secondary-50 dark:bg-slate-900 rounded-2xl">
-             <p className="text-xs text-secondary-500 uppercase font-bold mb-2">Linked Bank Account</p>
+      {/* Institutional Modals */}
+      <AddBankAccountModal isOpen={showAddBankModal} onClose={() => setShowAddBankModal(false)} onSuccess={() => fetchData(true)} />
+      
+      <Modal isOpen={showDepositModal} onClose={() => setShowDepositModal(false)} title="Capital Deployment" subtitle="Deposit Sequence">
+        <form onSubmit={handleDeposit} className="space-y-10 py-4">
+          <div className="space-y-4">
+             <label className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-600">Deployment Amount (INR)</label>
+             <input 
+               type="number"
+               placeholder="ENTER VALUE..."
+               value={depositAmount}
+               onChange={(e) => setDepositAmount(e.target.value)}
+               className="w-full bg-white/[0.02] border border-white/10 p-6 text-2xl font-bold tracking-tighter focus:outline-none focus:border-[#D4AF37] transition-all"
+               required
+             />
+          </div>
+          <div className="p-6 bg-white/[0.02] border border-white/5 space-y-4">
+             <p className="text-[8px] font-black uppercase tracking-widest text-zinc-700">Source Node</p>
              {bankAccounts.length > 0 ? (
-               <div className="flex items-center gap-3">
-                 <Building size={16} className="text-primary-500" />
-                 <span className="text-sm font-medium">{bankAccounts[0].bank_name} - ****{bankAccounts[0].account_number.slice(-4)}</span>
+               <div className="flex items-center gap-4">
+                 <Building size={16} className="text-[#D4AF37]" />
+                 <span className="text-[10px] font-black uppercase tracking-widest">{bankAccounts[0].bank_name} // ****{bankAccounts[0].account_number.slice(-4)}</span>
                </div>
              ) : (
-               <p className="text-sm text-red-500">Please link a bank account first in profile.</p>
+               <p className="text-[10px] text-red-500 font-black uppercase tracking-widest">Action Required: Link Bank Node</p>
              )}
           </div>
-          <Button className="w-full h-12" type="submit" isLoading={isDepositing} disabled={bankAccounts.length === 0}>
-            Confirm Deposit
-          </Button>
+          <button 
+            type="submit" 
+            disabled={isDepositing || bankAccounts.length === 0}
+            className="w-full bg-white text-black py-5 text-[11px] font-black uppercase tracking-[0.4em] hover:bg-[#D4AF37] transition-all disabled:opacity-50"
+          >
+            {isDepositing ? 'SYNCHRONIZING...' : 'AUTHORIZE DEPLOYMENT'}
+          </button>
         </form>
       </Modal>
 
-      {/* Withdraw Modal */}
-      <Modal 
-        isOpen={showWithdrawModal} 
-        onClose={() => setShowWithdrawModal(false)}
-        title="Withdraw Funds"
-      >
-        <form onSubmit={handleWithdraw} className="space-y-6">
-          <Input 
-            label="Amount (INR)"
-            type="number"
-            placeholder="Enter amount"
-            value={withdrawAmount}
-            onChange={(e) => setWithdrawAmount(e.target.value)}
-            required
-          />
-          <Button className="w-full h-12" type="submit" isLoading={isWithdrawing} disabled={bankAccounts.length === 0}>
-            Confirm Withdrawal
-          </Button>
+      <Modal isOpen={showWithdrawModal} onClose={() => setShowWithdrawModal(false)} title="Capital Liquidation" subtitle="Withdrawal Sequence">
+        <form onSubmit={handleWithdraw} className="space-y-10 py-4">
+          <div className="space-y-4">
+             <label className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-600">Liquidation Amount (INR)</label>
+             <input 
+               type="number"
+               placeholder="ENTER VALUE..."
+               value={withdrawAmount}
+               onChange={(e) => setWithdrawAmount(e.target.value)}
+               className="w-full bg-white/[0.02] border border-white/10 p-6 text-2xl font-bold tracking-tighter focus:outline-none focus:border-[#D4AF37] transition-all"
+               required
+             />
+          </div>
+          <button 
+            type="submit" 
+            disabled={isWithdrawing || bankAccounts.length === 0}
+            className="w-full bg-white text-black py-5 text-[11px] font-black uppercase tracking-[0.4em] hover:bg-[#D4AF37] transition-all disabled:opacity-50"
+          >
+            {isWithdrawing ? 'SYNCHRONIZING...' : 'AUTHORIZE LIQUIDATION'}
+          </button>
         </form>
       </Modal>
     </div>

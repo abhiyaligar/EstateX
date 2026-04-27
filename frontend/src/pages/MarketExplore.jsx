@@ -2,27 +2,34 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, TrendingUp, MapPin, ArrowLeft, MoreHorizontal, ChevronRight,
-  LayoutGrid, List as ListIcon, ChevronLeft, X
+  LayoutGrid, List as ListIcon, ChevronLeft, X, Loader2, Zap, ArrowUpRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
+import { LineChart, Line, ResponsiveContainer, YAxis, AreaChart, Area } from 'recharts';
 import { Button } from '../components/ui/Button';
-import { propertyService } from '../services/propertyService';
+import propertyService from '../services/propertyService';
 
-const Sparkline = ({ data, color = "#10b981", height = 32 }) => (
+const Sparkline = ({ data, color = "#D4AF37", height = 32 }) => (
   <div className={`w-full`} style={{ height: `${height}px` }}>
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data}>
-        <Line 
+      <AreaChart data={data}>
+        <defs>
+          <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={color} stopOpacity={0.2}/>
+            <stop offset="95%" stopColor={color} stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <Area 
           type="monotone" 
           dataKey="pv" 
           stroke={color} 
           strokeWidth={1.5} 
+          fill={`url(#grad-${color})`}
           dot={false} 
           isAnimationActive={false}
         />
         <YAxis hide domain={['auto', 'auto']} />
-      </LineChart>
+      </AreaChart>
     </ResponsiveContainer>
   </div>
 );
@@ -31,16 +38,14 @@ const MarketExplore = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('All assets');
+  const [activeTab, setActiveTab] = useState('ALL ASSETS');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 12;
 
-  // Mock data for sparklines
-  const generateMockSparkline = () => Array.from({ length: 10 }, (_, i) => ({
+  const generateMockSparkline = () => Array.from({ length: 15 }, (_, i) => ({
     name: i,
     pv: Math.floor(Math.random() * 100) + 50
   }));
@@ -48,7 +53,8 @@ const MarketExplore = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const data = await propertyService.getProperties();
+        setLoading(true);
+        const data = await propertyService.getProperties('active');
         setProjects(data);
       } catch (error) {
         console.error('Error fetching projects:', error);
@@ -60,17 +66,14 @@ const MarketExplore = () => {
     fetchProjects();
   }, []);
 
-  const tabs = ['All assets', 'Residential', 'Commercial', 'Land', 'High Yield'];
+  const tabs = ['ALL ASSETS', 'RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'HIGH YIELD'];
 
-  // Filtering Logic
   const filteredProjects = useMemo(() => {
     return projects.filter(project => {
-      // Tab Filtering
-      const matchesTab = activeTab === 'All assets' || 
-                        project.property_type?.toLowerCase() === activeTab.toLowerCase() ||
-                        (activeTab === 'High Yield' && project.macro_analytics?.avg_rental_yield > 8);
+      const matchesTab = activeTab === 'ALL ASSETS' || 
+                        project.property_type?.toUpperCase() === activeTab ||
+                        (activeTab === 'HIGH YIELD' && (project.macro_analytics?.avg_rental_yield || 0) > 8);
 
-      // Search Filtering
       const query = searchQuery.toLowerCase();
       const matchesSearch = project.title?.toLowerCase().includes(query) ||
                            project.location?.city?.toLowerCase().includes(query) ||
@@ -80,7 +83,6 @@ const MarketExplore = () => {
     });
   }, [projects, activeTab, searchQuery]);
 
-  // Pagination Logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentProjects = filteredProjects.slice(indexOfFirstItem, indexOfLastItem);
@@ -88,226 +90,154 @@ const MarketExplore = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Reset page on filter change
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab, searchQuery]);
 
-  const topMovers = [
-    { name: 'DXB-SKY', sub: 'Skyline Residences', price: '₹1.42', change: '+12.5%', data: generateMockSparkline(), color: '#10b981' },
-    { name: 'NYC-VIL', sub: 'Ocean Front Villa', price: '₹2.15', change: '-3.24%', data: generateMockSparkline(), color: '#ef4444' },
-    { name: 'LDN-OAK', sub: 'Oak Gardens', price: '₹0.89', change: '+5.7%', data: generateMockSparkline(), color: '#10b981' },
-    { name: 'SIN-TOW', sub: 'Singapore Tower', price: '₹3.50', change: '+9.1%', data: generateMockSparkline(), color: '#10b981' },
-  ];
+  if (loading) {
+     return (
+       <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-6">
+             <Loader2 size={32} className="text-[#D4AF37] animate-spin" />
+             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Synchronizing Market Nodes...</p>
+          </div>
+       </div>
+     );
+  }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-400 font-sans selection:bg-white/10 pt-2 pb-20 px-4 md:px-6 lg:px-12">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37]/30 pb-20 px-6 md:px-12 pt-10">
+      <div className="max-w-[1600px] mx-auto">
         
-        {/* Header Section */}
-        <div className="flex flex-col gap-3 mb-6">
-          <div className="flex items-center justify-between h-14">
-            {!isSearching ? (
-              <motion.div 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-2 md:gap-4"
-              >
-                <button 
-                  onClick={() => navigate(-1)}
-                  className="p-1.5 md:p-2 hover:bg-white/5 rounded-full transition-colors group shrink-0"
-                >
-                  <ArrowLeft size={18} className="text-zinc-500 group-hover:text-white" />
-                </button>
-                <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">Market</h1>
-              </motion.div>
-            ) : (
-              <motion.div 
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: '100%' }}
-                className="flex items-center gap-3 flex-1"
-              >
-                 <Search size={18} className="text-zinc-500 shrink-0" />
-                 <input 
-                   autoFocus
-                   type="text"
-                   placeholder="Search properties..."
-                   value={searchQuery}
-                   onChange={(e) => setSearchQuery(e.target.value)}
-                   className="bg-transparent border-none text-white text-base w-full focus:outline-none placeholder:text-zinc-700 font-medium"
-                 />
-                 <button 
-                   onClick={() => { setIsSearching(false); setSearchQuery(''); }}
-                   className="p-2 text-zinc-500 hover:text-white"
-                 >
-                   <X size={18} />
-                 </button>
-              </motion.div>
-            )}
+        {/* Institutional Header Section */}
+        <header className="mb-16 space-y-10 border-b border-white/5 pb-12">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+             <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                   <TrendingUp size={14} className="text-[#D4AF37]" />
+                   <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Secondary Market</p>
+                </div>
+                <h1 className="text-4xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
+                  Global <span className="text-[#D4AF37]">Explore</span>
+                </h1>
+                <p className="text-sm md:text-lg text-zinc-500 max-w-2xl leading-relaxed">
+                  Real-time auditing of verified real estate assets across global nodes. Transparent ledger tracking for secondary market liquidity.
+                </p>
+             </div>
 
-            {!isSearching && (
-              <div className="flex items-center gap-1">
-                 <button 
-                   onClick={() => setIsSearching(true)}
-                   className="p-2 text-zinc-500 hover:text-white transition-colors shrink-0"
-                 >
-                    <Search size={20} />
-                 </button>
-                 <div className="hidden sm:flex items-center bg-[#141414] border border-white/5 rounded-lg p-1 shrink-0">
-                    <button className="p-1.5 bg-white/10 text-white rounded-md shadow-sm">
-                      <LayoutGrid size={14} />
-                    </button>
-                    <button className="p-1.5 text-zinc-600 hover:text-zinc-400">
-                      <ListIcon size={14} />
-                    </button>
-                 </div>
-              </div>
-            )}
+             <div className="flex flex-col sm:flex-row items-center gap-8">
+                {/* Search Node */}
+                <div className="relative group w-full sm:w-[300px]">
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-[#D4AF37] transition-colors" size={16} />
+                   <input 
+                     type="text"
+                     placeholder="SEARCH NODES..."
+                     value={searchQuery}
+                     onChange={(e) => setSearchQuery(e.target.value)}
+                     className="w-full bg-white/[0.02] border border-white/5 py-3.5 pl-12 pr-4 text-[10px] font-black tracking-widest uppercase focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-zinc-800"
+                   />
+                </div>
+             </div>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-8 overflow-x-auto no-scrollbar pb-2">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-1.5 rounded-full text-[11px] font-medium transition-all whitespace-nowrap border ${
+                className={`text-[9px] font-black uppercase tracking-[0.3em] transition-all pb-2 border-b-2 whitespace-nowrap ${
                   activeTab === tab 
-                  ? 'bg-white text-black border-white' 
-                  : 'text-zinc-500 hover:text-zinc-300 border-white/5 bg-transparent'
+                  ? 'text-[#D4AF37] border-[#D4AF37]' 
+                  : 'text-zinc-700 border-transparent hover:text-zinc-400'
                 }`}
               >
                 {tab}
               </button>
             ))}
           </div>
+        </header>
+
+        {/* Asset List Header */}
+        <div className="hidden lg:grid grid-cols-12 px-6 py-4 text-[9px] uppercase tracking-[0.3em] font-black text-zinc-700 mb-4 border-y border-white/5 bg-white/[0.01]">
+          <div className="col-span-5">Sovereign Asset Node</div>
+          <div className="col-span-2 text-right">Market Value</div>
+          <div className="col-span-1 text-right">Delta</div>
+          <div className="col-span-2 px-10">Performance</div>
+          <div className="col-span-2 text-right">Audit</div>
         </div>
 
-        {/* Search Results Summary */}
-        {searchQuery && (
-          <div className="mb-4 px-1">
-             <p className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold">
-               Found {filteredProjects.length} matching assets
-             </p>
-          </div>
-        )}
-
-        {/* Top Movers Section - Hidden when searching or filtering */}
-        {!searchQuery && activeTab === 'All assets' && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mb-8 overflow-hidden"
-          >
-            <h2 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-3 px-1">Top Movers</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-              {topMovers.map((mover, i) => (
-                <div 
-                  key={i}
-                  className="bg-[#141414]/30 border border-white/5 p-4 rounded-xl hover:bg-[#141414]/50 transition-all cursor-pointer group"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-white font-bold text-xs border border-white/5 shrink-0">
-                        {mover.name[0]}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs font-bold text-white leading-none truncate uppercase">{mover.name}</div>
-                        <div className="text-[9px] text-zinc-600 truncate mt-1 uppercase tracking-tighter">{mover.sub}</div>
-                      </div>
-                    </div>
-                    <div className={`text-[10px] font-bold ${mover.change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
-                      {mover.change}
-                    </div>
-                  </div>
-                  <Sparkline data={mover.data} color={mover.color} height={20} />
-                  <div className="mt-2 text-sm font-bold text-white font-mono tracking-tighter">{mover.price}</div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Asset List Header - Hidden on mobile */}
-        <div className="hidden md:grid grid-cols-12 px-6 py-2 text-[9px] uppercase tracking-[0.2em] font-bold text-zinc-700 mb-1 border-b border-white/5">
-          <div className="col-span-5">Asset protocol</div>
-          <div className="col-span-2 text-right">Price index</div>
-          <div className="col-span-2 text-right">Yield</div>
-          <div className="col-span-3 text-right">Aggregate value</div>
-        </div>
-
-        {/* Asset List - Transparent Row Style */}
-        <div className="space-y-0">
+        {/* Asset List */}
+        <div className="space-y-4">
           <AnimatePresence mode="wait">
-            {loading ? (
-              <motion.div 
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-0"
-              >
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-16 border-b border-white/5 animate-pulse" />
-                ))}
-              </motion.div>
-            ) : currentProjects.length > 0 ? (
+            {currentProjects.length > 0 ? (
               <motion.div 
                 key={currentPage + activeTab + searchQuery}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="divide-y divide-white/5"
+                className="space-y-3"
               >
                 {currentProjects.map((asset, i) => (
-                  <div 
+                  <motion.div 
                     key={asset.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
                     onClick={() => navigate(`/trade?assetId=${asset.id}`)}
-                    className="flex md:grid md:grid-cols-12 items-center px-4 md:px-6 py-4 bg-transparent hover:bg-white/[0.02] transition-all cursor-pointer group gap-4 md:gap-0"
+                    className="flex flex-col lg:grid lg:grid-cols-12 items-center px-6 py-6 bg-white/[0.01] border border-white/5 hover:border-[#D4AF37]/30 transition-all cursor-pointer group gap-6 lg:gap-0"
                   >
                     {/* Asset Identity */}
-                    <div className="md:col-span-5 flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg overflow-hidden border border-white/5 shrink-0 bg-[#0c0c0c]">
-                        <img src={asset.images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=100'} alt={asset.title} className="w-full h-full object-cover" />
+                    <div className="lg:col-span-5 flex items-center gap-6 w-full min-w-0">
+                      <div className="w-14 h-14 rounded-none overflow-hidden border border-white/10 shrink-0 bg-[#0c0c0c]">
+                        <img 
+                          src={asset.images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=100'} 
+                          alt={asset.title} 
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                        />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-bold text-white truncate uppercase tracking-tight">{asset.title}</div>
-                        <div className="text-[10px] text-zinc-600 truncate uppercase tracking-tighter">{asset.location?.city || 'Prime Cluster'}</div>
+                        <h4 className="text-lg font-bold text-white group-hover:text-[#D4AF37] transition-colors truncate uppercase tracking-tight">{asset.title}</h4>
+                        <div className="text-[10px] text-zinc-600 truncate uppercase tracking-widest font-black mt-1 flex items-center gap-2">
+                           <MapPin size={10} className="text-zinc-800" />
+                           {asset.location?.city || 'Prime Cluster'}, {asset.location?.state}
+                        </div>
                       </div>
                     </div>
                     
-                    {/* Desktop Sparkline (Middle) */}
-                    <div className="hidden md:block col-span-2 px-6 opacity-30 group-hover:opacity-100 transition-opacity">
-                       <Sparkline data={generateMockSparkline()} height={16} />
+                    {/* Price Node */}
+                    <div className="lg:col-span-2 w-full lg:text-right border-t lg:border-0 border-white/5 pt-4 lg:pt-0">
+                       <p className="lg:hidden text-[8px] font-black text-zinc-700 uppercase tracking-widest mb-1">Market Value</p>
+                       <p className="text-xl font-bold text-white font-mono tracking-tighter">
+                         ₹{(asset.financial?.market_value || asset.financial?.ipo_price || 0).toLocaleString()}
+                       </p>
                     </div>
 
-                    {/* Price & Change (Right) */}
-                    <div className="md:col-span-2 text-right">
-                      <div className="text-sm font-bold text-white font-mono tracking-tighter">
-                        ₹{(asset.financial?.market_value || asset.financial?.ipo_price || 0).toLocaleString()}
-                      </div>
-                      <div className="text-[10px] text-green-500 font-bold">+1.24%</div>
+                    {/* Delta Node */}
+                    <div className="lg:col-span-1 w-full lg:text-right">
+                       <p className="lg:hidden text-[8px] font-black text-zinc-700 uppercase tracking-widest mb-1">24H Delta</p>
+                       <div className="flex items-center lg:justify-end gap-1 text-[10px] font-black text-green-500">
+                          <ArrowUpRight size={12} />
+                          <span>+1.24%</span>
+                       </div>
                     </div>
 
-                    {/* Yield (Desktop only) */}
-                    <div className="hidden md:block col-span-1 text-right text-xs font-bold text-zinc-500">
-                      {asset.macro_analytics?.avg_rental_yield || '7.5'}%
+                    {/* Sparkline Node */}
+                    <div className="lg:col-span-2 w-full px-4 lg:px-10 opacity-30 group-hover:opacity-100 transition-opacity">
+                       <Sparkline data={generateMockSparkline()} height={24} />
                     </div>
 
-                    {/* Market Cap (Desktop only) */}
-                    <div className="hidden md:block col-span-2 text-right text-xs font-mono font-medium text-zinc-700 tracking-tighter">
-                      ₹{(asset.financial?.total_bricks * (asset.financial?.market_value || asset.financial?.ipo_price) || 0).toLocaleString()}
+                    {/* Action Node */}
+                    <div className="lg:col-span-2 w-full lg:text-right border-t lg:border-0 border-white/5 pt-4 lg:pt-0">
+                       <button className="w-full lg:w-auto px-6 py-2 bg-white text-black text-[9px] font-black uppercase tracking-[0.2em] hover:bg-[#D4AF37] transition-all">
+                          Audit Node
+                       </button>
                     </div>
-
-                    {/* Mobile Chevron */}
-                    <div className="md:hidden">
-                       <ChevronRight size={14} className="text-zinc-900" />
-                    </div>
-                  </div>
+                  </motion.div>
                 ))}
               </motion.div>
             ) : (
-              <div className="text-center py-20">
-                <p className="text-zinc-800 text-[10px] uppercase font-bold tracking-[0.3em]">Neural link empty // No data found</p>
+              <div className="text-center py-40 border border-white/5 bg-white/[0.01]">
+                <p className="text-zinc-800 text-[10px] uppercase font-black tracking-[0.4em]">Sovereign Node empty // No relational data</p>
               </div>
             )}
           </AnimatePresence>
@@ -315,24 +245,24 @@ const MarketExplore = () => {
 
         {/* Pagination Controls */}
         {!loading && filteredProjects.length > itemsPerPage && (
-          <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-6">
-            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-800">
-              {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, filteredProjects.length)} / {filteredProjects.length}
+          <div className="mt-12 flex items-center justify-between border-t border-white/5 pt-10">
+            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700">
+              SEQUENCE {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, filteredProjects.length)} OF {filteredProjects.length}
             </p>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <button 
                 onClick={() => paginate(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="p-1.5 rounded-lg border border-white/5 text-zinc-700 hover:text-white disabled:opacity-10 transition-colors"
+                className="w-10 h-10 flex items-center justify-center border border-white/5 text-zinc-700 hover:text-white disabled:opacity-10 transition-all hover:border-white/20"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={18} />
               </button>
               <button 
                 onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="p-1.5 rounded-lg border border-white/5 text-zinc-700 hover:text-white disabled:opacity-10 transition-colors"
+                className="w-10 h-10 flex items-center justify-center border border-white/5 text-zinc-700 hover:text-white disabled:opacity-10 transition-all hover:border-white/20"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={18} />
               </button>
             </div>
           </div>

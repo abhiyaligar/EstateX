@@ -55,7 +55,9 @@ const AppRoutes = () => {
           {/* Public Routes with Main Layout */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/properties" element={<Properties />} />
+            <Route path="/ipo" element={<Properties />} />
+            <Route path="/explore" element={<MarketExplore />} />
+            <Route path="/properties" element={<Navigate to="/ipo" replace />} />
             <Route path="/properties/:id" element={<PropertyDetails />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
