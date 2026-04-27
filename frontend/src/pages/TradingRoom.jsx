@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -30,7 +31,6 @@ import {
   MapPin,
   ChevronRight
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { createChart, ColorType, AreaSeries, HistogramSeries, CandlestickSeries, LineSeries } from 'lightweight-charts';
 import { supabase } from '../utils/supabaseClient';
 
@@ -444,6 +444,7 @@ const ModifyOrderModal = ({ isOpen, onClose, order, onModify }) => {
 const TradingRoom = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   
   // Data State
@@ -494,9 +495,19 @@ const TradingRoom = () => {
         ]);
         setProjects(projectsData);
         setWalletBalance(walletData.balance || 0);
+        
+        // Handle asset selection from URL
+        const params = new URLSearchParams(location.search);
+        const assetId = params.get('assetId');
+        
         if (projectsData.length > 0) {
-          setSelectedProject(projectsData[0]);
-          setCurrentPrice(projectsData[0].market_price || 0);
+          let projectToSelect = projectsData[0];
+          if (assetId) {
+            const found = projectsData.find(p => p.id === assetId);
+            if (found) projectToSelect = found;
+          }
+          setSelectedProject(projectToSelect);
+          setCurrentPrice(projectToSelect.market_price || 0);
         }
       } catch (error) {
         console.error("Initialization failed", error);

@@ -31,20 +31,20 @@ const Home = () => {
       <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden px-6 lg:px-8">
         {/* Local Background - Localized to Home Only */}
         <div className="absolute inset-0 z-0">
-          <LiquidChrome 
-            baseColor={[1.0, 1.0, 1.0]} 
-            speed={0.12} 
-            amplitude={0.6} 
+          <LiquidChrome
+            baseColor={[1.0, 1.0, 1.0]}
+            speed={0.12}
+            amplitude={0.6}
             interactive={true}
           />
         </div>
- 
+
         <div className="mx-auto max-w-5xl text-center space-y-16 relative z-10">
           <div className="inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.4em] text-zinc-500 font-bold mb-4">
             <span className="h-px w-10 bg-white/10"></span>
             System Status: 01 // Wealth Synchronization
           </div>
-          
+
           <h1 className="text-4xl sm:text-7xl md:text-9xl font-bold text-white leading-tight md:leading-[0.9] tracking-tighter uppercase font-heading">
             Architect your <br />
             <span className="italic opacity-20">Attention.</span>
@@ -61,9 +61,9 @@ const Home = () => {
                 Enter the Sanctuary
               </Button>
             </Link>
-            <Button 
-              variant="outline" 
-              size="lg" 
+            <Button
+              variant="outline"
+              size="lg"
               className="px-16 py-8 border-white/10 text-white hover:bg-white/5 rounded-[var(--radius)] text-[10px] font-bold uppercase tracking-[0.2em] transition-all cursor-pointer"
               onClick={() => document.getElementById('methodology')?.scrollIntoView({ behavior: 'smooth' })}
             >

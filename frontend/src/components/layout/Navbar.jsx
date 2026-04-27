@@ -12,27 +12,23 @@ const Navbar = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Properties', path: '/properties' },
-    { name: 'Trade', path: '/trade' },
-    { name: 'About', path: '/about' },
+  // Links for guests (landing page)
+  const landingLinks = [
+    { name: 'Investor', path: '/investor' },
+    { name: 'Builder', path: '/builder' },
+    { name: 'Opportunities', path: '/properties' },
+    { name: 'Contact', path: '/contact' },
   ];
 
+  // Mobile dashboard links
   const dashboardLinks = [
     { name: 'Overview', path: '/dashboard' },
     { name: 'Trade', path: '/trade' },
+    { name: 'Market Explore', path: '/market-explore' },
     { name: 'My Portfolio', path: '/dashboard/portfolio' },
     { name: 'Wallet', path: '/dashboard/wallet' },
     { name: 'KYC Verification', path: '/dashboard/kyc' },
     { name: 'My Profile', path: '/dashboard/profile' },
-    // Role-specific links
-    ...(user?.role === 'builder' || user?.role === 'admin' 
-      ? [{ name: 'Add Property', path: '/dashboard/add-property' }] 
-      : []),
-    ...(user?.role === 'admin' 
-      ? [{ name: 'Admin Portal', path: '/dashboard/admin' }] 
-      : []),
   ];
 
   return (
@@ -51,9 +47,9 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Desktop Navigation */}
+        {/* Desktop Navigation - Conditional Rendering */}
         <div className="hidden md:flex md:items-center md:space-x-12">
-          {navLinks.map((link) => (
+          {!isAuthenticated && landingLinks.map((link) => (
             <Link
               key={link.name}
               to={link.path}
@@ -110,7 +106,7 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-black/95 backdrop-blur-2xl border-b border-white/5">
           <div className="space-y-1 px-4 pb-6 pt-4">
-            {(isAuthenticated ? dashboardLinks : navLinks).map((link) => (
+            {(isAuthenticated ? dashboardLinks : landingLinks).map((link) => (
               <Link
                 key={link.name}
                 to={link.path}

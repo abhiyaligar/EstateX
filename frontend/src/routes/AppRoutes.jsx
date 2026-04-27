@@ -21,6 +21,7 @@ import KYC from '../pages/KYC';
 import Portfolio from '../pages/Portfolio';
 import TradingRoom from '../pages/TradingRoom';
 import AdminPortal from '../pages/AdminPortal';
+import MarketExplore from '../pages/MarketExplore';
 
 import ForgotPassword from '../pages/ForgotPassword';
 import BuilderWallet from '../pages/BuilderWallet';
@@ -67,6 +68,12 @@ const AppRoutes = () => {
           <Route path="/trade" element={
             <ProtectedRoute>
               <TradingRoom />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/market-explore" element={
+            <ProtectedRoute>
+              <MarketExplore />
             </ProtectedRoute>
           } />
 

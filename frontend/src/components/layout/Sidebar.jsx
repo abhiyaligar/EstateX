@@ -11,7 +11,9 @@ import {
   ShieldCheck, 
   Building2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  LayoutGrid,
+  Info
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,7 +22,9 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
   const links = [
     { name: 'Overview', path: '/dashboard', icon: LayoutDashboard, exact: true },
+    { name: 'Properties', path: '/properties', icon: Building2 },
     { name: 'Trade', path: '/trade', icon: ArrowLeftRight },
+    { name: 'Market Explore', path: '/market-explore', icon: LayoutGrid },
     { name: 'My Portfolio', path: '/dashboard/portfolio', icon: Home },
     { name: user?.role === 'builder' ? 'Investor Wallet' : 'Wallet', path: '/dashboard/wallet', icon: Wallet },
     ...(user?.role === 'builder' 
@@ -34,6 +38,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
           { name: 'Add Property', path: '/dashboard/add-property', icon: PlusCircle }
         ] 
       : []),
+    { name: 'About', path: '/about', icon: Info },
     { name: 'Settings', path: '/dashboard/settings', icon: Settings },
     ...(user?.role === 'admin' 
       ? [{ name: 'Admin Portal', path: '/admin', icon: ShieldCheck }] 
@@ -100,10 +105,10 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         <NavLink
             to="/"
             className={`group flex w-full items-center ${isCollapsed ? 'justify-center' : 'px-4'} py-3 text-[10px] font-bold uppercase tracking-widest text-white/20 hover:text-white transition-colors`}
-            title={isCollapsed ? 'Back to site' : ''}
+            title={isCollapsed ? 'Home' : ''}
           >
             <Home className={`h-4 w-4 text-white/10 group-hover:text-white transition-colors ${!isCollapsed ? 'mr-4' : ''}`} />
-            {!isCollapsed && <span>Back to site</span>}
+            {!isCollapsed && <span>Home</span>}
         </NavLink>
       </div>
     </aside>
