@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { Loader } from '../components/ui/Loader';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -46,10 +47,9 @@ const AuthCallback = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] flex flex-col items-center justify-center text-white">
-      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p className="text-xl font-medium text-gray-300">{status}</p>
-      <p className="text-sm text-gray-500 mt-2">Please do not close this window.</p>
+    <div className="min-h-screen bg-[#0a0a0b] flex flex-col items-center justify-center text-white p-4">
+      <Loader size={48} text={status} className="mb-2" />
+      <p className="text-sm text-gray-500 mt-4">Please do not close this window.</p>
     </div>
   );
 };

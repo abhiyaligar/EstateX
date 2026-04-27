@@ -20,6 +20,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import builderService from '../services/builderService';
 import { useAuth } from '../context/AuthContext';
+import { Loader } from '../components/ui/Loader';
 
 const BuilderVerification = () => {
     const { user } = useAuth();
@@ -120,7 +121,7 @@ const BuilderVerification = () => {
 
     if (fetching) return (
         <div className="min-h-screen flex items-center justify-center bg-[#050505]">
-            <div className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full animate-spin"></div>
+            <Loader size={48} text="Initializing Accreditation Protocols..." />
         </div>
     );
 

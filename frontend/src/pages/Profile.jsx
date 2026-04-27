@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, ShieldCheck, Clock, MapPin, Briefcase, Building2, CreditCard, FileText, Smartphone, Globe, Landmark, TrendingUp, Loader2 } from 'lucide-react';
+import { User, Mail, ShieldCheck, Clock, MapPin, Briefcase, Building2, CreditCard, FileText, Smartphone, Globe, Landmark, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import userService from '../services/userService';
+import { userService } from '../services/userService';
+import { Loader } from '../components/ui/Loader';
 
 const Profile = () => {
   const { user: authUser } = useAuth();
@@ -29,10 +30,7 @@ const Profile = () => {
   if (loading) {
      return (
        <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
-          <div className="flex flex-col items-center gap-6">
-             <Loader2 size={32} className="text-[#D4AF37] animate-spin" />
-             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Retrieving Sovereign Identity...</p>
-          </div>
+          <Loader size={48} text="Synchronizing Identity Node..." />
        </div>
      );
   }

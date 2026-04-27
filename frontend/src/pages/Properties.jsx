@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, Search, Filter, MapPin, Zap, ArrowRight, Loader2, Clock, ShieldCheck, TrendingUp, Info } from 'lucide-react';
 import propertyService from '../services/propertyService';
+import { Loader } from '../components/ui/Loader';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 
@@ -33,10 +34,7 @@ const IPOCenter = () => {
   if (loading) {
      return (
        <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
-          <div className="flex flex-col items-center gap-6">
-             <Loader2 size={32} className="text-[#D4AF37] animate-spin" />
-             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Synchronizing Primary Market Nodes...</p>
-          </div>
+          <Loader size={48} text="Synchronizing Asset Node..." />
        </div>
      );
   }

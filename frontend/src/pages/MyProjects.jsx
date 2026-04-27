@@ -20,6 +20,7 @@ import { Button } from '../components/ui/Button';
 import propertyService from '../services/propertyService';
 import revenueService from '../services/revenueService';
 import { Input } from '../components/ui/Input';
+import { Loader } from '../components/ui/Loader';
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <Card className="relative overflow-hidden group">
@@ -108,11 +109,8 @@ const MyProjects = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-white/10 border-t-white animate-spin rounded-full" />
-          <p className="text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold">Initializing Assets...</p>
-        </div>
+      <div className="h-screen bg-black flex items-center justify-center">
+        <Loader size={48} text="Synchronizing Project Nodes..." />
       </div>
     );
   }

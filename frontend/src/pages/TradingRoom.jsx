@@ -44,6 +44,7 @@ import governanceService from '../services/governanceService';
 import { walletService } from '../services/walletService';
 import Toast from '../components/ui/Toast';
 import { Modal } from '../components/ui/Modal';
+import { Loader } from '../components/ui/Loader';
 
 // --- Sub-Components ---
 
@@ -907,12 +908,9 @@ const TradingRoom = () => {
 
   if (loading && projects.length === 0) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="space-y-4 text-center">
-          <div className="w-12 h-12 border-2 border-white/5 border-t-white animate-spin mx-auto rounded-full" />
-          <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-500 font-bold">Synchronizing Node...</p>
+        <div className="flex-1 flex flex-col items-center justify-center h-full bg-[#080808]">
+          <Loader size={48} text="Synchronizing Order Book Nodes..." />
         </div>
-      </div>
     );
   }
 

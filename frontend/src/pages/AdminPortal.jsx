@@ -39,6 +39,7 @@ import AnalyticsTab from './Admin/tabs/AnalyticsTab';
 import GovernanceTab from './Admin/tabs/GovernanceTab';
 import UsersTab from './Admin/tabs/UsersTab';
 import SupportTab from './Admin/tabs/SupportTab';
+import { Loader } from '../components/ui/Loader';
 
 
 // Components & Modals
@@ -469,7 +470,7 @@ const AdminPortal = () => {
 
   if (loading && !stats) return (
     <div className="flex items-center justify-center h-screen bg-black">
-      <div className="w-12 h-12 border-t-2 border-primary-500 animate-spin rounded-full" />
+      <Loader size={48} text="Initializing Admin Protocols..." />
     </div>
   );
 

@@ -8,6 +8,7 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import AddBankAccountModal from '../components/profile/AddBankAccountModal';
 import { useAuth } from '../context/AuthContext';
+import { Loader } from '../components/ui/Loader';
 
 const Wallet = () => {
   const { user } = useAuth();
@@ -96,10 +97,7 @@ const Wallet = () => {
   if (loading) {
     return (
       <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
-         <div className="flex flex-col items-center gap-6">
-            <Loader2 size={32} className="text-[#D4AF37] animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Synchronizing Liquidity Nodes...</p>
-         </div>
+         <Loader size={48} text="Synchronizing Liquidity Nodes..." />
       </div>
     );
   }
