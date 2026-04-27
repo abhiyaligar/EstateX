@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { walletService } from '../services/walletService';
 import { userService } from '../services/userService';
-import { Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Plus, Building, Trash2, Clock, Loader2, Minus, Shield, X, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Plus, Building, Trash2, Clock, Loader2, Minus, Shield, X, AlertCircle, CheckCircle2, ArrowRight, Briefcase, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import AddBankAccountModal from '../components/profile/AddBankAccountModal';
+import { useAuth } from '../context/AuthContext';
 
 const Wallet = () => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [walletData, setWalletData] = useState(null);
+  const [builderWalletData, setBuilderWalletData] = useState(null);
   const [bankAccounts, setBankAccounts] = useState([]);
   const [isDepositing, setIsDepositing] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
@@ -19,16 +22,28 @@ const Wallet = () => {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showAddBankModal, setShowAddBankModal] = useState(false);
+  const [activeWalletType, setActiveWalletType] = useState('personal'); // 'personal' or 'builder'
 
   const fetchData = async (silent = false) => {
     try {
       if (!silent) setLoading(true);
-      const [wallet, banks] = await Promise.all([
+      const isBuilder = user?.role === 'builder';
+      
+      const calls = [
         walletService.getWalletContext(),
         userService.getBankAccounts()
-      ]);
-      setWalletData(wallet);
-      setBankAccounts(banks);
+      ];
+      
+      if (isBuilder) {
+        calls.push(walletService.getBuilderWalletContext());
+      }
+
+      const results = await Promise.all(calls);
+      setWalletData(results[0]);
+      setBankAccounts(results[1]);
+      if (isBuilder) {
+        setBuilderWalletData(results[2]);
+      }
     } catch (error) {
       console.error("Failed to fetch wallet data", error);
     } finally {
@@ -38,13 +53,14 @@ const Wallet = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user]);
 
   const handleDeposit = async (e) => {
     e.preventDefault();
     if (!depositAmount || bankAccounts.length === 0) return;
     setIsDepositing(true);
     try {
+      // Deposits always go to personal for now as per system logic
       await walletService.depositFunds(parseFloat(depositAmount), bankAccounts[0].id);
       setDepositAmount('');
       setShowDepositModal(false);
@@ -61,7 +77,12 @@ const Wallet = () => {
     if (!withdrawAmount || bankAccounts.length === 0) return;
     setIsWithdrawing(true);
     try {
-      await walletService.withdrawFunds(parseFloat(withdrawAmount), bankAccounts[0].id);
+      if (activeWalletType === 'builder') {
+        // Builders need OTP - simulated 123456
+        await walletService.withdrawBuilderFunds(parseFloat(withdrawAmount), bankAccounts[0].id, "123456");
+      } else {
+        await walletService.withdrawFunds(parseFloat(withdrawAmount), bankAccounts[0].id);
+      }
       setWithdrawAmount('');
       setShowWithdrawModal(false);
       await fetchData(true);
@@ -77,11 +98,13 @@ const Wallet = () => {
       <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
          <div className="flex flex-col items-center gap-6">
             <Loader2 size={32} className="text-[#D4AF37] animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Synchronizing Liquidity Node...</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Synchronizing Liquidity Nodes...</p>
          </div>
       </div>
     );
   }
+
+  const activeData = activeWalletType === 'builder' ? builderWalletData : walletData;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37]/30 pb-20 px-6 md:px-12 pt-10">
@@ -99,13 +122,13 @@ const Wallet = () => {
                   Sovereign <span className="text-[#D4AF37]">Liquidity</span>
                 </h1>
                 <p className="text-sm md:text-lg text-zinc-500 max-w-2xl leading-relaxed">
-                  Real-time auditing of your liquid capital nodes. Securely deploy or liquidate funds across the verified institutional network.
+                  Dual-node auditing of your capital assets. Manage universal personal funds alongside institutional business liquidity.
                 </p>
              </div>
              
              <div className="flex gap-4">
                 <button 
-                  onClick={() => setShowDepositModal(true)}
+                  onClick={() => { setActiveWalletType('personal'); setShowDepositModal(true); }}
                   className="bg-white text-black px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#D4AF37] transition-all flex items-center gap-3"
                 >
                   <Plus size={14} /> Deposit Capital
@@ -118,6 +141,26 @@ const Wallet = () => {
                 </button>
              </div>
           </div>
+          
+          {/* Node Switcher for Builders */}
+          {user?.role === 'builder' && (
+            <div className="flex gap-8 pt-4">
+               <button 
+                 onClick={() => setActiveWalletType('personal')}
+                 className={`flex items-center gap-3 pb-4 border-b-2 transition-all ${activeWalletType === 'personal' ? 'border-[#D4AF37] text-white' : 'border-transparent text-zinc-600 hover:text-zinc-400'}`}
+               >
+                  <User size={14} />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em]">Personal Node</span>
+               </button>
+               <button 
+                 onClick={() => setActiveWalletType('builder')}
+                 className={`flex items-center gap-3 pb-4 border-b-2 transition-all ${activeWalletType === 'builder' ? 'border-[#D4AF37] text-white' : 'border-transparent text-zinc-600 hover:text-zinc-400'}`}
+               >
+                  <Briefcase size={14} />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em]">Business Node</span>
+               </button>
+            </div>
+          )}
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-20">
@@ -127,13 +170,15 @@ const Wallet = () => {
              <div className="p-8 md:p-12 bg-white/[0.01] border border-white/5 relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all duration-500">
                 <div className="relative z-10 space-y-8">
                    <div className="flex justify-between items-center">
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Liquid Balance Node</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">
+                        {activeWalletType === 'builder' ? 'Institutional Business Balance' : 'Universal Liquid Balance'}
+                      </p>
                       <div className="bg-white/[0.03] p-3 border border-white/5">
                          <Shield size={20} className="text-[#D4AF37]" />
                       </div>
                    </div>
                    <h2 className="text-5xl md:text-8xl font-bold tracking-tighter">
-                     ₹{(walletData?.balance || 0).toLocaleString()}
+                     ₹{(activeData?.balance || 0).toLocaleString()}
                    </h2>
                    <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-[#D4AF37]">
                       <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
@@ -147,14 +192,16 @@ const Wallet = () => {
              {/* Ledger Audit */}
              <div className="space-y-10">
                 <div className="flex justify-between items-center">
-                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Ledger Audit Sequence</h3>
+                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
+                     {activeWalletType === 'builder' ? 'Institutional Ledger Sequence' : 'Universal Ledger Sequence'}
+                   </h3>
                    <div className="flex gap-4 text-[8px] font-black uppercase tracking-widest text-zinc-700">
                       <span>Live Sync Active</span>
                    </div>
                 </div>
                 <div className="space-y-4">
-                   {walletData?.recent_transactions?.length > 0 ? (
-                     walletData.recent_transactions.slice(0, 5).map((tx, i) => (
+                   {activeData?.recent_transactions?.length > 0 ? (
+                     activeData.recent_transactions.slice(0, 5).map((tx, i) => (
                        <motion.div 
                          initial={{ opacity: 0, x: -10 }}
                          animate={{ opacity: 1, x: 0 }}
@@ -276,7 +323,7 @@ const Wallet = () => {
         </form>
       </Modal>
 
-      <Modal isOpen={showWithdrawModal} onClose={() => setShowWithdrawModal(false)} title="Capital Liquidation" subtitle="Withdrawal Sequence">
+      <Modal isOpen={showWithdrawModal} onClose={() => setShowWithdrawModal(false)} title="Capital Liquidation" subtitle={`${activeWalletType === 'builder' ? 'Business' : 'Universal'} Withdrawal Sequence`}>
         <form onSubmit={handleWithdraw} className="space-y-10 py-4">
           <div className="space-y-4">
              <label className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-600">Liquidation Amount (INR)</label>
@@ -289,6 +336,11 @@ const Wallet = () => {
                required
              />
           </div>
+          {activeWalletType === 'builder' && (
+             <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest leading-relaxed">
+               Note: Business withdrawals require standard institutional OTP verification (Simulated: 123456).
+             </p>
+          )}
           <button 
             type="submit" 
             disabled={isWithdrawing || bankAccounts.length === 0}

@@ -1,85 +1,101 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #fafaf9;
-  --color-primary-100: #f5f5f4;
-  --color-primary-200: #e7e5e4;
-  --color-primary-300: #d6d3d1;
-  --color-primary-400: #a8a29e;
-  --color-primary-500: #78716c;
-  --color-primary-600: #57534e;
-  --color-primary-700: #44403c;
-  --color-primary-800: #292524;
-  --color-primary-900: #1c1917;
-  --color-primary-950: #0c0a09;
+  /* Institutional Gold Palette */
+  --color-primary-50: #fdfaf3;
+  --color-primary-100: #f9f1df;
+  --color-primary-200: #f2e0bc;
+  --color-primary-300: #e8ca8e;
+  --color-primary-400: #dbac5d;
+  --color-primary-500: #c5a059; /* Aureate Primary */
+  --color-primary-600: #b58946;
+  --color-primary-700: #976f3a;
+  --color-primary-800: #7a5a33;
+  --color-primary-900: #644a2c;
+  --color-primary-950: #392816;
 
-  --color-secondary-50: #fafaf9;
-  --color-secondary-100: #f5f5f4;
-  --color-secondary-200: #e7e5e4;
-  --color-secondary-300: #d6d3d1;
-  --color-secondary-400: #a8a29e;
-  --color-secondary-500: #78716c;
-  --color-secondary-600: #57534e;
-  --color-secondary-700: #44403c;
-  --color-secondary-800: #292524;
-  --color-secondary-900: #e5e5e5;
-  --color-secondary-950: #ffffff;
+  /* Institutional Accent */
+  --color-accent-gold: #D4AF37;
 
+  /* Typography Node */
   --font-sans: 'Inter', sans-serif;
-  --font-heading: 'Outfit', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
 
-  --color-background: #0a0a0a;
-  --color-foreground: #f5f5f5;
-  --color-card: #141414;
-  --color-card-foreground: #f5f5f5;
-  --color-popover: #0a0a0a;
-  --color-popover-foreground: #f5f5f5;
-  --color-primary: #f5f5f5;
-  --color-primary-foreground: #0a0a0a;
-  --color-secondary: #f5f5f5;
-  --color-secondary-foreground: #0a0a0a;
-  --color-muted: #1f1f1f;
-  --color-muted-foreground: #888888;
-  --color-accent: #cc4433;
-  --color-accent-foreground: #f5f5f5;
-  --color-border: #1a1a1a;
-  --color-input: #111111;
-  --color-ring: #cc4433;
-  --radius: 1.25rem;
+  /* Structural Colors */
+  --color-background: #050505;
+  --color-foreground: #e5e2e1;
+  --color-surface: #0d0d0d;
+  --color-surface-bright: #3a3939;
+  
+  --color-border: rgba(197, 160, 89, 0.2); /* 20% Primary Gold Hairline */
+  --color-input: #0d0d0d;
+  
+  /* Institutional Geometry */
+  --radius: 0px;
 }
 
 @layer base {
   * {
-    border-color: #1a1a1a;
+    border-color: var(--color-border);
+    border-radius: 0px !important;
+    transition-duration: 400ms;
   }
 
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-heading tracking-tight;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight uppercase;
+  }
+
+  /* Aureate Typographic Scale */
+  .text-display {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .text-h1 {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .text-label-caps {
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    @apply uppercase;
   }
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-white/70 backdrop-blur-lg border border-white/20 dark:bg-black/50 dark:border-white/10;
+  /* Institutional "De-boxed" Philosophy */
+  .de-boxed {
+    @apply border-t border-primary-500/20 bg-transparent shadow-none rounded-none;
   }
 
-  .glass-card {
-    @apply bg-white/80 backdrop-blur-md border border-white/40 shadow-xl shadow-primary-500/5 dark:bg-slate-900/80 dark:border-slate-800 dark:shadow-black/50;
+  .structural-hairline {
+    @apply border-t border-primary-500/20 w-full;
   }
 
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-400 dark:to-indigo-400;
+  /* Tonal Layering & Luminescence */
+  .aureate-glow {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.05);
+  }
+
+  .aureate-glow-hover:hover {
+    box-shadow: 0 0 60px rgba(212, 175, 55, 0.1);
   }
 
   .scrollbar-hide::-webkit-scrollbar {
@@ -93,8 +109,8 @@
 
   /* Institutional Scrollbar Architecture */
   ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 2px;
+    height: 2px;
   }
 
   ::-webkit-scrollbar-track {
@@ -102,11 +118,11 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #1a1a1a;
+    background: rgba(197, 160, 89, 0.2);
     border-radius: 0px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #D4AF37;
+    background: #C5A059;
   }
 }

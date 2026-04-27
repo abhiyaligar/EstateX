@@ -99,10 +99,15 @@ const Navbar = () => {
           <Link to="/" className="flex items-center gap-2 group">
             <span className="text-sm md:text-base font-black tracking-[0.4em] uppercase text-[#D4AF37]">EstateX</span>
           </Link>
+          <div className="hidden md:flex items-center gap-12">
+            <Link to="/ipo" className="text-[10px] uppercase tracking-[0.3em] font-black text-zinc-500 hover:text-white transition-all">Properties</Link>
+            <Link to="/explore" className="text-[10px] uppercase tracking-[0.3em] font-black text-zinc-500 hover:text-white transition-all">Investors</Link>
+            <button onClick={() => document.getElementById('methodology')?.scrollIntoView({ behavior: 'smooth' })} className="text-[10px] uppercase tracking-[0.3em] font-black text-zinc-500 hover:text-white transition-all">About</button>
+          </div>
           <div className="flex items-center gap-8">
             <Link to="/login" className="text-[10px] uppercase tracking-widest font-bold text-zinc-500 hover:text-white transition-colors">Log In</Link>
             <Link to="/register">
-              <button className="bg-white text-black px-6 py-2.5 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-zinc-200 transition-colors">Sign Up</button>
+              <button className="border border-white/20 text-white px-8 py-3 text-[9px] font-black uppercase tracking-[0.3em] hover:bg-white/5 transition-all">Get Started</button>
             </Link>
           </div>
         </div>

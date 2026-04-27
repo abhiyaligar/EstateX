@@ -96,7 +96,11 @@ class AdminService:
             (DBUser.first_name + " " + DBUser.last_name).label("full_name")
         ).join(DBUser, KYCRecord.user_id == DBUser.id)
         
-        if status_filter != 'all':
+        if status_filter == 'pending':
+            # Logic: If admin asks for 'pending', we include both 'pending' and 'otp_verified' subjects 
+            # as both require manual review nodes.
+            query = query.filter(KYCRecord.status.in_(['pending', 'otp_verified']))
+        elif status_filter != 'all':
             query = query.filter(KYCRecord.status == status_filter)
         else:
             query = query.filter(KYCRecord.status.in_(['pending', 'otp_verified', 'approved']))

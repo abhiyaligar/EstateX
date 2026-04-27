@@ -5,9 +5,9 @@ export const Card = ({ className, children, noPadding = false, hover = false }) 
   return (
     <div 
       className={cn(
-        "bg-[#141414] border border-white/5 overflow-hidden transition-all duration-500",
-        !noPadding && "p-4 md:p-6 lg:p-10",
-        hover && "hover:border-white/20",
+        "bg-transparent border-t border-[#C5A059]/20 overflow-hidden transition-all duration-700 rounded-none",
+        !noPadding && "p-6 md:p-10 lg:p-16",
+        hover && "hover:border-[#C5A059]/50",
         className
       )}
     >
@@ -17,19 +17,19 @@ export const Card = ({ className, children, noPadding = false, hover = false }) 
 };
 
 export const CardHeader = ({ className, children }) => (
-  <div className={cn("mb-6 flex flex-col space-y-1.5", className)}>
+  <div className={cn("mb-10 flex flex-col space-y-4", className)}>
     {children}
   </div>
 );
 
 export const CardTitle = ({ className, children }) => (
-  <h3 className={cn("text-2xl font-semibold leading-none tracking-tight", className)}>
+  <h3 className={cn("text-h1", className)}>
     {children}
   </h3>
 );
 
 export const CardDescription = ({ className, children }) => (
-  <p className={cn("text-sm text-secondary-500 dark:text-secondary-400", className)}>
+  <p className={cn("text-sm text-zinc-500 font-medium leading-relaxed", className)}>
     {children}
   </p>
 );
@@ -41,7 +41,7 @@ export const CardContent = ({ className, children }) => (
 );
 
 export const CardFooter = ({ className, children }) => (
-  <div className={cn("mt-6 flex items-center p-0", className)}>
+  <div className={cn("mt-10 flex items-center p-0", className)}>
     {children}
   </div>
 );

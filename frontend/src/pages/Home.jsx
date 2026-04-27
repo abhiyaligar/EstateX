@@ -55,21 +55,7 @@ const Home = () => {
             EstateX is the fortress—an adaptive digital environment for institutional-grade growth.
           </p>
 
-          <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8">
-            <Link to="/properties">
-              <Button size="lg" className="px-16 py-8 bg-primary-600 text-white hover:bg-primary-700 rounded-[var(--radius)] text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:scale-105 shadow-2xl shadow-primary-900/20 border-none">
-                Enter the Sanctuary
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              size="lg"
-              className="px-16 py-8 border-white/10 text-white hover:bg-white/5 rounded-[var(--radius)] text-[10px] font-bold uppercase tracking-[0.2em] transition-all cursor-pointer"
-              onClick={() => document.getElementById('methodology')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              How it works
-            </Button>
-          </div>
+          {/* Action Nodes Removed for Minimalist Landing State */}
         </div>
 
         {/* Bottom Credits */}

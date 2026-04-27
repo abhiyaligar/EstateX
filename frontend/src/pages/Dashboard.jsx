@@ -208,7 +208,7 @@ const Dashboard = () => {
                     <button className="hover:text-white transition-colors">ALL</button>
                  </div>
               </div>
-              <div className="relative h-[250px] md:h-[400px] w-full group">
+              <div className="relative h-[250px] md:h-[400px] w-full min-w-0 group">
                 <div className="absolute top-4 right-4 md:right-10 z-20 bg-[#D4AF37] text-black px-2 md:px-3 py-1 md:py-1.5 text-[8px] md:text-[9px] font-black uppercase tracking-widest shadow-2xl">
                    {dashboardData?.portfolio?.length > 0 ? '+14.2% YTD' : '0.0% Delta'}
                 </div>
