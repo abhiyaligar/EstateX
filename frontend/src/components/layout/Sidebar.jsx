@@ -30,7 +30,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     ...(user?.role === 'builder' 
       ? [{ name: 'Builder Wallet', path: '/dashboard/builder-wallet', icon: ShieldCheck }] 
       : []),
-    { name: 'KYC Verification', path: '/dashboard/kyc', icon: ShieldCheck },
     { name: 'My Profile', path: '/dashboard/profile', icon: UserCircle },
     ...(user?.role === 'builder' || user?.role === 'admin' 
       ? [

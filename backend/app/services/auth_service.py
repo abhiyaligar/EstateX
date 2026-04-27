@@ -2,6 +2,8 @@ from fastapi import HTTPException, status
 from app.core.database import supabase
 from app.schemas.auth import UserCreate, UserLogin, Token, User, OAuthSyncRequest
 from app.models.user import User as DBUser
+from app.models.kyc import KYCRecord
+from app.models.builder import Builder
 from sqlalchemy.orm import Session
 from app.models.otp import OTPRecord
 from app.core.database import supabase, supabase_admin
@@ -40,10 +42,36 @@ class AuthService:
                 phone=phone,
                 first_name=first_name,
                 last_name=last_name,
-                role=user_data.role # Apply dynamic role to SQL DB
+                role=user_data.role,
+                investment_preference=user_data.user_metadata.get("investment_preference")
             )
             
             db.add(db_user)
+            db.flush() # Get the ID for relationships
+            
+            # 4. Create KYC Record for Manual Review
+            aadhaar = user_data.user_metadata.get("aadhaar")
+            pan = user_data.user_metadata.get("pan")
+            
+            kyc_record = KYCRecord(
+                user_id=db_user.id,
+                aadhaar_last_4_digits=aadhaar[-4:] if aadhaar and len(aadhaar) >= 4 else None,
+                pan_number=pan,
+                status='pending' # This flags it for Admin manual review
+            )
+            db.add(kyc_record)
+            
+            # 5. Handle Builder Profile if applicable
+            if user_data.role == 'builder':
+                builder_profile = Builder(
+                    id=db_user.id,
+                    company_name=user_data.user_metadata.get("entity_name") or f"{first_name} {last_name}",
+                    business_type=user_data.user_metadata.get("registration_type"),
+                    rera_registration_number=user_data.user_metadata.get("license_number"),
+                    verification_status='pending'
+                )
+                db.add(builder_profile)
+                
             db.commit()
             db.refresh(db_user)
             

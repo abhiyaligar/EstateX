@@ -52,6 +52,7 @@ class User(Base):
     notification_push = Column(Boolean(), default=True)
     language = Column(String(10), default='en')
     timezone = Column(String(50), nullable=True)
+    investment_preference = Column(String(100), nullable=True)
     
     # Timestamps & Metadata
     created_at = Column(DateTime(timezone=True), default=utcnow, index=True)

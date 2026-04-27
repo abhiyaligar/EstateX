@@ -27,7 +27,6 @@ const Navbar = () => {
     { name: 'Market Explore', path: '/market-explore' },
     { name: 'My Portfolio', path: '/dashboard/portfolio' },
     { name: 'Wallet', path: '/dashboard/wallet' },
-    { name: 'KYC Verification', path: '/dashboard/kyc' },
     { name: 'My Profile', path: '/dashboard/profile' },
   ];
 

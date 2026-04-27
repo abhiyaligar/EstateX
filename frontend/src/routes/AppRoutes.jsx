@@ -57,12 +57,14 @@ const AppRoutes = () => {
             <Route path="/" element={<Home />} />
             <Route path="/properties" element={<Properties />} />
             <Route path="/properties/:id" element={<PropertyDetails />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/unauthorized" element={<div className="p-20 text-center">Unauthorized Access</div>} />
           </Route>
+
+          {/* Standalone Auth Routes (They have their own headers) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* Full Screen Protected Routes (No shared layout) */}
           <Route path="/trade" element={
