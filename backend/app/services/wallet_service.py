@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from decimal import Decimal
@@ -80,15 +81,33 @@ class WalletService:
 
     @staticmethod
     def admin_adjust_balance(user_id: str, adjust_data: AdminWalletAdjustmentRequest, db: Session):
-        user = db.query(User).filter(User.id == user_id).with_for_update().first()
+        # Look for user by ID (GUID) or Email
+        user = None
+        
+        # Check if user_id is a valid UUID
+        is_uuid = False
+        try:
+            uuid.UUID(user_id)
+            is_uuid = True
+        except ValueError:
+            is_uuid = False
+
+        if is_uuid:
+            user = db.query(User).filter(User.id == user_id).with_for_update().first()
+            
+        # If not found by ID (or not a UUID), try finding by Email
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+            user = db.query(User).filter(User.email == user_id).with_for_update().first()
+            
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found via GUID or Email")
             
         adjustment_amount = Decimal(str(adjust_data.amount))
         user.wallet_balance += adjustment_amount
         
+        # Use the REAL user.id (GUID) for the transaction record
         trx = WalletTransaction(
-            user_id=user_id,
+            user_id=user.id,
             amount=adjustment_amount,
             transaction_type="admin_adjustment",
             reference_id=adjust_data.reason,

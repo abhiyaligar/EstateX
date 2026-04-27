@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from './Button';
 
-export const Card = ({ className, children, noPadding = false, hover = false }) => {
+export const Card = ({ className, children, noPadding = false, hover = false, ...props }) => {
   return (
     <div 
       className={cn(
@@ -10,38 +10,39 @@ export const Card = ({ className, children, noPadding = false, hover = false }) 
         hover && "hover:border-[#C5A059]/50",
         className
       )}
+      {...props}
     >
       {children}
     </div>
   );
 };
 
-export const CardHeader = ({ className, children }) => (
-  <div className={cn("mb-10 flex flex-col space-y-4", className)}>
+export const CardHeader = ({ className, children, ...props }) => (
+  <div className={cn("mb-10 flex flex-col space-y-4", className)} {...props}>
     {children}
   </div>
 );
 
-export const CardTitle = ({ className, children }) => (
-  <h3 className={cn("text-h1", className)}>
+export const CardTitle = ({ className, children, ...props }) => (
+  <h3 className={cn("text-h1", className)} {...props}>
     {children}
   </h3>
 );
 
-export const CardDescription = ({ className, children }) => (
-  <p className={cn("text-sm text-zinc-500 font-medium leading-relaxed", className)}>
+export const CardDescription = ({ className, children, ...props }) => (
+  <p className={cn("text-sm text-zinc-500 font-medium leading-relaxed", className)} {...props}>
     {children}
   </p>
 );
 
-export const CardContent = ({ className, children }) => (
-  <div className={cn("", className)}>
+export const CardContent = ({ className, children, ...props }) => (
+  <div className={cn("", className)} {...props}>
     {children}
   </div>
 );
 
-export const CardFooter = ({ className, children }) => (
-  <div className={cn("mt-10 flex items-center p-0", className)}>
+export const CardFooter = ({ className, children, ...props }) => (
+  <div className={cn("mt-10 flex items-center p-0", className)} {...props}>
     {children}
   </div>
 );

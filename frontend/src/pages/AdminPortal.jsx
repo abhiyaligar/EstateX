@@ -19,8 +19,10 @@ import {
   Search,
   Settings,
   LogOut,
-  ArrowLeft
+  ArrowLeft,
+  LifeBuoy
 } from 'lucide-react';
+
 import { useAuth } from '../context/AuthContext';
 import adminService from '../services/adminService';
 import propertyService from '../services/propertyService';
@@ -36,6 +38,8 @@ import RevenueTab from './Admin/tabs/RevenueTab';
 import AnalyticsTab from './Admin/tabs/AnalyticsTab';
 import GovernanceTab from './Admin/tabs/GovernanceTab';
 import UsersTab from './Admin/tabs/UsersTab';
+import SupportTab from './Admin/tabs/SupportTab';
+
 
 // Components & Modals
 import ProjectReviewModal from './Admin/components/ProjectReviewModal';
@@ -107,6 +111,7 @@ const AdminPortal = () => {
     { id: 'analytics', label: 'Macro Data', icon: BarChart3 },
     { id: 'governance', label: 'Consensus', icon: Gavel },
     { id: 'users', label: 'User Nodes', icon: Users },
+    { id: 'support', label: 'Support Tickets', icon: LifeBuoy },
   ];
 
   const addToast = useCallback((message, type = 'success') => {
@@ -713,6 +718,8 @@ const AdminPortal = () => {
                 onAdjust={handleWalletAdjust}
               />
             )}
+            {activeTab === 'support' && <SupportTab addToast={addToast} />}
+
           </AnimatePresence>
         </div>
       </main>

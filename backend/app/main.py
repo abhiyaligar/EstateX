@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 try:
-    from app.api.routes import auth, kyc, admin, builders, projects, wallet, exchange, users, analytics, governance, revenue
+    from app.api.routes import auth, kyc, admin, builders, projects, wallet, exchange, users, analytics, governance, revenue, support
 except ImportError as e:
     logging.error(f"IMPORT ERROR: {e}")
     raise e
@@ -47,6 +47,7 @@ app.include_router(exchange.router, prefix=settings.API_V1_STR)
 app.include_router(analytics.router, prefix=settings.API_V1_STR)
 app.include_router(governance.router, prefix=settings.API_V1_STR)
 app.include_router(revenue.router, prefix=settings.API_V1_STR)
+app.include_router(support.router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def read_root():

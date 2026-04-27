@@ -210,8 +210,8 @@ const Wallet = () => {
                          className="flex items-center justify-between p-6 bg-white/[0.01] border border-white/5 hover:bg-white/[0.02] transition-all group"
                        >
                          <div className="flex items-center gap-6">
-                            <div className={`w-10 h-10 flex items-center justify-center border ${tx.transaction_type === 'deposit' ? 'border-green-500/20 text-green-500 bg-green-500/5' : 'border-zinc-800 text-zinc-500 bg-white/5'}`}>
-                               {tx.transaction_type === 'deposit' ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
+                            <div className={`w-10 h-10 flex items-center justify-center border ${Number(tx.amount) >= 0 ? 'border-green-500/20 text-green-500 bg-green-500/5' : 'border-zinc-800 text-zinc-500 bg-white/5'}`}>
+                               {Number(tx.amount) >= 0 ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
                             </div>
                             <div>
                                <p className="text-sm font-bold text-white uppercase tracking-tight mb-1">{tx.transaction_type.replace('_', ' ')}</p>
@@ -220,12 +220,12 @@ const Wallet = () => {
                                </p>
                             </div>
                          </div>
-                         <div className="text-right">
-                            <p className={`text-lg font-black tracking-tighter ${tx.transaction_type === 'deposit' ? 'text-[#D4AF37]' : 'text-white'}`}>
-                               {tx.transaction_type === 'deposit' ? '+' : '-'}₹{tx.amount.toLocaleString()}
+                          <div className="text-right">
+                            <p className={`text-lg font-black tracking-tighter ${Number(tx.amount) >= 0 ? 'text-[#D4AF37]' : 'text-white'}`}>
+                               {Number(tx.amount) >= 0 ? '+' : '-'}₹{Math.abs(Number(tx.amount)).toLocaleString()}
                             </p>
                             <p className="text-[8px] font-black uppercase tracking-widest text-zinc-800">Success</p>
-                         </div>
+                          </div>
                        </motion.div>
                      ))
                    ) : (

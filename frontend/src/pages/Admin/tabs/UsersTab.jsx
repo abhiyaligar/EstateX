@@ -25,8 +25,8 @@ const UsersTab = ({ targetUserId, setTargetUserId, walletAmount, setWalletAmount
 
           <form onSubmit={onAdjust} className="space-y-6">
             <Input 
-              label="User ID" 
-              placeholder="Paste User GUID" 
+              label="Target User (GUID or Email)" 
+              placeholder="Paste User GUID or Email Address" 
               value={targetUserId}
               onChange={(e) => setTargetUserId(e.target.value)}
               icon={Search}
@@ -36,8 +36,11 @@ const UsersTab = ({ targetUserId, setTargetUserId, walletAmount, setWalletAmount
                 label="Amount (INR)" 
                 placeholder="e.g. 5000" 
                 type="number"
-                value={Math.abs(walletAmount)}
-                onChange={(e) => setWalletAmount(parseFloat(e.target.value) * (walletAmount < 0 ? -1 : 1))}
+                value={Math.abs(walletAmount) || ''}
+                onChange={(e) => {
+                  const val = Math.abs(parseFloat(e.target.value) || 0);
+                  setWalletAmount(walletAmount < 0 ? -val : val);
+                }}
               />
               <div className="flex flex-col">
                 <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] font-medium text-white/40">Direction</label>

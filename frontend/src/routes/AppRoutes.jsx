@@ -22,6 +22,8 @@ import Portfolio from '../pages/Portfolio';
 import TradingRoom from '../pages/TradingRoom';
 import AdminPortal from '../pages/AdminPortal';
 import MarketExplore from '../pages/MarketExplore';
+import Help from '../pages/Help';
+
 
 import ForgotPassword from '../pages/ForgotPassword';
 import BuilderWallet from '../pages/BuilderWallet';
@@ -61,6 +63,7 @@ const AppRoutes = () => {
             <Route path="/properties/:id" element={<PropertyDetails />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/help" element={<Help />} />
             <Route path="/unauthorized" element={<div className="p-20 text-center">Unauthorized Access</div>} />
           </Route>
 
