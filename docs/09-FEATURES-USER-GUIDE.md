@@ -1010,6 +1010,34 @@ Admin Dashboard → Reports:
     └── Email to regulators (auto)
 ```
 
+### 4. Support Ticket Management
+```
+Admin Dashboard → Support Tickets:
+├── Global Resolution Terminal:
+│   ├── View a centralized ledger of all investor queries.
+│   ├── Filter by status: Open, In Progress, Resolved.
+│   └── Real-time user context: See the investor's Name and Email directly on the ticket.
+├── Ticket Lifecycle:
+│   ├── Claim: Mark a ticket as 'In Progress' to signify active investigation.
+│   ├── Update: Record internal or external 'Admin Notes' to track resolution steps.
+│   └── Resolve: Mark the query as COMPLETED once the investor's issue is cleared.
+└── Integrated Feedback: Instant Toast notifications confirm every state change.
+```
+
+### 5. Flexible Wallet Overrides
+```
+Admin Dashboard → User Nodes:
+├── Multi-Identifier Lookup:
+│   ├── Search and adjust wallets using either the User's unique **GUID** or their **Email Address**.
+│   └── System auto-validates identifiers to prevent database transaction errors.
+├── Precision Controls:
+│   ├── Explicit 'Credit' and 'Debit' toggles to prevent sign-entry errors.
+│   └── Real-time absolute-value normalization during input.
+└── Immutable Audit Trail:
+    ├── Every adjustment requires a mandatory 'Reason' for compliance tracking.
+    └── All overrides appear instantly in the user's personal transaction ledger.
+```
+
 ---
 
 ## Complete User Workflows
@@ -1058,28 +1086,7 @@ Day 2 onwards - Monitor
 
 ---
 
-## Social Features (In Development 🚧)
 
-EstateX is expanding from a pure investment platform into a vibrant social ecosystem. The following features are currently being implemented:
-
-### 1. Investment Circles
-- Connect with friends and family to pool capital.
-- Private discussion boards for shared investment strategies.
-- Co-ownership dashboards for group investments.
-
-### 2. Community Discussions
-- Project-specific forums for investors to ask questions.
-- Verified builder Q&A sessions.
-- Expert market analysis and community sentiment tracking.
-
-### 3. Investor Reputation
-- Badges for long-term holders and successful exiters.
-- Community-driven trust scores for builders.
-
-> [!NOTE]
-> These features are currently in the database schema and backend implementation phase. Full UI integration is expected in the next major release.
-
----
 
 ### Workflow 2: Builder's Project Launch
 

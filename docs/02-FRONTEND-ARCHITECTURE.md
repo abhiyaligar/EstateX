@@ -432,7 +432,7 @@ RootLayout
 
 #### 2. Composite Components (Molecules)
 - **FormGroup**: Label + Input + Error message
-- **Card**: Container component with header/footer
+- **Card**: Container component with header/footer. Recently updated to support **full prop-spreading**, enabling consistent event handling (e.g., `onClick`) and custom styling across all sub-components (`CardHeader`, `CardContent`, `CardFooter`).
 - **Modal**: Dialog with overlay
 - **Table**: Data table with sorting/filtering
 - **Tabs**: Tabbed interface
@@ -561,11 +561,7 @@ Contexts:
 │   ├── /settings
 │   └── /documents
 
-├── /social/ (Upcoming)
-│   ├── /circles
-│   ├── /discussions
-│   └── /chat
-│
+
 └── /admin/ (Protected, role-based)
     ├── /dashboard
     ├── /users
@@ -574,6 +570,7 @@ Contexts:
     ├── /approvals
     ├── /compliance
     ├── /disputes
+    ├── /support         # Integrated Resolution Terminal for investor queries
     ├── /reporting
     └── /settings
 ```

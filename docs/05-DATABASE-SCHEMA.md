@@ -17,7 +17,7 @@
 9. [Query Optimization](#query-optimization)
 
 > [!NOTE]
-> **Schema Version**: 1.4 — Updated April 25, 2026. Added the High-Performance Market Engine (`daily_candles`), enforced non-negative wallet `CheckConstraints`, and finalized the atomic settlement logic for Revenue Distribution.
+> **Schema Version**: 1.5 — Updated April 27, 2026. Added the **Support Ticket Engine** (`support_tickets`), finalized the atomic settlement logic for Revenue Distribution, and enforced dual-ledger wallet integrity.
 
 ---
 
@@ -700,6 +700,32 @@ CREATE TABLE proposal_votes (
 
 CREATE INDEX idx_votes_proposal ON proposal_votes(proposal_id);
 CREATE INDEX idx_votes_user     ON proposal_votes(user_id);
+```
+
+### 14. support_tickets Table
+
+Integrated support system for resolving investor and builder queries.
+
+```sql
+CREATE TABLE support_tickets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    
+    subject VARCHAR(200) NOT NULL,
+    description TEXT NOT NULL,
+    category VARCHAR(50) NOT NULL, -- technical, financial, account, property
+    
+    status VARCHAR(20) DEFAULT 'open', -- open, in_progress, resolved, closed
+    priority VARCHAR(20) DEFAULT 'medium', -- low, medium, high
+    
+    admin_notes TEXT,
+    
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_support_user_id ON support_tickets(user_id);
+CREATE INDEX idx_support_status ON support_tickets(status);
 ```
 
 > [!NOTE]

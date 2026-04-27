@@ -849,9 +849,9 @@ Remove a macroeconomic data node.
 
 **Response** (200): Success message.
 
-### POST /admin/users/{user_id}/wallet/adjust
+### POST /admin/users/{user_id_or_email}/wallet/adjust
 
-**God Mode**: Directly adjust a user's wallet balance. Use with extreme caution.
+**God Mode**: Directly adjust a user's wallet balance. Use with extreme caution. Now supports both **GUID** and **Email** for the `user_id_or_email` parameter.
 
 **Request**:
 ```json
@@ -1154,6 +1154,57 @@ Admin-only. Close or execute a proposal, recording the winning option.
 
 ---
 
+## Support Endpoints (Admin & Internal)
+
+### POST /support/tickets
+
+Create a new support ticket.
+
+**Request**:
+```json
+{
+  "subject": "Payment Failed",
+  "message": "My payment for BuilderX project was successful but tokens not credited.",
+  "category": "payment"
+}
+```
+
+### GET /support/tickets
+
+List all tickets (Admin only).
+
+**Query Parameters**:
+- `status`: open, in_progress, resolved, closed (default: open)
+
+**Response** (200):
+```json
+[
+  {
+    "id": "uuid-string",
+    "user_id": "uuid-string",
+    "user_name": "John Doe",
+    "user_email": "john@doe.com",
+    "subject": "...",
+    "status": "open",
+    "created_at": "..."
+  }
+]
+```
+
+### PATCH /support/tickets/{id}
+
+Update ticket status or notes.
+
+**Request**:
+```json
+{
+  "status": "in_progress",
+  "admin_notes": "Checking with payment gateway."
+}
+```
+
+---
+
 ## Error Codes
 
 | Code | HTTP Status | Meaning |
@@ -1172,6 +1223,6 @@ Admin-only. Close or execute a proposal, recording the winning option.
 
 ---
 
-**Document Version**: 1.3  
-**Last Updated**: April 25, 2026  
-**Status**: Complete (Revenue Distribution Engine & DAO Governance Update)
+**Document Version**: 1.5  
+**Last Updated**: April 27, 2026  
+**Status**: Complete (Support Ticket Engine & Enhanced Admin Wallet Protocols)

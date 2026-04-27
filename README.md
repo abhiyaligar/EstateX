@@ -69,7 +69,8 @@ EstateX creates a secure, transparent, and technologically advanced crowdfunding
 ✅ **Dual Wallet Architecture**: Strict separation of investor personal funds and builder business ledger  
 ✅ **Strict Compliance**: Manual KYC review policy, RERA validation, SEBI-aligned structure  
 ✅ **Social Authentication**: Google OAuth integration via Supabase  
-✅ **Social Interaction Circles (In Development)**: Investment pooling and community forums  
+✅ ✅ **Support Ticket Management**: Centralized Resolution Terminal for investor queries  
+✅ **Flexible Wallet Overrides**: Multi-criteria (GUID/Email) financial adjustment protocols  
 
 ---
 
@@ -96,8 +97,8 @@ EstateX creates a secure, transparent, and technologically advanced crowdfunding
 - **Revenue Settlement Dashboard**: Approve/reject monthly rental cycle submissions from builders
 - **DAO Governance Management**: Create proposals, configure voting options, and execute consensus results
 - Macro Analytics Management: Global Market Intelligence CRUD suite
-- Dispute resolution dashboard
-- Platform analytics and reporting
+- **Support Ticket Resolution**: Centralized terminal for resolving investor queries with full user context  
+- **Flexible Wallet Overrides**: God-mode financial adjustments with multi-identifier support (GUID/Email)  
 - Regulatory compliance monitoring
 
 ---
@@ -362,6 +363,6 @@ This project is developed as an academic capstone and is protected under intelle
 
 ---
 
-**Version**: 1.5  
-**Last Updated**: April 26, 2026 (21:40)  
-**Status**: Manual KYC Policy, Google OAuth Integration & Social Feature Roadmap Active
+**Version**: 1.6  
+**Last Updated**: April 27, 2026 (19:35)  
+**Status**: Support Ticket Engine & Flexible Admin Wallet Overrides Active

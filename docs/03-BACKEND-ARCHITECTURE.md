@@ -445,7 +445,10 @@ estateX-backend/
 - withdraw_funds(user_id, amount, bank_id) → Transaction
 - builder_withdraw(builder_id, amount, bank_id) → Transaction
 - credit_milestone_payment(builder_id, project_id, amount) → Transaction
+- admin_adjust_balance(user_id_or_email, amount, reason) → Transaction  # Supports GUID or Email lookup
 ```
+> [!IMPORTANT]
+> **Transaction Integrity**: The Wallet Service implements strict UUID validation for all lookups. If a provided identifier is not a valid UUID, the system automatically falls back to an email-based lookup to prevent Postgres transaction abortion due to type mismatches.
 
 #### 8. Payment Service (Gateway)
 ```python
@@ -501,6 +504,14 @@ estateX-backend/
 ```
 > [!NOTE]
 > **Price Sync Logic**: The matching engine atomically updates the `Project.market_value` after every successful execution. This ensures that the global ticker across the platform (headers, search, and detail pages) remains perfectly synchronized with the last traded price in the exchange.
+
+#### 13. Support Service
+```python
+- create_ticket(user_id, data) → SupportTicket
+- get_all_tickets(status_filter) → List[SupportTicketResponse] (Joined with User)
+- update_ticket(ticket_id, data) → SupportTicket
+- resolve_ticket(ticket_id, admin_notes) → SupportTicket
+```
 
 ---
 

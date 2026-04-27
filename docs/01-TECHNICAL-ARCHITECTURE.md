@@ -55,6 +55,7 @@ EstateX employs a **modern, cloud-native, layered architecture** designed for se
 │  • Notification Service                                          │
 │  • Analytics Service                                             │
   • Exchange & Matching Service                                    │
+  • Support & Resolution Service                                   │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
                     ┌──────┴──────┐
@@ -574,6 +575,12 @@ FastAPI Application
 │   ├── In-app notifications
 │   ├── Notification templates
 │   └── Notification scheduling
+│
+├── Support Module
+│   ├── Ticket creation (Investor/Builder)
+│   ├── Resolution Terminal (Admin)
+│   ├── Status & Priority management
+│   └── Relationship-mapped user context
 │
 └── Admin Module
     ├── User management
