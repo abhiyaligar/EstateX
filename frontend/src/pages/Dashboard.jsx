@@ -8,6 +8,25 @@ import { Button } from '../components/ui/Button';
 import { Link } from 'react-router-dom';
 import dashboardService from '../services/dashboardService';
 
+const Sparkline = ({ data, color = "#D4AF37", height = 24 }) => (
+  <div className={`w-full`} style={{ height: `${height}px` }}>
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data}>
+        <Area 
+          type="monotone" 
+          dataKey="pv" 
+          stroke={color} 
+          strokeWidth={1.5} 
+          fill="transparent"
+          dot={false} 
+          isAnimationActive={false}
+        />
+        <YAxis hide domain={['auto', 'auto']} />
+      </AreaChart>
+    </ResponsiveContainer>
+  </div>
+);
+
 const Dashboard = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -25,7 +44,6 @@ const Dashboard = () => {
       setLoading(true);
       const data = await dashboardService.getDashboardData(user?.role === 'builder');
       
-      // Precision Valuation Mapping for Nested Relational Schema
       const mappedPortfolio = (data.portfolio || []).map(item => {
         const project = item.project;
         const marketValue = project?.financial?.market_value || project?.financial?.ipo_price || 1000;
@@ -38,7 +56,8 @@ const Dashboard = () => {
             : 'Digital Ledger',
           image_url: project?.images && project.images.length > 0 
             ? project.images[0] 
-            : 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80'
+            : 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80',
+          mock_sparkline: Array.from({ length: 12 }, (_, i) => ({ name: i, pv: Math.floor(Math.random() * 100) + 50 }))
         };
       });
 
@@ -57,13 +76,27 @@ const Dashboard = () => {
     fetchDashboard();
   }, [user]);
 
+  const totalPortfolioValue = dashboardData?.portfolio?.reduce((acc, p) => acc + (p.current_valuation || 0), 0) || 0;
+
+  // Dynamic Temporal Mapping for Trailing 6 Months
+  const getTrailingMonths = () => {
+    const months = [];
+    const date = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+      months.push(d.toLocaleString('default', { month: 'short' }));
+    }
+    return months;
+  };
+
+  const trailingMonths = getTrailingMonths();
   const chartData = [
-    { name: 'Jan', value: 40000 },
-    { name: 'Feb', value: 48000 },
-    { name: 'Mar', value: 35000 },
-    { name: 'Apr', value: 52000 },
-    { name: 'May', value: 49000 },
-    { name: 'Jun', value: dashboardData?.wallet?.balance || 58000 },
+    { name: trailingMonths[0], value: 40000 },
+    { name: trailingMonths[1], value: 48000 },
+    { name: trailingMonths[2], value: 35000 },
+    { name: trailingMonths[3], value: 52000 },
+    { name: trailingMonths[4], value: 49000 },
+    { name: trailingMonths[5], value: totalPortfolioValue || 58000 },
   ];
 
   const allLedgerEvents = (dashboardData?.wallet?.recent_transactions || []).map(tx => ({
@@ -75,9 +108,7 @@ const Dashboard = () => {
   }));
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(allLedgerEvents.length / itemsPerPage);
   const paginatedEvents = allLedgerEvents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
   const isKYCPending = user?.kyc_status !== 'approved';
 
   if (loading) {
@@ -179,7 +210,7 @@ const Dashboard = () => {
               </div>
               <div className="relative h-[250px] md:h-[400px] w-full group">
                 <div className="absolute top-4 right-4 md:right-10 z-20 bg-[#D4AF37] text-black px-2 md:px-3 py-1 md:py-1.5 text-[8px] md:text-[9px] font-black uppercase tracking-widest shadow-2xl">
-                  {dashboardData?.portfolio?.length > 0 ? '+14.2% YTD' : '0.0% Delta'}
+                   {dashboardData?.portfolio?.length > 0 ? '+14.2% YTD' : '0.0% Delta'}
                 </div>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
@@ -199,66 +230,57 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Portfolio Section - List View Implementation */}
+            {/* Portfolio Section - High Fidelity Row Implementation */}
             <div className="space-y-8 md:space-y-10 pt-4 md:pt-10">
                <div className="flex justify-between items-center">
                   <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Sovereign Bricks Portfolio</h3>
-                  <Link to="/properties" className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-[#D4AF37] hover:underline underline-offset-4">Browse Marketplace</Link>
+                  <Link to="/explore" className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-[#D4AF37] hover:underline underline-offset-4">Browse Marketplace</Link>
                </div>
                {dashboardData?.portfolio?.length > 0 ? (
-                 <div className="space-y-6">
+                 <div className="space-y-3">
                     {dashboardData.portfolio.map((item, i) => (
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
+                        transition={{ delay: i * 0.05 }}
                         key={i} 
-                        className="group flex flex-col md:flex-row gap-6 md:gap-10 p-6 bg-white/[0.01] border border-white/5 hover:border-[#D4AF37]/30 transition-all cursor-pointer"
+                        className="group flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 bg-white/[0.01] border border-white/5 hover:border-[#D4AF37]/30 transition-all cursor-pointer gap-6 md:gap-0"
                       >
-                         {/* Asset Image Node - Fetched from DB */}
-                         <div className="w-full md:w-[200px] aspect-video md:aspect-square overflow-hidden shrink-0 border border-white/5">
-                            <img 
-                              src={item.image_url} 
-                              alt={item.project?.title} 
-                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" 
-                            />
-                         </div>
-                         
-                         {/* Asset Details Node */}
-                         <div className="flex-1 flex flex-col justify-between py-1">
-                            <div className="flex justify-between items-start mb-4">
-                               <div>
-                                  <h4 className="text-xl font-bold tracking-tight mb-1">{item.project?.title || 'Sovereign Asset'}</h4>
-                                  <p className="text-[10px] text-zinc-500 font-medium flex items-center gap-2">
-                                    <MapPin size={10} /> {item.display_location}
-                                  </p>
-                               </div>
-                               <div className="bg-[#D4AF37]/10 px-3 py-1 text-[8px] font-black uppercase tracking-widest text-[#D4AF37] border border-[#D4AF37]/20">
-                                  {item.project?.category || 'REAL ESTATE'}
-                               </div>
+                         <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0">
+                            {/* Small Square Asset Node */}
+                            <div className="w-12 h-12 md:w-16 md:h-16 shrink-0 bg-[#0c0c0c] border border-white/10 overflow-hidden">
+                               <img src={item.image_url} alt={item.project?.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
                             </div>
                             
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-6 border-t border-white/5">
-                               <div>
-                                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-1">Quantity</p>
-                                  <p className="text-sm font-bold">{item.quantity} Bricks</p>
+                            <div className="min-w-0 flex-1 lg:flex lg:items-center lg:gap-20">
+                               <div className="min-w-0 md:min-w-[200px] lg:min-w-[250px]">
+                                  <h4 className="text-sm md:text-base font-bold text-white group-hover:text-[#D4AF37] transition-colors truncate uppercase tracking-tight">{item.project?.title || 'Sovereign Asset'}</h4>
+                                  <p className="text-[9px] text-zinc-600 truncate uppercase tracking-widest font-black mt-0.5 flex items-center gap-2">
+                                     <MapPin size={9} className="text-zinc-800" /> {item.display_location}
+                                  </p>
                                </div>
-                               <div>
-                                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-1">Equity Value</p>
-                                  <p className="text-sm font-bold text-[#D4AF37]">₹{item.current_valuation?.toLocaleString()}</p>
-                               </div>
-                               <div>
-                                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-1">Avg Cost</p>
-                                  <p className="text-sm font-bold">₹{(item.total_cost_basis / (item.quantity || 1)).toLocaleString()}</p>
-                               </div>
-                               <div>
-                                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-1">Yield Stake</p>
-                                  <div className="flex items-center gap-2">
-                                     <div className="flex-1 h-1 bg-white/5 overflow-hidden"><div className="h-full bg-green-500 w-full" /></div>
-                                     <span className="text-[10px] font-bold">100%</span>
+
+                               <div className="flex items-center justify-between md:justify-start gap-10 md:gap-20 flex-1 mt-2 md:mt-0">
+                                  <div className="md:text-right min-w-[80px] md:min-w-[100px]">
+                                     <p className="text-base md:text-xl font-bold font-mono tracking-tighter">₹{(item.current_valuation || 0).toLocaleString()}</p>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-[9px] md:text-[10px] font-black text-green-500">
+                                     <ArrowUpRight size={10} className="md:size-3" />
+                                     <span>+1.24%</span>
+                                  </div>
+                                  <div className="hidden lg:block flex-1 max-w-[150px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                     <Sparkline data={item.mock_sparkline} />
                                   </div>
                                </div>
                             </div>
+                         </div>
+                         
+                         <div className="shrink-0 w-full md:w-auto">
+                            <Link to={`/properties/${item.project?.id}`} className="block">
+                               <button className="w-full md:w-auto px-6 py-3 md:py-2 bg-white text-black text-[9px] font-black uppercase tracking-[0.2em] hover:bg-[#D4AF37] transition-all">
+                                  Audit Node
+                               </button>
+                            </Link>
                          </div>
                       </motion.div>
                     ))}
