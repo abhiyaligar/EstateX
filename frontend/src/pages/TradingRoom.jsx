@@ -568,7 +568,7 @@ const TradingRoom = () => {
         if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
         refreshTimerRef.current = setTimeout(() => {
             refreshLiveData();
-        }, 500);
+        }, 50);
     };
 
     const tradeChannel = supabase
