@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { supabase } from '../utils/supabaseClient';
 
 // Update with backend URL or use environment variable
 const getBaseUrl = () => {
@@ -79,6 +80,9 @@ api.interceptors.response.use(
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
+        
+        try { await supabase.auth.signOut(); } catch (e) {}
+
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
@@ -108,6 +112,9 @@ api.interceptors.response.use(
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
+        
+        try { await supabase.auth.signOut(); } catch (e) {}
+
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
