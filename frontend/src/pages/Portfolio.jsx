@@ -105,7 +105,7 @@ const Portfolio = () => {
                    <h3 className="text-sm font-bold uppercase tracking-wider text-secondary-900 dark:text-white">Exposure by City</h3>
                 </div>
                 <div className="h-[250px] p-4">
-                   <ResponsiveContainer width="100%" height="100%">
+                   <ResponsiveContainer width="99%" height="99%" minWidth={1} minHeight={1}>
                       <PieChart>
                          <Pie
                            data={cityAllocation}
@@ -131,7 +131,7 @@ const Portfolio = () => {
                    <h3 className="text-sm font-bold uppercase tracking-wider text-secondary-900 dark:text-white">Exposure by Property Type</h3>
                 </div>
                 <div className="h-[250px] p-4">
-                   <ResponsiveContainer width="100%" height="100%">
+                   <ResponsiveContainer width="99%" height="99%" minWidth={1} minHeight={1}>
                       <PieChart>
                          <Pie
                            data={typeAllocation}

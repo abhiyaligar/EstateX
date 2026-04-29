@@ -119,11 +119,7 @@ const Navbar = () => {
     <nav className="sticky top-0 z-[60] w-full border-b border-white/5 bg-[#0a0a0a]/95 backdrop-blur-xl h-16 md:h-20">
       <div className="h-full flex items-center justify-between px-6 md:px-12">
         <div className="flex items-center gap-6 md:gap-12">
-          <Link to="/dashboard" className="flex items-center gap-2"><span className="text-sm md:text-base font-black tracking-[0.4em] uppercase text-[#D4AF37]">EstateX</span></Link>
-          <div className="hidden lg:flex items-center gap-3">
-             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700">|</span>
-             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Sovereign Node</span>
-          </div>
+          <Link to="/" className="flex items-center gap-2"><span className="text-sm md:text-base font-black tracking-[0.4em] uppercase text-[#D4AF37]">EstateX</span></Link>
         </div>
 
         <div className="flex items-center gap-4 md:gap-12">
@@ -190,7 +186,7 @@ const Navbar = () => {
         {isOpen && (
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed inset-0 z-[999] bg-black flex flex-col p-8 lg:hidden overflow-y-auto h-screen w-screen">
              <div className="flex justify-between items-center mb-16 pt-2">
-                <span className="text-xs font-black tracking-[0.4em] uppercase text-[#D4AF37]">EstateX</span>
+                <Link to="/" onClick={toggleMenu} className="text-xs font-black tracking-[0.4em] uppercase text-[#D4AF37] block">EstateX</Link>
                 <button onClick={toggleMenu} className="p-2 text-zinc-400 hover:text-white transition-colors"><X size={24} strokeWidth={3} /></button>
              </div>
              <div className="flex-1 flex flex-col justify-center space-y-8">
