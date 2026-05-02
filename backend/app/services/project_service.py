@@ -90,16 +90,34 @@ class ProjectService:
 
     @staticmethod
     def list_projects(db: Session, status_filter: str = 'active', builder_id: Optional[UUID] = None) -> List[Project]:
-        query = db.query(Project)
+        from sqlalchemy.orm import joinedload, selectinload
+        
+        # Optimize with Eager Loading to solve N+1 problem
+        # joinedload fetches the 1-to-1 Builder data in the SAME query
+        # selectinload fetches the MacroAnalytics data in one efficient second query
+        query = db.query(Project).options(
+            joinedload(Project.builder),
+            selectinload(Project.macro_analytics)
+        )
+        
         if status_filter != 'all':
             query = query.filter(Project.status == status_filter)
         if builder_id:
             query = query.filter(Project.builder_id == builder_id)
+            
         return query.order_by(Project.created_at.desc()).all()
 
     @staticmethod
     def get_project_details(project_id: str, db: Session) -> Project:
-        project = db.query(Project).filter(Project.id == project_id).first()
+        from sqlalchemy.orm import joinedload, selectinload
+        
+        # Fetch everything in one trip for the detail view
+        project = db.query(Project).options(
+            joinedload(Project.builder),
+            joinedload(Project.macro_analytics),
+            selectinload(Project.milestones)
+        ).filter(Project.id == project_id).first()
+        
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
         return project

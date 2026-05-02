@@ -65,9 +65,20 @@ def get_investor_holdings(
     """
     Displays the user's legally backed Equity (Bricks) inside various Real Estate Projects!
     """
+    from sqlalchemy.orm import joinedload, selectinload
+    from app.models.project import Project
+    
     # Ensure string ID from middleware is cast to UUID for the query
     uid = UUID(str(current_user.id))
-    results = db.query(BrickHolding).filter(BrickHolding.user_id == uid).all()
+    
+    # Deep Eager Loading to solve nested N+1 issues
+    # We fetch the Holding, the Project it belongs to, and that project's Builder/Analytics
+    # all in ONE trip to the database.
+    results = db.query(BrickHolding).options(
+        joinedload(BrickHolding.project).joinedload(Project.builder),
+        joinedload(BrickHolding.project).selectinload(Project.macro_analytics)
+    ).filter(BrickHolding.user_id == uid).all()
+    
     return results
 
 @router.get("/orders", response_model=List[OrderResponse])
