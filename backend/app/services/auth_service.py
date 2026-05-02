@@ -105,13 +105,54 @@ class AuthService:
             )
 
     @staticmethod
-    def login_user(user_data: UserLogin) -> Token:
+    def login_user(user_data: UserLogin, db: Session) -> Token:
         try:
             res = supabase.auth.sign_in_with_password({
                 "email": user_data.email,
                 "password": user_data.password
             })
             if res.session:
+                # ─── AUTO-SYNC CHECK ───
+                # Ensure user exists in our local PostgreSQL DB
+                supabase_user = res.user
+                db_user = db.query(DBUser).filter(DBUser.id == supabase_user.id).first()
+                
+                if not db_user:
+                    print(f"DEBUG: Syncing missing user {user_data.email} to PostgreSQL on login.")
+                    user_metadata = supabase_user.user_metadata or {}
+                    
+                    # Create the local user record
+                    db_user = DBUser(
+                        id=supabase_user.id,
+                        email=user_data.email,
+                        phone=user_metadata.get("phone"),
+                        first_name=user_metadata.get("first_name"),
+                        last_name=user_metadata.get("last_name"),
+                        role=user_metadata.get("role", "investor"),
+                        investment_preference=user_metadata.get("investment_preference")
+                    )
+                    db.add(db_user)
+                    
+                    # Create a default KYC record if missing
+                    kyc_record = KYCRecord(
+                        user_id=db_user.id,
+                        status='pending'
+                    )
+                    db.add(kyc_record)
+                    
+                    # Handle builder profile if role matches
+                    if user_metadata.get("role") == 'builder':
+                        builder_profile = Builder(
+                            id=db_user.id,
+                            company_name=user_metadata.get("entity_name") or f"{user_metadata.get('first_name')} {user_metadata.get('last_name')}",
+                            business_type=user_metadata.get("registration_type"),
+                            rera_registration_number=user_metadata.get("license_number"),
+                            verification_status='pending'
+                        )
+                        db.add(builder_profile)
+                    
+                    db.commit()
+
                 return Token(
                     access_token=res.session.access_token,
                     refresh_token=res.session.refresh_token,
@@ -122,6 +163,7 @@ class AuthService:
                 detail="Invalid credentials"
             )
         except Exception as e:
+            db.rollback()
             error_detail = getattr(e, 'message', str(e))
             status_code = getattr(e, 'status', status.HTTP_401_UNAUTHORIZED)
             if "Invalid credentials" in error_detail or "Invalid login credentials" in error_detail:
@@ -339,30 +381,40 @@ class AuthService:
     @staticmethod
     def verify_login_otp(email: str, otp_code: str, db: Session) -> Token:
         from app.services.otp_service import OTPService
-        # 1. Verify the local OTP
+        # 1. Verify the local OTP (our 6-digit custom code)
         OTPService.verify_otp(email, otp_code, purpose="login", db=db)
         
-        # 2. Secure Bridge: Sign the user into Supabase
-        # We'll set a temporary secure random password to generate a session
-        import secrets
-        import string
-        temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
-        
+        # 2. Secure Bridge: Sign the user into Supabase WITHOUT changing their password
+        # We use the Admin API to generate a one-time login link/hash
         user = db.query(DBUser).filter(DBUser.email == email).first()
         if not user:
             raise HTTPException(status_code=404, detail="User records synchronized incorrectly.")
 
         try:
-            # Force update password via admin API
-            supabase_admin.auth.admin.update_user_by_id(
-                str(user.id),
-                {"password": temp_password}
-            )
+            # Generate a magic link hash via Admin API (Non-destructive)
+            # This doesn't send an email because we just want the hash
+            link_data = supabase_admin.auth.admin.generate_link({
+                "type": "magiclink",
+                "email": email
+            })
             
-            # Sign in with the temporary password
-            res = supabase.auth.sign_in_with_password({
-                "email": email,
-                "password": temp_password
+            if not link_data or not hasattr(link_data, 'properties') or not link_data.properties.get('hashed_token'):
+                 # Fallback/Retry logic if generate_link structure differs
+                 # Some versions of the SDK return it differently
+                 if hasattr(link_data, 'hashed_token'):
+                     token_hash = link_data.hashed_token
+                 else:
+                     token_hash = getattr(link_data, 'token_hash', None)
+                 
+                 if not token_hash:
+                     raise Exception("Could not extract token hash from Supabase")
+            else:
+                token_hash = link_data.properties['hashed_token']
+            
+            # 3. Use the hash to get a real session
+            res = supabase.auth.verify_otp({
+                "token_hash": token_hash,
+                "type": "magiclink"
             })
             
             if res.session:
@@ -374,6 +426,8 @@ class AuthService:
             
             raise HTTPException(status_code=401, detail="Authentication failed after OTP verification.")
         except Exception as e:
+            print(f"DEBUG: OTP Bridge Error: {str(e)}")
+            # If magiclink fails, we could fallback to the old way, but better to fix the SDK usage
             raise HTTPException(status_code=500, detail=f"Failed to generate secure session: {str(e)}")
 
     @staticmethod

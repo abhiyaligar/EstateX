@@ -22,11 +22,11 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     )
 
 @router.post("/login", response_model=Token)
-def login(user_data: UserLogin):
+def login(user_data: UserLogin, db: Session = Depends(get_db)):
     """
     Login an existing user and get a JWT token.
     """
-    return AuthService.login_user(user_data)
+    return AuthService.login_user(user_data, db)
 
 @router.post("/otp/send")
 def send_otp(data: AuthOtpSendRequest):

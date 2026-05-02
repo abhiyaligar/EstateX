@@ -24,6 +24,20 @@ export const userService = {
   removeBankAccount: async (bankId) => {
     const response = await api.delete(`/users/bank-accounts/${bankId}`);
     return response.data;
+  },
+
+  requestPasswordReset: async (email) => {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  resetPassword: async (email, otp, newPassword) => {
+    const response = await api.post('/auth/reset-password', { 
+      email, 
+      otp, 
+      new_password: newPassword 
+    });
+    return response.data;
   }
 };
 
