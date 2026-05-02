@@ -398,18 +398,19 @@ class AuthService:
                 "email": email
             })
             
-            if not link_data or not hasattr(link_data, 'properties') or not link_data.properties.get('hashed_token'):
-                 # Fallback/Retry logic if generate_link structure differs
-                 # Some versions of the SDK return it differently
-                 if hasattr(link_data, 'hashed_token'):
-                     token_hash = link_data.hashed_token
-                 else:
-                     token_hash = getattr(link_data, 'token_hash', None)
-                 
-                 if not token_hash:
-                     raise Exception("Could not extract token hash from Supabase")
-            else:
-                token_hash = link_data.properties['hashed_token']
+            # The SDK returns a GenerateLinkResponse object. We need the hashed_token.
+            token_hash = getattr(link_data, 'hashed_token', None)
+            
+            if not token_hash:
+                # Some versions might put it in a properties dict or nested object
+                properties = getattr(link_data, 'properties', {})
+                if isinstance(properties, dict):
+                    token_hash = properties.get('hashed_token')
+                else:
+                    token_hash = getattr(properties, 'hashed_token', None)
+
+            if not token_hash:
+                raise Exception("Could not extract token hash from Supabase response.")
             
             # 3. Use the hash to get a real session
             res = supabase.auth.verify_otp({
