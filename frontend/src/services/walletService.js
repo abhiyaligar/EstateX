@@ -11,8 +11,13 @@ export const walletService = {
     return response.data;
   },
 
-  withdrawFunds: async (amount, bank_id) => {
-    const response = await api.post('/wallet/withdraw', { amount, bank_id });
+  initiateWithdrawal: async (amount, bank_id) => {
+    const response = await api.post('/wallet/withdraw/init', { amount, bank_id });
+    return response.data;
+  },
+
+  verifyWithdrawal: async (otp_code) => {
+    const response = await api.post('/wallet/withdraw/verify', { otp_code });
     return response.data;
   },
   
@@ -21,8 +26,13 @@ export const walletService = {
     return response.data;
   },
 
-  withdrawBuilderFunds: async (amount, bank_id, otp) => {
-    const response = await api.post('/wallet/builder/withdraw', { amount, bank_id, reference_id: otp });
+  initiateBuilderWithdrawal: async (amount, bank_id) => {
+    const response = await api.post('/wallet/builder/withdraw/init', { amount, bank_id });
+    return response.data;
+  },
+
+  verifyBuilderWithdrawal: async (otp_code) => {
+    const response = await api.post('/wallet/builder/withdraw/verify', { otp_code });
     return response.data;
   }
 };

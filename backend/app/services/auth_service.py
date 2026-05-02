@@ -75,15 +75,33 @@ class AuthService:
             db.commit()
             db.refresh(db_user)
             
-            return supabase_user
+            # Trigger local OTP generation for registration verification
+            from app.services.otp_service import OTPService
+            OTPService.generate_and_send_otp(email=user_data.email, purpose="signup", db=db)
             
+            return supabase_user
         except Exception as e:
             db.rollback()
-            error_detail = getattr(e, 'message', str(e))
-            status_code = getattr(e, 'status', status.HTTP_400_BAD_REQUEST)
+            # Capture the specific error from Supabase if available
+            error_msg = str(e)
+            if hasattr(e, 'message'):
+                error_msg = e.message
+            
+            print(f"DEBUG: Supabase Registration Error: {error_msg}")
+            
+            # Surface a more descriptive error to the frontend
+            if "User already registered" in error_msg:
+                raise HTTPException(status_code=400, detail="This email address is already registered.")
+            
+            if "users_phone_key" in error_msg:
+                raise HTTPException(status_code=400, detail="This phone number is already registered.")
+            
+            if "duplicate key value" in error_msg:
+                raise HTTPException(status_code=400, detail="Record already exists (Email or Phone).")
+
             raise HTTPException(
-                status_code=status_code,
-                detail=error_detail
+                status_code=getattr(e, 'status', 400),
+                detail=f"Registration Error: {error_msg}"
             )
 
     @staticmethod
@@ -114,6 +132,100 @@ class AuthService:
             )
 
     @staticmethod
+    def send_auth_otp(email: str, user_metadata: dict = None):
+        try:
+            options = {}
+            if user_metadata:
+                options["data"] = user_metadata
+                
+            # supabase.auth.sign_in_with_otp sends a magic link or OTP depending on Supabase settings
+            res = supabase.auth.sign_in_with_otp({
+                "email": email,
+                "options": options
+            })
+            return True
+        except Exception as e:
+            error_detail = getattr(e, 'message', str(e))
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_detail
+            )
+
+    @staticmethod
+    def verify_auth_otp(email: str, otp_code: str, otp_type: str, db: Session) -> Token:
+        try:
+            res = supabase.auth.verify_otp({
+                "email": email,
+                "token": otp_code,
+                "type": otp_type
+            })
+            
+            if not res.session:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid or expired OTP"
+                )
+                
+            supabase_user = res.user
+            
+            # Sync to local DB if it's a new user
+            db_user = db.query(DBUser).filter(DBUser.id == supabase_user.id).first()
+            if not db_user:
+                user_metadata = supabase_user.user_metadata or {}
+                first_name = user_metadata.get("first_name")
+                last_name = user_metadata.get("last_name")
+                phone = user_metadata.get("phone")
+                role = user_metadata.get("role", "investor")
+                
+                db_user = DBUser(
+                    id=supabase_user.id,
+                    email=email,
+                    phone=phone,
+                    first_name=first_name,
+                    last_name=last_name,
+                    role=role,
+                    investment_preference=user_metadata.get("investment_preference")
+                )
+                db.add(db_user)
+                db.flush()
+                
+                aadhaar = user_metadata.get("aadhaar")
+                pan = user_metadata.get("pan")
+                kyc_record = KYCRecord(
+                    user_id=db_user.id,
+                    aadhaar_last_4_digits=aadhaar[-4:] if aadhaar and len(aadhaar) >= 4 else None,
+                    pan_number=pan,
+                    status='pending'
+                )
+                db.add(kyc_record)
+                
+                if role == 'builder':
+                    builder_profile = Builder(
+                        id=db_user.id,
+                        company_name=user_metadata.get("entity_name") or f"{first_name} {last_name}",
+                        business_type=user_metadata.get("registration_type"),
+                        rera_registration_number=user_metadata.get("license_number"),
+                        verification_status='pending'
+                    )
+                    db.add(builder_profile)
+                    
+                db.commit()
+
+            return Token(
+                access_token=res.session.access_token,
+                refresh_token=res.session.refresh_token,
+                expires_in=res.session.expires_in
+            )
+            
+        except Exception as e:
+            db.rollback()
+            error_detail = getattr(e, 'message', str(e))
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=error_detail
+            )
+
+    @staticmethod
     def refresh_user_session(refresh_token: str) -> Token:
         try:
             res = supabase.auth.refresh_session(refresh_token)
@@ -136,26 +248,14 @@ class AuthService:
 
     @staticmethod
     def forgot_password(email: str, db: Session) -> str:
+        from app.services.otp_service import OTPService
         # Check if user exists
         user = db.query(DBUser).filter(DBUser.email == email).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
             
-        # Generate 6 digit OTP
-        otp_code = str(random.randint(100000, 999999))
-        
-        # Invalidate old unused OTPs
-        db.query(OTPRecord).filter(OTPRecord.email == email, OTPRecord.is_used == False).update({"is_used": True})
-        
-        # Create new OTP record valid for 10 minutes
-        expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
-        otp_record = OTPRecord(email=email, otp_code=otp_code, expires_at=expires_at)
-        
-        db.add(otp_record)
-        db.commit()
-        
-        # Return the generated OTP (since we are not sending emails yet)
-        return otp_code
+        OTPService.generate_and_send_otp(email, purpose="forgot_password", db=db)
+        return "OTP sent successfully"
 
     @staticmethod
     def reset_password(email: str, otp: str, new_password: str, db: Session):
@@ -165,16 +265,9 @@ class AuthService:
                 detail="Server configuration error: SUPABASE_SERVICE_KEY is required to reset passwords."
             )
             
+        from app.services.otp_service import OTPService
         # Verify OTP
-        otp_record = db.query(OTPRecord).filter(
-            OTPRecord.email == email,
-            OTPRecord.otp_code == otp,
-            OTPRecord.is_used == False,
-            OTPRecord.expires_at > datetime.datetime.utcnow()
-        ).first()
-        
-        if not otp_record:
-            raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+        OTPService.verify_otp(email, otp, purpose="forgot_password", db=db)
             
         user = db.query(DBUser).filter(DBUser.email == email).first()
         if not user:
@@ -186,14 +279,8 @@ class AuthService:
                 str(user.id),
                 {"password": new_password}
             )
-            
-            # Mark OTP as used
-            otp_record.is_used = True
-            db.commit()
-            
             return True
         except Exception as e:
-            db.rollback()
             raise HTTPException(status_code=500, detail=f"Failed to reset password: {str(e)}")
     @staticmethod
     def sync_oauth_user(data: OAuthSyncRequest, db: Session):
@@ -230,3 +317,76 @@ class AuthService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to synchronize OAuth user: {str(e)}"
             )
+
+    @staticmethod
+    def verify_registration_otp_local(email: str, otp_code: str, db: Session):
+        from app.services.otp_service import OTPService
+        # Simply verify the local OTP
+        OTPService.verify_otp(email, otp_code, purpose="signup", db=db)
+        return True
+
+    @staticmethod
+    def send_login_otp(email: str, db: Session):
+        # Check if user exists first
+        user = db.query(DBUser).filter(DBUser.email == email).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Account not found. Please register first.")
+            
+        from app.services.otp_service import OTPService
+        OTPService.generate_and_send_otp(email, purpose="login", db=db)
+        return True
+
+    @staticmethod
+    def verify_login_otp(email: str, otp_code: str, db: Session) -> Token:
+        from app.services.otp_service import OTPService
+        # 1. Verify the local OTP
+        OTPService.verify_otp(email, otp_code, purpose="login", db=db)
+        
+        # 2. Secure Bridge: Sign the user into Supabase
+        # We'll set a temporary secure random password to generate a session
+        import secrets
+        import string
+        temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
+        
+        user = db.query(DBUser).filter(DBUser.email == email).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User records synchronized incorrectly.")
+
+        try:
+            # Force update password via admin API
+            supabase_admin.auth.admin.update_user_by_id(
+                str(user.id),
+                {"password": temp_password}
+            )
+            
+            # Sign in with the temporary password
+            res = supabase.auth.sign_in_with_password({
+                "email": email,
+                "password": temp_password
+            })
+            
+            if res.session:
+                return Token(
+                    access_token=res.session.access_token,
+                    refresh_token=res.session.refresh_token,
+                    expires_in=res.session.expires_in
+                )
+            
+            raise HTTPException(status_code=401, detail="Authentication failed after OTP verification.")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to generate secure session: {str(e)}")
+
+    @staticmethod
+    def resend_otp(email: str, purpose: str, db: Session):
+        from app.services.otp_service import OTPService
+        # For resend, we don't necessarily check if user exists for 'signup' 
+        # as the user is already created in PostgreSQL during register_user call.
+        # But for other purposes, we might want to check.
+        
+        if purpose in ['login', 'forgot_password', 'withdrawal']:
+            user = db.query(DBUser).filter(DBUser.email == email).first()
+            if not user:
+                raise HTTPException(status_code=404, detail="Account not found.")
+
+        OTPService.generate_and_send_otp(email=email, purpose=purpose, db=db)
+        return True

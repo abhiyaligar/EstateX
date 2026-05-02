@@ -20,6 +20,8 @@ const Wallet = () => {
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawStep, setWithdrawStep] = useState(1); // 1 = Amount, 2 = OTP
+  const [withdrawOtp, setWithdrawOtp] = useState('');
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showAddBankModal, setShowAddBankModal] = useState(false);
@@ -78,17 +80,28 @@ const Wallet = () => {
     if (!withdrawAmount || bankAccounts.length === 0) return;
     setIsWithdrawing(true);
     try {
-      if (activeWalletType === 'builder') {
-        // Builders need OTP - simulated 123456
-        await walletService.withdrawBuilderFunds(parseFloat(withdrawAmount), bankAccounts[0].id, "123456");
+      if (withdrawStep === 1) {
+        if (activeWalletType === 'builder') {
+          await walletService.initiateBuilderWithdrawal(parseFloat(withdrawAmount), bankAccounts[0].id);
+        } else {
+          await walletService.initiateWithdrawal(parseFloat(withdrawAmount), bankAccounts[0].id);
+        }
+        setWithdrawStep(2);
       } else {
-        await walletService.withdrawFunds(parseFloat(withdrawAmount), bankAccounts[0].id);
+        if (activeWalletType === 'builder') {
+          await walletService.verifyBuilderWithdrawal(withdrawOtp);
+        } else {
+          await walletService.verifyWithdrawal(withdrawOtp);
+        }
+        setWithdrawAmount('');
+        setWithdrawOtp('');
+        setWithdrawStep(1);
+        setShowWithdrawModal(false);
+        await fetchData(true);
       }
-      setWithdrawAmount('');
-      setShowWithdrawModal(false);
-      await fetchData(true);
     } catch (error) {
       console.error("Withdrawal failed", error);
+      alert(error.response?.data?.detail || "Withdrawal failed");
     } finally {
       setIsWithdrawing(false);
     }
@@ -132,7 +145,7 @@ const Wallet = () => {
                   <Plus size={14} /> Deposit Capital
                 </button>
                 <button 
-                  onClick={() => setShowWithdrawModal(true)}
+                  onClick={() => { setWithdrawStep(1); setWithdrawOtp(''); setShowWithdrawModal(true); }}
                   className="border border-white/10 text-white px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 transition-all flex items-center gap-3"
                 >
                   <Minus size={14} /> Withdraw Funds
@@ -212,7 +225,7 @@ const Wallet = () => {
                                {Number(tx.amount) >= 0 ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
                             </div>
                             <div>
-                               <p className="text-sm font-bold text-white uppercase tracking-tight mb-1">{tx.transaction_type.replace('_', ' ')}</p>
+                               <p className="text-sm font-bold text-white uppercase tracking-tight mb-1">{(tx.transaction_type || 'TRANSACTION').replace('_', ' ')}</p>
                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600">
                                  {new Date(tx.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })} // {tx.description || 'System Audit'}
                                </p>
@@ -321,30 +334,42 @@ const Wallet = () => {
         </form>
       </Modal>
 
-      <Modal isOpen={showWithdrawModal} onClose={() => setShowWithdrawModal(false)} title="Capital Liquidation" subtitle={`${activeWalletType === 'builder' ? 'Business' : 'Universal'} Withdrawal Sequence`}>
+      <Modal isOpen={showWithdrawModal} onClose={() => { setShowWithdrawModal(false); setWithdrawStep(1); setWithdrawOtp(''); }} title="Capital Liquidation" subtitle={`${activeWalletType === 'builder' ? 'Business' : 'Universal'} Withdrawal Sequence`}>
         <form onSubmit={handleWithdraw} className="space-y-10 py-4">
-          <div className="space-y-4">
-             <label className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-600">Liquidation Amount (INR)</label>
-             <input 
-               type="number"
-               placeholder="ENTER VALUE..."
-               value={withdrawAmount}
-               onChange={(e) => setWithdrawAmount(e.target.value)}
-               className="w-full bg-white/[0.02] border border-white/10 p-6 text-2xl font-bold tracking-tighter focus:outline-none focus:border-[#D4AF37] transition-all"
-               required
-             />
-          </div>
-          {activeWalletType === 'builder' && (
-             <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest leading-relaxed">
-               Note: Business withdrawals require standard institutional OTP verification (Simulated: 123456).
-             </p>
+          {withdrawStep === 1 ? (
+            <div className="space-y-4">
+               <label className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-600">Liquidation Amount (INR)</label>
+               <input 
+                 type="number"
+                 placeholder="ENTER VALUE..."
+                 value={withdrawAmount}
+                 onChange={(e) => setWithdrawAmount(e.target.value)}
+                 className="w-full bg-white/[0.02] border border-white/10 p-6 text-2xl font-bold tracking-tighter focus:outline-none focus:border-[#D4AF37] transition-all"
+                 required
+               />
+            </div>
+          ) : (
+            <div className="space-y-4">
+               <label className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-600">OTP Verification</label>
+               <input 
+                 type="text"
+                 placeholder="6-DIGIT CODE"
+                 value={withdrawOtp}
+                 onChange={(e) => setWithdrawOtp(e.target.value)}
+                 maxLength={6}
+                 className="w-full bg-white/[0.02] border border-white/10 p-6 text-2xl font-bold tracking-widest text-center focus:outline-none focus:border-[#D4AF37] transition-all"
+                 required
+               />
+               <p className="text-[9px] text-zinc-500 text-center uppercase tracking-widest">A verification code has been sent to your email.</p>
+            </div>
           )}
+          
           <button 
             type="submit" 
             disabled={isWithdrawing || bankAccounts.length === 0}
             className="w-full bg-white text-black py-5 text-[11px] font-black uppercase tracking-[0.4em] hover:bg-[#D4AF37] transition-all disabled:opacity-50"
           >
-            {isWithdrawing ? 'SYNCHRONIZING...' : 'AUTHORIZE LIQUIDATION'}
+            {isWithdrawing ? 'SYNCHRONIZING...' : (withdrawStep === 1 ? 'INITIATE LIQUIDATION' : 'VERIFY LIQUIDATION')}
           </button>
         </form>
       </Modal>

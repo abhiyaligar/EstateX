@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from decimal import Decimal
 from app.models.user import User
 from app.models.wallet import WalletTransaction
-from app.schemas.wallet import WalletDepositRequest, WalletWithdrawRequest, AdminWalletAdjustmentRequest
+from app.schemas.wallet import WalletDepositRequest, WalletWithdrawRequest, AdminWalletAdjustmentRequest, WalletWithdrawVerifyRequest
 
 class WalletService:
     @staticmethod
@@ -56,10 +56,40 @@ class WalletService:
         return trx
 
     @staticmethod
-    def process_withdrawal(user_id: str, withdraw_data: WalletWithdrawRequest, db: Session):
+    def initiate_withdrawal(user_id: str, withdraw_data: WalletWithdrawRequest, db: Session):
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            
+        withdraw_amount = Decimal(str(withdraw_data.amount))
+        if user.wallet_balance < withdraw_amount:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="Insufficient wallet balance"
+            )
+            
+        from app.services.otp_service import OTPService
+        OTPService.generate_and_send_otp(
+            email=user.email,
+            purpose="withdrawal",
+            db=db,
+            payload={"amount": str(withdraw_amount)}
+        )
+        return {"message": "OTP sent to your email to authorize the withdrawal."}
+
+    @staticmethod
+    def process_withdrawal(user_id: str, verify_data: WalletWithdrawVerifyRequest, db: Session):
         user = db.query(User).filter(User.id == user_id).with_for_update().first()
         
-        withdraw_amount = Decimal(str(withdraw_data.amount))
+        from app.services.otp_service import OTPService
+        payload = OTPService.verify_otp(
+            email=user.email,
+            otp_code=verify_data.otp_code,
+            purpose="withdrawal",
+            db=db
+        )
+        
+        withdraw_amount = Decimal(payload.get("amount", "0"))
         if user.wallet_balance < withdraw_amount:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 
@@ -119,20 +149,49 @@ class WalletService:
         return {"success": True, "new_balance": user.wallet_balance, "transaction_id": trx.id}
 
     @staticmethod
-    def process_builder_withdrawal(user_id: str, withdraw_data: WalletWithdrawRequest, db: Session):
+    def initiate_builder_withdrawal(user_id: str, withdraw_data: WalletWithdrawRequest, db: Session):
+        from app.models.builder import Builder
+        builder = db.query(Builder).filter(Builder.id == user_id).first()
+        if not builder:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Builder profile not found")
+            
+        withdraw_amount = Decimal(str(withdraw_data.amount))
+        if builder.wallet_balance < withdraw_amount:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="Insufficient business balance"
+            )
+            
+        # We need the user's email to send the OTP
+        user = db.query(User).filter(User.id == user_id).first()
+        
+        from app.services.otp_service import OTPService
+        OTPService.generate_and_send_otp(
+            email=user.email,
+            purpose="builder_withdrawal",
+            db=db,
+            payload={"amount": str(withdraw_amount)}
+        )
+        return {"message": "OTP sent to your email to authorize the business withdrawal."}
+
+    @staticmethod
+    def process_builder_withdrawal(user_id: str, verify_data: WalletWithdrawVerifyRequest, db: Session):
         from app.models.builder import Builder
         builder = db.query(Builder).filter(Builder.id == user_id).with_for_update().first()
         if not builder:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Builder profile not found")
         
-        # SIMULATED OTP Logic
-        if not withdraw_data.reference_id or withdraw_data.reference_id != "123456":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, 
-                detail="INVALID OTP. Please use the simulated 123456 for this request."
-            )
+        user = db.query(User).filter(User.id == user_id).first()
+        
+        from app.services.otp_service import OTPService
+        payload = OTPService.verify_otp(
+            email=user.email,
+            otp_code=verify_data.otp_code,
+            purpose="builder_withdrawal",
+            db=db
+        )
 
-        withdraw_amount = Decimal(str(withdraw_data.amount))
+        withdraw_amount = Decimal(payload.get("amount", "0"))
         if builder.wallet_balance < withdraw_amount:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 

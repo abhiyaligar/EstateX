@@ -21,6 +21,9 @@ class WalletDepositRequest(BaseModel):
 class WalletWithdrawRequest(BaseModel):
     amount: condecimal(max_digits=18, decimal_places=2, gt=0) # type: ignore
 
+class WalletWithdrawVerifyRequest(BaseModel):
+    otp_code: str
+
 class AdminWalletAdjustmentRequest(BaseModel):
     amount: condecimal(max_digits=18, decimal_places=2) # type: ignore
     reason: str

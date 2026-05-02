@@ -101,9 +101,9 @@ const Dashboard = () => {
   ];
 
   const allLedgerEvents = (dashboardData?.wallet?.recent_transactions || []).map(tx => ({
-    type: tx.transaction_type?.toUpperCase().replace('_', ' ') || 'TRANSACTION',
+    type: (tx.transaction_type || 'TRANSACTION').toUpperCase().replace('_', ' '),
     title: tx.description || `Transfer Ref: ${tx.id?.substring(0, 8)}`,
-    amount: tx.transaction_type === 'deposit' ? `+₹${tx.amount.toLocaleString()}` : `-₹${tx.amount.toLocaleString()}`,
+    amount: tx.transaction_type === 'deposit' ? `+₹${(tx.amount || 0).toLocaleString()}` : `-₹${(tx.amount || 0).toLocaleString()}`,
     date: tx.created_at ? new Date(tx.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent',
     isPositive: tx.transaction_type === 'deposit'
   }));
@@ -164,7 +164,7 @@ const Dashboard = () => {
         <div className="bg-[#D4AF37]/10 border-b border-[#D4AF37]/20 py-3 px-6 flex items-center justify-center gap-3 text-center">
            <AlertCircle size={14} className="text-[#D4AF37] shrink-0" />
            <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-[#D4AF37] leading-relaxed">
-             KYC Status: {user?.kyc_status?.toUpperCase().replace('_', ' ')}. Sovereign Permissions restricted.
+             KYC Status: {user?.kyc_status ? user.kyc_status.toUpperCase().replace('_', ' ') : 'PENDING'}. Sovereign Permissions restricted.
            </p>
         </div>
       )}

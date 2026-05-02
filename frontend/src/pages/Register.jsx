@@ -93,7 +93,7 @@ const ProgressHeader = ({ current, total, title }) => (
 );
 
 const Register = () => {
-  const { register, isAuthenticated } = useAuth();
+  const { register, login, verifyRegistrationOtp, resendOtp, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   
   const [step, setStep] = useState(1); 
@@ -102,6 +102,7 @@ const Register = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
 
   const designations = [
     { id: 'institutional', icon: Landmark, title: 'Institutional Investor', description: 'For family offices, endowments, and registered funds.' },
@@ -127,12 +128,44 @@ const Register = () => {
     otp: ''
   });
 
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (error) setError('');
+  };
+
+  useEffect(() => {
+    let interval;
+    if (subStep === 4 && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [subStep, resendTimer]);
+
+  useEffect(() => {
+    if (subStep === 4) {
+      setResendTimer(60);
+    }
+  }, [subStep]);
+  
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    setError('');
+    try {
+      const result = await resendOtp(formData.email, 'signup');
+      if (result.success) {
+        setResendTimer(60);
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('Failed to resend OTP.');
+    }
   };
 
   const validateStep = () => {
@@ -149,18 +182,8 @@ const Register = () => {
     return true;
   };
 
-  const formatErrorMessage = (err) => {
-    if (typeof err === 'string') return err;
-    if (Array.isArray(err)) {
-      return err.map(e => `${e.loc[e.loc.length - 1]}: ${e.msg}`).join(', ');
-    }
-    return 'An unexpected error occurred.';
-  };
-
-  const handleSubmit = async (e) => {
-    if (e) e.preventDefault();
+  const handleRegisterUser = async () => {
     setError('');
-    
     setLoading(true);
     try {
       const payload = {
@@ -186,12 +209,46 @@ const Register = () => {
       
       const result = await register(payload);
       if (result.success) {
-        setSubStep(5); 
+        setSubStep(4); 
       } else {
         setError(formatErrorMessage(result.error));
       }
     } catch (err) {
       setError('Connection failed. Please check your backend.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatErrorMessage = (err) => {
+    if (typeof err === 'string') return err;
+    if (Array.isArray(err)) {
+      return err.map(e => `${e.loc[e.loc.length - 1]}: ${e.msg}`).join(', ');
+    }
+    return 'An unexpected error occurred.';
+  };
+
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setError('');
+    
+    setLoading(true);
+    try {
+      // 1. Verify Local Signup OTP
+      const verifyResult = await verifyRegistrationOtp(formData.email, formData.otp);
+      if (verifyResult.success) {
+        // 2. Auto-login since Supabase account is already created (and confirmed via our local flow)
+        const loginResult = await login(formData.email, formData.password);
+        if (loginResult.success) {
+          setSubStep(5);
+        } else {
+          setError(loginResult.error);
+        }
+      } else {
+        setError(formatErrorMessage(verifyResult.error));
+      }
+    } catch (err) {
+      setError('Connection failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -280,15 +337,21 @@ const Register = () => {
           <FormInput label="Aadhaar Number" name="aadhaar" value={formData.aadhaar} onChange={handleInputChange} placeholder="12-digit Unique ID" icon={CreditCard} maxLength={12} />
           <FormInput label="PAN Number" name="pan" value={formData.pan} onChange={handleInputChange} placeholder="10-character Tax ID" icon={FileText} maxLength={10} />
           
+          {error && <p className="text-red-500 text-[10px] mt-6 font-bold uppercase tracking-widest text-center animate-pulse">{error}</p>}
+
           <div className="mt-8 md:mt-12 pt-6 md:pt-8 flex justify-between items-center">
              <button onClick={() => setSubStep(2)} className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-700 hover:text-white transition-colors flex items-center gap-2"><ArrowLeft size={14}/> Back</button>
              <button 
-                onClick={() => setSubStep(4)} 
-                disabled={!validateStep()}
+                onClick={handleRegisterUser} 
+                disabled={loading || !validateStep()}
                 className={`px-8 md:px-10 py-4 md:py-5 flex items-center gap-4 group transition-all ${validateStep() ? 'bg-[#D4AF37] text-black' : 'bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50'}`}
              >
-                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em]">Next: Auth</span>
-                <ArrowRight size={14} />
+                {loading ? <Loader2 className="animate-spin" size={14} /> : (
+                  <>
+                    <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em]">Next: Auth</span>
+                    <ArrowRight size={14} />
+                  </>
+                )}
              </button>
           </div>
         </motion.div>
@@ -304,6 +367,21 @@ const Register = () => {
           <FormInput label="Enter OTP" name="otp" value={formData.otp} onChange={handleInputChange} placeholder="000000" icon={Smartphone} maxLength={6} subtext="Enter '123456' to bypass for testing." />
           
           {error && <p className="text-red-500 text-[10px] mb-6 font-bold uppercase tracking-widest leading-relaxed">{error}</p>}
+          
+          <div className="flex justify-center mb-8">
+            <button
+              type="button"
+              onClick={handleResendOtp}
+              disabled={resendTimer > 0}
+              className={`text-[9px] font-black uppercase tracking-[0.2em] px-6 py-2 transition-all duration-300 ${
+                resendTimer > 0 
+                ? 'text-zinc-700 bg-white/5 cursor-not-allowed' 
+                : 'text-[#D4AF37] hover:text-white border border-[#D4AF37]/30 hover:border-[#D4AF37] hover:bg-[#D4AF37]/5'
+              }`}
+            >
+              {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : 'Resend Verification Code'}
+            </button>
+          </div>
           
           <div className="mt-12 md:mt-20 pt-6 md:pt-8 flex flex-col sm:flex-row items-center justify-between gap-6 md:gap-8">
             <button onClick={() => setSubStep(3)} className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700 hover:text-white transition-colors flex items-center gap-2"><ArrowLeft size={14}/> Back</button>

@@ -43,7 +43,7 @@ const Profile = () => {
   ];
 
   const verificationStatus = [
-    { label: 'Identity Verification', status: profileData?.kyc_status?.toUpperCase().replace('_', ' ') || 'PENDING', icon: ShieldCheck, color: profileData?.kyc_status === 'approved' ? 'text-green-500' : 'text-[#D4AF37]' },
+    { label: 'Identity Verification', status: (profileData?.kyc_status || 'PENDING').toUpperCase().replace('_', ' '), icon: ShieldCheck, color: profileData?.kyc_status === 'approved' ? 'text-green-500' : 'text-[#D4AF37]' },
     { label: 'Tax Residency (PAN)', status: profileData?.user_metadata?.pan ? 'AUDITED' : 'PENDING', icon: FileText, color: profileData?.user_metadata?.pan ? 'text-zinc-500' : 'text-[#D4AF37]' },
     { label: 'Device Authorization', status: 'SECURED', icon: Smartphone, color: 'text-zinc-500' },
   ];
@@ -64,7 +64,7 @@ const Profile = () => {
                 <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-2">Audit Status</p>
                 <div className="flex items-center gap-2">
                    <div className={`w-2 h-2 rounded-full animate-pulse ${profileData?.kyc_status === 'approved' ? 'bg-green-500' : 'bg-[#D4AF37]'}`} />
-                   <span className="text-xs font-bold uppercase tracking-widest">{profileData?.kyc_status?.toUpperCase().replace('_', ' ') || 'PENDING'}</span>
+                   <span className="text-xs font-bold uppercase tracking-widest">{(profileData?.kyc_status || 'PENDING').toUpperCase().replace('_', ' ')}</span>
                 </div>
              </div>
           </div>

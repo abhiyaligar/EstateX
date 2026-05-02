@@ -79,17 +79,17 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/auth/login', { email, password });
       const { access_token, refresh_token } = response.data;
       
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('refreshToken', refresh_token);
-      setToken(access_token);
-      
       // Fetch user profile after login
       const userResponse = await api.get('/auth/me', {
         headers: { Authorization: `Bearer ${access_token}` }
       });
       const userData = userResponse.data;
       
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('refreshToken', refresh_token);
       localStorage.setItem('user', JSON.stringify(userData));
+      
+      setToken(access_token);
       setUser(userData);
       
       return { success: true, user: userData };
@@ -136,6 +136,77 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const sendAuthOtp = async (email) => {
+    try {
+      const response = await api.post('/auth/login/otp/send', { email });
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || "Failed to send login code."
+      };
+    }
+  };
+
+  const verifyAuthOtp = async (email, otpCode) => {
+    try {
+      const response = await api.post('/auth/login/otp/verify', { 
+        email, 
+        otp_code: otpCode,
+        otp_type: "magiclink" // kept for schema compatibility
+      });
+      const { access_token, refresh_token } = response.data;
+      
+      // Fetch user profile
+      const userResponse = await api.get('/auth/me', {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+      const userData = userResponse.data;
+      
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('refreshToken', refresh_token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      setToken(access_token);
+      setUser(userData);
+      
+      return { success: true, user: userData };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || "Invalid or expired login code."
+      };
+    }
+  };
+
+  const verifyRegistrationOtp = async (email, otpCode) => {
+    try {
+      const response = await api.post('/auth/register/verify-otp', { 
+        email, 
+        otp_code: otpCode,
+        otp_type: "signup" 
+      });
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || "Verification failed."
+      };
+    }
+  };
+
+  const resendOtp = async (email, purpose) => {
+    try {
+      const response = await api.post('/auth/otp/resend', { email, purpose });
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || "Failed to resend OTP."
+      };
+    }
+  };
+
   const value = {
     user,
     token,
@@ -143,6 +214,10 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!token,
     login,
     register,
+    sendAuthOtp,
+    verifyAuthOtp,
+    verifyRegistrationOtp,
+    resendOtp,
     loginWithGoogle,
     logout
   };

@@ -13,6 +13,7 @@ const BuilderWallet = () => {
     const [walletData, setWalletData] = useState(null);
     const [isWithdrawing, setIsWithdrawing] = useState(false);
     const [withdrawAmount, setWithdrawAmount] = useState('');
+    const [withdrawStep, setWithdrawStep] = useState(1); // 1 = Amount, 2 = OTP
     const [otp, setOtp] = useState('');
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -54,17 +55,23 @@ const BuilderWallet = () => {
 
     const handleWithdraw = async (e) => {
         e.preventDefault();
-        if (!withdrawAmount || !otp) return;
-
+        
         setIsWithdrawing(true);
         try {
-            // Passing 'dummy_bank' as bank_id for now as builders might have business accounts
-            await walletService.withdrawBuilderFunds(parseFloat(withdrawAmount), 'business_bank_default', otp);
-            setWithdrawAmount('');
-            setOtp('');
-            setShowWithdrawModal(false);
-            await fetchData();
-            alert("Withdrawal initiated successfully!");
+            if (withdrawStep === 1) {
+                if (!withdrawAmount) return;
+                await walletService.initiateBuilderWithdrawal(parseFloat(withdrawAmount), 'business_bank_default');
+                setWithdrawStep(2);
+            } else {
+                if (!otp) return;
+                await walletService.verifyBuilderWithdrawal(otp);
+                setWithdrawAmount('');
+                setOtp('');
+                setWithdrawStep(1);
+                setShowWithdrawModal(false);
+                await fetchData();
+                alert("Withdrawal verified successfully!");
+            }
         } catch (error) {
             const msg = error.response?.data?.detail || "Withdrawal failed.";
             alert(msg);
@@ -252,39 +259,47 @@ const BuilderWallet = () => {
             {/* Withdraw Modal */}
             <Modal
                 isOpen={showWithdrawModal}
-                onClose={() => setShowWithdrawModal(false)}
+                onClose={() => { setShowWithdrawModal(false); setWithdrawStep(1); setOtp(''); }}
                 title="Business Revenue Withdrawal"
             >
                 <form onSubmit={handleWithdraw} className="space-y-6 pt-2">
-                    <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-start gap-4 mb-2">
-                        <div className="p-2 bg-white dark:bg-slate-800 rounded-xl">
-                            <Shield className="text-indigo-500" size={20} />
+                    {withdrawStep === 1 ? (
+                      <>
+                        <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-start gap-4 mb-2">
+                            <div className="p-2 bg-white dark:bg-slate-800 rounded-xl">
+                                <Shield className="text-indigo-500" size={20} />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-indigo-900 dark:text-indigo-200">Security Verification</p>
+                                <p className="text-xs text-indigo-700 dark:text-indigo-400 mt-0.5">An OTP will be sent to your registered email to authorize this withdrawal.</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-sm font-bold text-indigo-900 dark:text-indigo-200">Security Verification</p>
-                            <p className="text-xs text-indigo-700 dark:text-indigo-400 mt-0.5">Please use the simulated OTP <strong>123456</strong> for this demonstration.</p>
-                        </div>
-                    </div>
 
-                    <Input
-                        label="Amount to Withdraw (INR)"
-                        type="number"
-                        placeholder="0.00"
-                        value={withdrawAmount}
-                        onChange={(e) => setWithdrawAmount(e.target.value)}
-                        required
-                        className="h-14 text-lg"
-                    />
-
-                    <Input
-                        label="Business OTP Verification"
-                        type="password"
-                        placeholder="******"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                        required
-                        className="h-14 tracking-widest text-center text-xl"
-                    />
+                        <Input
+                            label="Amount to Withdraw (INR)"
+                            type="number"
+                            placeholder="0.00"
+                            value={withdrawAmount}
+                            onChange={(e) => setWithdrawAmount(e.target.value)}
+                            required
+                            className="h-14 text-lg"
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <Input
+                            label="Business OTP Verification"
+                            type="text"
+                            placeholder="6-DIGIT CODE"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value)}
+                            required
+                            maxLength={6}
+                            className="h-14 tracking-widest text-center text-xl"
+                        />
+                        <p className="text-xs text-indigo-700 dark:text-indigo-400 text-center">We've sent a 6-digit code to your email.</p>
+                      </>
+                    )}
 
                     <div className="py-2">
                         <p className="text-[10px] text-secondary-500 text-center uppercase font-bold tracking-widest">Payout Destination</p>
@@ -294,7 +309,7 @@ const BuilderWallet = () => {
                     </div>
 
                     <Button className="w-full h-14 text-lg font-bold bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20" type="submit" isLoading={isWithdrawing}>
-                        Execute Payout
+                        {withdrawStep === 1 ? 'Initiate Payout' : 'Verify & Execute'}
                     </Button>
                 </form>
             </Modal>

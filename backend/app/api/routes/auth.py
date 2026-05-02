@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.schemas.auth import UserCreate, UserLogin, Token, User, OAuthSyncRequest
+from app.schemas.auth import UserCreate, UserLogin, Token, User, OAuthSyncRequest, AuthOtpSendRequest, AuthOtpVerifyRequest, AuthOtpResendRequest
 from app.services.auth_service import AuthService
 from app.middleware.auth import get_current_user
 from app.core.db import get_db
@@ -27,6 +27,53 @@ def login(user_data: UserLogin):
     Login an existing user and get a JWT token.
     """
     return AuthService.login_user(user_data)
+
+@router.post("/otp/send")
+def send_otp(data: AuthOtpSendRequest):
+    """
+    Initiates a passwordless login or signup via email magic link / OTP.
+    """
+    AuthService.send_auth_otp(data.email, data.user_metadata)
+    return {"message": "OTP has been sent."}
+
+@router.post("/otp/verify", response_model=Token)
+def verify_otp(data: AuthOtpVerifyRequest, db: Session = Depends(get_db)):
+    """
+    Verifies the email OTP and returns a JWT session token.
+    (Legacy Supabase OTP - remains for compatibility)
+    """
+    return AuthService.verify_auth_otp(data.email, data.otp_code, data.otp_type, db)
+
+@router.post("/register/verify-otp")
+def verify_registration_otp(data: AuthOtpVerifyRequest, db: Session = Depends(get_db)):
+    """
+    Verifies the local registration OTP.
+    """
+    AuthService.verify_registration_otp_local(data.email, data.otp_code, db)
+    return {"message": "Registration verified successfully"}
+
+@router.post("/login/otp/send")
+def send_login_otp(data: AuthOtpSendRequest, db: Session = Depends(get_db)):
+    """
+    Sends a local login OTP.
+    """
+    AuthService.send_login_otp(data.email, db)
+    return {"message": "Login code sent successfully"}
+
+@router.post("/otp/resend")
+def resend_otp(data: AuthOtpResendRequest, db: Session = Depends(get_db)):
+    """
+    Resends a local OTP for various purposes.
+    """
+    AuthService.resend_otp(data.email, data.purpose, db)
+    return {"message": f"OTP for {data.purpose} resent successfully"}
+
+@router.post("/login/otp/verify", response_model=Token)
+def verify_login_otp(data: AuthOtpVerifyRequest, db: Session = Depends(get_db)):
+    """
+    Verifies the local login OTP and returns a Supabase session.
+    """
+    return AuthService.verify_login_otp(data.email, data.otp_code, db)
 
 from app.schemas.auth import TokenRefreshRequest
 

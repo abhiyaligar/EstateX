@@ -11,6 +11,20 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class AuthOtpSendRequest(BaseModel):
+    email: EmailStr
+    user_metadata: dict = Field(default_factory=dict)
+
+class AuthOtpResendRequest(BaseModel):
+    email: EmailStr
+    purpose: Literal['signup', 'login', 'forgot_password', 'withdrawal']
+
+
+class AuthOtpVerifyRequest(BaseModel):
+    email: EmailStr
+    otp_code: str
+    otp_type: str = "magiclink"
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
