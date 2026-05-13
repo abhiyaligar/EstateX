@@ -2,15 +2,8 @@ import axios from 'axios';
 import { supabase } from '../utils/supabaseClient';
 
 // Update with backend URL or use environment variable
-const getBaseUrl = () => {
-    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return 'http://localhost:8000/api/v1';
-    }
-    return 'https://estate-x-nine-orcin.vercel.app/api/v1';
-};
-
-const BASE_URL = getBaseUrl();
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const AUTH_BASE_URL = import.meta.env.VITE_AUTH_API_URL || BASE_URL;
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -19,9 +12,16 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor to attach JWT token
+// Request interceptor to attach JWT token and handle traffic splitting
 api.interceptors.request.use(
   (config) => {
+    // Traffic splitting: route auth requests to Vercel
+    if (config.url && (config.url.startsWith('/auth') || config.url.startsWith('auth'))) {
+      config.baseURL = AUTH_BASE_URL;
+    } else {
+      config.baseURL = BASE_URL;
+    }
+
     const token = localStorage.getItem('token');
     if (token && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -91,7 +91,7 @@ api.interceptors.response.use(
 
       try {
         // Important: use a separate axios instance or a direct call to avoid interceptor loop
-        const response = await axios.post(`${BASE_URL}/auth/refresh`, {
+        const response = await axios.post(`${AUTH_BASE_URL}/auth/refresh`, {
           refresh_token: refreshToken
         });
 
