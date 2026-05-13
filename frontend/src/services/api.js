@@ -16,8 +16,15 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Traffic splitting: route auth requests to Vercel
-    if (config.url && (config.url.startsWith('/auth') || config.url.startsWith('auth'))) {
+    const isAuthRequest = config.url && (
+      config.url.startsWith('/auth') || 
+      config.url.startsWith('auth') || 
+      config.url.includes('/api/v1/auth')
+    );
+
+    if (isAuthRequest) {
       config.baseURL = AUTH_BASE_URL;
+      console.log(`[API] Routing AUTH request to Vercel: ${config.url}`);
     } else {
       config.baseURL = BASE_URL;
     }
