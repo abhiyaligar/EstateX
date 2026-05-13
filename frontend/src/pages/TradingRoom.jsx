@@ -231,6 +231,7 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
   const filteredProjects = projects.filter(p => {
     const query = searchQuery.toLowerCase();
     const titleMatch = p.title?.toLowerCase().includes(query);
+    const isCompleted = p.ipo_status === 'completed';
     let locationMatch = false;
     if (typeof p.location === 'string') {
         locationMatch = p.location.toLowerCase().includes(query);
@@ -238,7 +239,7 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
         locationMatch = (p.location.city?.toLowerCase().includes(query)) || 
                         (p.location.state?.toLowerCase().includes(query));
     }
-    return titleMatch || locationMatch;
+    return isCompleted && (titleMatch || locationMatch);
   });
   
   return (
@@ -494,7 +495,8 @@ const TradingRoom = () => {
           propertyService.getProperties('active'),
           walletService.getWalletContext().catch(() => ({ balance: 0 }))
         ]);
-        setProjects(projectsData);
+        const completedProjects = projectsData.filter(p => p.ipo_status === 'completed');
+        setProjects(completedProjects);
         setWalletBalance(walletData.balance || 0);
         
         // Handle asset selection from URL

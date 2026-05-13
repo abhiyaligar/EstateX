@@ -16,7 +16,7 @@ const IPOCenter = () => {
       setLoading(true);
       // Fetch all projects and filter for 'approved' IPO status
       const data = await propertyService.getProperties('active');
-      const approvedIPOs = data.filter(p => p.ipo_status === 'approved' || p.ipo_status === 'upcoming');
+      const approvedIPOs = data.filter(p => p.ipo_status === 'active' || p.ipo_status === 'upcoming');
       setProperties(approvedIPOs);
     } catch (error) {
       console.error("Failed to fetch IPO listings", error);
@@ -78,7 +78,8 @@ const IPOCenter = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="group flex flex-col bg-white/[0.01] border border-white/5 hover:border-[#D4AF37]/30 transition-all duration-500"
+              className="group flex flex-col bg-white/[0.01] border border-white/5 hover:border-[#D4AF37]/30 transition-all duration-500 cursor-pointer"
+              onClick={() => window.location.href = `/properties/${property.id}`}
             >
                <div className="relative aspect-[16/10] overflow-hidden">
                   <img 
@@ -87,8 +88,8 @@ const IPOCenter = () => {
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100"
                   />
                   <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-md px-3 py-1.5 text-[8px] font-black uppercase tracking-widest border border-white/10 flex items-center gap-2">
-                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                     {property.ipo_status}
+                     <span className={`w-1.5 h-1.5 rounded-full ${property.ipo_status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`} />
+                     {property.ipo_status === 'active' ? 'Live IPO' : 'Upcoming'}
                   </div>
                </div>
                
@@ -127,11 +128,11 @@ const IPOCenter = () => {
                      </div>
                   </div>
 
-                  <Link to={`/properties/${property.id}`} className="block">
+                  <div className="pt-4">
                      <button className="w-full bg-white text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-[#D4AF37] transition-all flex items-center justify-center gap-3 group/btn">
-                        Invest in Node <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                        {property.ipo_status === 'active' ? 'Invest in Node' : 'View Details'} <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                      </button>
-                  </Link>
+                  </div>
                </div>
             </motion.div>
           ))
