@@ -10,15 +10,16 @@ const MainLayout = () => {
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground font-sans selection:bg-accent-orange/10">
-      <Navbar />
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - Only visible for authenticated users */}
-        {isAuthenticated && <Sidebar />}
+    <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-accent-orange/10 overflow-hidden">
+      {/* Sidebar - Only visible for authenticated users */}
+      {isAuthenticated && <Sidebar />}
+      
+      <div className="flex flex-col flex-1 min-w-0 h-screen overflow-hidden relative">
+        <Navbar />
         
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto w-full scrollbar-hide">
-          <div className="mx-auto w-full">
+          <div className="mx-auto w-full min-h-full">
             <Outlet />
           </div>
           {!isAuthenticated && <Footer />}

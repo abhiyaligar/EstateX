@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Building2, Menu, X, User, Bell, Mail, Inbox, ChevronDown, 
-  ShieldCheck, PlusCircle, Briefcase, LayoutGrid, ArrowLeftRight, 
-  TrendingUp, Wallet, AlertCircle, Clock, CheckCircle2, Search, 
-  Zap, ArrowRight, Sun, Moon 
+import {
+  Building2, Menu, X, User, Bell, Mail, Inbox, ChevronDown,
+  ShieldCheck, PlusCircle, Briefcase, LayoutGrid, ArrowLeftRight,
+  TrendingUp, Wallet, AlertCircle, Clock, CheckCircle2, Search,
+  Zap, ArrowRight, Sun, Moon, LogOut, Settings, Activity, Command,
+  Cpu, Wifi
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -16,7 +17,6 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showInbox, setShowInbox] = useState(false);
   const [navData, setNavData] = useState({ nav: 0, loading: true });
   const { isAuthenticated, logout, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -24,6 +24,11 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   const menuItems = [
     { name: 'Trading', path: '/trading', dropdown: ['Institutional', 'Derivatives', 'Liquidity'] },
@@ -36,8 +41,10 @@ const Navbar = () => {
     const fetchNavData = async () => {
       if (isAuthenticated) {
         try {
-          const stats = await dashboardService.getStats();
-          setNavData({ nav: stats.notifications_count || 0, loading: false });
+          const data = await dashboardService.getDashboardData();
+          // Assuming notifications count might be in wallet or derived from transactions
+          const notificationCount = data.wallet?.recent_transactions?.length || 0;
+          setNavData({ nav: notificationCount, loading: false });
         } catch (error) {
           console.error("Nav data fetch failed", error);
           setNavData({ nav: 0, loading: false });
@@ -50,21 +57,20 @@ const Navbar = () => {
   if (!isAuthenticated) {
     return (
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-7xl scrypt-nav rounded-full px-2 py-2 flex items-center justify-between transition-all">
-        {/* ... (Logo and Desktop Menu) ... */}
         <div className="flex items-center gap-4 lg:gap-8 pl-4">
           <Link to="/" className="flex items-center gap-3">
             <div className="h-10 w-10 bg-accent-orange rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,95,5,0.4)] transition-transform hover:scale-105">
               <Zap size={20} className="text-white fill-white" />
             </div>
-            <span className="text-lg md:text-xl font-heading font-black tracking-tighter text-white uppercase">EstateX</span>
+            <span className="hidden sm:block text-lg md:text-xl font-heading font-black tracking-tighter text-white uppercase">EstateX</span>
           </Link>
-          
+
           <div className="hidden lg:flex items-center gap-1">
             <Link to="/" className={`text-[11px] font-bold px-6 py-2.5 rounded-full transition-all ${location.pathname === '/' ? 'scrypt-pill-active' : 'text-zinc-300 hover:text-white'}`}>Home</Link>
-            
+
             {menuItems.map((item) => (
-              <div 
-                key={item.name} 
+              <div
+                key={item.name}
                 className="relative"
                 onMouseEnter={() => setActiveDropdown(item.name)}
                 onMouseLeave={() => setActiveDropdown(null)}
@@ -77,15 +83,17 @@ const Navbar = () => {
 
                 <AnimatePresence>
                   {activeDropdown === item.name && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full left-0 mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-2xl p-2 shadow-2xl overflow-hidden"
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute top-full left-0 mt-4 w-56 bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[24px] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden z-50"
                     >
+                      <div className="absolute inset-0 bg-gradient-to-br from-accent-orange/5 to-transparent pointer-events-none" />
                       {item.dropdown.map(subItem => (
-                        <button key={subItem} className="w-full text-left text-[10px] font-bold text-zinc-400 hover:text-white hover:bg-white/5 px-4 py-2.5 rounded-lg transition-all uppercase tracking-widest">
+                        <button key={subItem} className="relative w-full text-left text-[10px] font-black text-zinc-400 hover:text-white hover:bg-white/5 px-5 py-3.5 rounded-xl transition-all uppercase tracking-[0.2em] group/item flex items-center justify-between">
                           {subItem}
+                          <ArrowRight size={10} className="opacity-0 -translate-x-2 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all text-accent-orange" />
                         </button>
                       ))}
                     </motion.div>
@@ -97,13 +105,13 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-1 md:gap-2 pr-2">
-          <button 
+          <button
             onClick={toggleTheme}
             className="p-2 text-zinc-400 hover:text-white transition-colors"
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-          
+
           <div className="hidden sm:flex items-center gap-1">
             <Link to="/login">
               <button className="text-[11px] font-bold text-zinc-300 hover:text-white px-4 py-3 transition-all">
@@ -118,7 +126,7 @@ const Navbar = () => {
           </div>
 
           <div className="sm:hidden flex items-center gap-1">
-             <Link to="/login" className="text-[10px] font-bold text-zinc-300 px-2">Login</Link>
+            <Link to="/login" className="text-[10px] font-bold text-zinc-300 px-2">Login</Link>
           </div>
 
           <button onClick={toggleMenu} className="lg:hidden p-2 text-white hover:bg-white/5 rounded-full transition-colors">
@@ -128,7 +136,7 @@ const Navbar = () => {
 
         <AnimatePresence>
           {isOpen && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -148,29 +156,89 @@ const Navbar = () => {
     );
   }
 
-  // ... (rest of authenticated navbar logic)
+  // Authenticated High-Fidelity TopBar Redesign
   return (
-    <nav className={`fixed top-0 z-50 w-full border-b transition-colors ${theme === 'dark' ? 'bg-[#050505] border-white/5' : 'bg-white border-black/5'}`}>
-       <div className="mx-auto flex h-16 md:h-20 max-w-[1600px] items-center justify-between px-6 lg:px-10">
-          <div className="flex items-center gap-10">
-             <Link to="/dashboard" className="flex items-center gap-3">
-                <div className="h-8 w-8 bg-accent-orange rounded-full flex items-center justify-center">
-                  <Zap size={16} className="text-white fill-white" />
-                </div>
-                <span className={`text-sm font-black tracking-widest uppercase ${theme === 'dark' ? 'text-white' : 'text-black'}`}>EstateX</span>
-             </Link>
+    <nav className="relative z-40 w-full border-b border-border bg-background/90 backdrop-blur-2xl transition-all duration-500 blueprint-grid-dashed-small overflow-visible shrink-0">
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-accent-orange/50 to-transparent opacity-50" />
+
+      <div className="flex h-16 md:h-20 items-center justify-between px-4 md:px-12 relative z-10">
+
+        <div className="flex items-center gap-4 md:gap-10">
+          <button onClick={toggleMenu} className="md:hidden p-2 text-foreground/40 hover:text-foreground">
+            {isOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+
+          <div className="hidden xl:flex items-center gap-4 py-2.5 px-6 bg-foreground/[0.03] rounded-full border border-border group focus-within:border-accent-orange/50 focus-within:bg-accent-orange/[0.02] transition-all">
+            <Search size={14} className="text-foreground/20 group-focus-within:text-accent-orange transition-colors" />
+            <input
+              type="text"
+              placeholder="SEARCH TERMINAL..."
+              className="bg-transparent border-none outline-none text-[9px] font-black uppercase tracking-[0.3em] w-56 placeholder:text-foreground/10 text-foreground"
+            />
           </div>
-          
-          <div className="flex items-center gap-6">
-            <button 
-              onClick={toggleTheme}
-              className={`p-2 transition-colors ${theme === 'dark' ? 'text-zinc-500 hover:text-white' : 'text-zinc-400 hover:text-black'}`}
-            >
+
+          <div className="flex items-center gap-3">
+            <Zap size={20} className="text-accent-orange fill-accent-orange" />
+            <span className="hidden sm:block text-base font-black uppercase tracking-tighter">EstateX</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 md:gap-6">
+          <div className="hidden sm:flex items-center gap-3 px-5 py-2.5 border border-border rounded-full bg-foreground/[0.02] group hover:border-accent-orange/30 transition-colors">
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/40 group-hover:text-foreground transition-colors">NODE: ONLINE</span>
+          </div>
+
+          <div className="flex items-center gap-1 md:gap-3 bg-foreground/[0.03] p-1 rounded-full border border-border">
+            <button onClick={toggleTheme} className="p-2 md:p-2.5 text-foreground/20 hover:text-foreground hover:bg-background rounded-full transition-all">
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <button onClick={logout} className={`text-xs font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500 hover:text-white' : 'text-zinc-400 hover:text-black'}`}>Logout</button>
+            <button className="p-2 md:p-2.5 text-foreground/20 hover:text-accent-orange hover:bg-background rounded-full transition-all">
+              <Bell size={18} />
+            </button>
           </div>
-       </div>
+
+          <div className="flex items-center gap-2 md:gap-3">
+            <Link to="/dashboard/profile" className="flex items-center gap-3 pl-1.5 pr-1.5 md:pr-5 py-1.5 bg-foreground/5 hover:bg-accent-orange/[0.05] border border-border rounded-full transition-all group">
+              <div className="h-8 w-8 md:h-9 md:w-9 bg-accent-orange text-white rounded-full flex items-center justify-center font-black text-xs shadow-[0_0_20px_rgba(255,95,5,0.3)]">
+                {user?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div className="hidden lg:flex flex-col items-start leading-none gap-1">
+                <span className="text-[10px] font-black uppercase tracking-tight text-foreground">{user?.first_name || 'User'}</span>
+                <span className="text-[8px] font-bold text-accent-orange uppercase tracking-[0.2em]">Profile</span>
+              </div>
+            </Link>
+
+            <button onClick={handleLogout} className="p-2.5 md:p-3.5 border border-border rounded-full text-foreground/20 hover:text-red-500 hover:bg-red-500/5 transition-all group flex items-center justify-center bg-foreground/[0.02]">
+              <LogOut size={18} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-background border-b border-border overflow-hidden"
+          >
+            <div className="p-6 space-y-4">
+              {[
+                { name: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
+                { name: 'IPO Center', path: '/ipo', icon: Zap },
+                { name: 'Explore', path: '/explore', icon: Search },
+                { name: 'Trade', path: '/trade', icon: ArrowLeftRight },
+                { name: 'Portfolio', path: '/dashboard/portfolio', icon: TrendingUp },
+                { name: 'Wallet', path: '/dashboard/wallet', icon: Wallet },
+              ].map((link) => (
+                <Link key={link.name} to={link.path} onClick={() => setIsOpen(false)} className="flex items-center gap-4 p-4 bg-foreground/[0.03] border border-border rounded-2xl text-[11px] font-black uppercase tracking-widest text-foreground/40 hover:text-accent-orange transition-all">
+                  <link.icon size={18} /> {link.name}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
