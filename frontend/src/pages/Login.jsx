@@ -1,92 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { LogIn, Mail, KeyRound, Loader2, Chrome } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LogIn, Mail, KeyRound, Loader2, Chrome, Zap, ArrowRight, Sun, Moon, ShieldCheck, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Login = () => {
   const { login, loginWithGoogle, sendAuthOtp, verifyAuthOtp, resendOtp, isAuthenticated } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [resendTimer, setResendTimer] = useState(0);
-  const [loginMethod, setLoginMethod] = useState('password'); // 'password' or 'otp'
-  const [otpStep, setOtpStep] = useState(1); // 1 = Email, 2 = OTP Code
-  const [otpCode, setOtpCode] = useState('');
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authMethod, setAuthMethod] = useState('password'); 
 
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-    if (error) setError('');
-  };
-
-  useEffect(() => {
-    let interval;
-    if (loginMethod === 'otp' && otpStep === 2 && resendTimer > 0) {
-      interval = setInterval(() => {
-        setResendTimer(prev => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [loginMethod, otpStep, resendTimer]);
-
-  useEffect(() => {
-    if (loginMethod === 'otp' && otpStep === 2) {
-      setResendTimer(60);
-    }
-  }, [loginMethod, otpStep]);
-  
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
-
-  const handleResendOtp = async () => {
-    if (resendTimer > 0) return;
-    setError('');
-    try {
-      const result = await resendOtp(formData.email, 'login');
-      if (result.success) {
-        setResendTimer(60);
-      } else {
-        setError(result.error);
-      }
-    } catch (err) {
-      setError('Failed to resend OTP.');
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
-
+    setLoading(true);
     try {
-      if (loginMethod === 'password') {
-        const result = await login(formData.email, formData.password);
-        if (!result.success) {
-          setError(result.error);
-        }
-      } else {
-        // OTP Login Flow
-        if (otpStep === 1) {
-          const result = await sendAuthOtp(formData.email);
-          if (result.success) {
-            setOtpStep(2);
-          } else {
-            setError(result.error);
-          }
-        } else {
-          const result = await verifyAuthOtp(formData.email, otpCode);
-          if (!result.success) {
-            setError(result.error);
-          }
-        }
+      const result = await login(email, password);
+      if (!result.success) {
+        setError(result.error || 'Invalid credentials');
       }
     } catch (err) {
       setError('Connection failed. Please try again.');
@@ -96,170 +33,140 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-[#0a0a0a] text-white flex flex-col selection:bg-[#D4AF37]/30">
-      {/* Header - More compact */}
-      <nav className="h-14 md:h-16 px-6 md:px-12 flex items-center justify-between border-b border-white/5 bg-[#0a0a0a] z-50">
-        <Link to="/" className="flex items-center gap-2 group">
-          <span className="text-xs md:text-sm font-black tracking-[0.4em] uppercase text-[#D4AF37]">EstateX</span>
+    <div className="min-h-screen bg-background text-foreground selection:bg-accent-orange/10 selection:text-accent-orange font-sans transition-colors duration-500 flex flex-col">
+      {/* Header */}
+      <nav className="h-20 px-6 md:px-12 flex items-center justify-between border-b border-border bg-background sticky top-0 z-50 transition-colors">
+        <Link to="/" className="flex items-center gap-3 group">
+           <div className="w-10 h-10 bg-accent-orange flex items-center justify-center rounded-full shadow-[0_0_20px_rgba(255,95,5,0.4)] transition-transform group-hover:scale-110">
+             <Zap className="text-white fill-white" size={20} />
+           </div>
+           <span className="text-xl font-heading font-black tracking-tighter uppercase">EstateX</span>
         </Link>
-        <Link to="/register" className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors">
-          Register
-        </Link>
+        <div className="flex items-center gap-6">
+           <button 
+             onClick={toggleTheme}
+             className="p-3 text-zinc-400 hover:text-foreground transition-colors"
+           >
+             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+           </button>
+           <Link to="/register">
+             <button className="text-[11px] uppercase tracking-[0.3em] font-black text-foreground border border-border px-8 py-3 rounded-full hover:bg-foreground/5 transition-all">Sign Up</button>
+           </Link>
+        </div>
       </nav>
 
-      {/* Main Content - Centered and Viewport Constrained */}
-      <main className="flex-1 flex flex-col items-center justify-center p-4 relative">
-        {/* Subtle Glows */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl max-h-[600px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none opacity-40" />
-
+      <div className="flex-1 flex items-center justify-center p-6 blueprint-grid">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.98 }} 
-          animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-[360px] md:max-w-[400px] space-y-4 md:space-y-6 relative z-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md space-y-12"
         >
-          {/* Titles - Compacted */}
-          <div className="text-center space-y-1 mb-1">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white leading-none">Welcome Back</h1>
-            <p className="text-zinc-500 text-[9px] md:text-[10px] font-medium tracking-wide uppercase tracking-[0.2em]">Institutional Wealth Terminal</p>
+          <div className="text-center space-y-4">
+            <h1 className="text-5xl font-heading font-black tracking-tighter uppercase">Access Terminal</h1>
+            <p className="text-foreground/50 font-medium text-sm tracking-tight">Institutional protocol access required for asset mapping.</p>
           </div>
 
-          <div className="flex bg-white/5 p-1 rounded-sm mb-4">
-            <button 
-              className={`flex-1 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] py-2 transition-all ${loginMethod === 'password' ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'text-zinc-500 hover:text-white'}`}
-              onClick={() => { setLoginMethod('password'); setOtpStep(1); setError(''); }}
-            >
-              Password
-            </button>
-            <button 
-              className={`flex-1 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] py-2 transition-all ${loginMethod === 'otp' ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'text-zinc-500 hover:text-white'}`}
-              onClick={() => { setLoginMethod('otp'); setOtpStep(1); setError(''); }}
-            >
-              OTP Login
-            </button>
-          </div>
+          <div className="bg-background border border-border p-10 relative group">
+            <div className="absolute -top-px -left-px w-4 h-4 border-t-2 border-l-2 border-accent-orange"></div>
+            <div className="absolute -bottom-px -right-px w-4 h-4 border-b-2 border-r-2 border-accent-orange"></div>
+            
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40">Credential Hub</label>
+                  <div className="relative group/input">
+                    <Mail className="absolute left-0 top-1/2 -translate-y-1/2 text-foreground/20 group-focus-within/input:text-accent-orange transition-colors" size={16} />
+                    <input 
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="your@company.com"
+                      className="w-full bg-transparent border-b border-border py-4 pl-10 text-base focus:outline-none focus:border-accent-orange transition-all placeholder:text-foreground/10 font-medium"
+                    />
+                  </div>
+                </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-            {/* Email Field - Always visible unless in OTP Step 2 */}
-            {!(loginMethod === 'otp' && otpStep === 2) && (
-              <div className="space-y-1">
-                <label className="block text-[7px] md:text-[8px] font-black uppercase tracking-[0.2em] text-zinc-600">Email Address</label>
-                <input 
-                  type="email" 
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="investor@domain.com"
-                  required
-                  className="w-full bg-transparent border-b border-white/5 py-1.5 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 font-medium"
-                />
-              </div>
-            )}
-
-            {/* Password Field */}
-            {loginMethod === 'password' && (
-              <div className="space-y-1">
-                <label className="block text-[7px] md:text-[8px] font-black uppercase tracking-[0.2em] text-zinc-600">Password</label>
-                <input 
-                  type="password" 
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="••••••••"
-                  required
-                  className="w-full bg-transparent border-b border-white/5 py-1.5 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 font-medium"
-                />
-              </div>
-            )}
-
-            {/* OTP Field */}
-            {loginMethod === 'otp' && otpStep === 2 && (
-              <div className="space-y-1">
-                <label className="block text-[7px] md:text-[8px] font-black uppercase tracking-[0.2em] text-zinc-600">Verification Code</label>
-                <input 
-                  type="text" 
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value)}
-                  placeholder="000000"
-                  required
-                  maxLength={6}
-                  className="w-full bg-transparent border-b border-white/5 py-1.5 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 font-medium text-center tracking-[0.5em]"
-                />
-                <p className="text-[8px] text-zinc-600 mt-1 text-center uppercase tracking-widest">Sent to {formData.email}</p>
-                <div className="flex flex-col gap-2 mt-2">
-                  <button 
-                    type="button" 
-                    onClick={handleResendOtp}
-                    disabled={resendTimer > 0}
-                    className={`w-full text-center text-[7px] font-bold uppercase tracking-widest transition-colors ${
-                      resendTimer > 0 ? 'text-zinc-700' : 'text-[#D4AF37]/70 hover:text-[#D4AF37]'
-                    }`}
-                  >
-                    {resendTimer > 0 ? `Resend Code in ${resendTimer}s` : 'Resend Access Code'}
-                  </button>
-                  <button type="button" onClick={() => setOtpStep(1)} className="w-full text-center text-[7px] text-zinc-700 hover:text-zinc-500 uppercase font-bold tracking-widest transition-colors">Change Email</button>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40">Access Key</label>
+                    <Link 
+                      to="/forgot-password" 
+                      className="text-[9px] font-black uppercase tracking-[0.1em] text-accent-orange hover:text-accent-orange/80 transition-colors border border-accent-orange/20 px-3 py-1 rounded-full"
+                    >
+                      Recovery
+                    </Link>
+                  </div>
+                  <div className="relative group/input">
+                    <KeyRound className="absolute left-0 top-1/2 -translate-y-1/2 text-foreground/20 group-focus-within/input:text-accent-orange transition-colors" size={16} />
+                    <input 
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full bg-transparent border-b border-border py-4 pl-10 text-base focus:outline-none focus:border-accent-orange transition-all placeholder:text-foreground/10 font-medium"
+                    />
+                  </div>
                 </div>
               </div>
-            )}
 
-            {/* Remember & Forgot - Only for Password */}
-            {loginMethod === 'password' && (
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative w-3 h-3 border border-white/10 rounded-none bg-transparent flex items-center justify-center transition-all group-hover:border-[#D4AF37]">
-                    <input type="checkbox" name="rememberMe" checked={formData.rememberMe} onChange={handleInputChange} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    {formData.rememberMe && <div className="w-1 h-1 bg-[#D4AF37]" />}
-                  </div>
-                  <span className="text-[8px] font-bold text-zinc-700 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Remember</span>
-                </label>
-                <Link to="/forgot-password" university className="text-[8px] font-bold text-[#D4AF37]/50 hover:text-[#D4AF37] transition-colors uppercase tracking-widest">Forgot Password?</Link>
+              {error && (
+                <div className="p-4 bg-red-500/5 border border-red-500/20 text-red-500 text-[11px] font-bold uppercase tracking-widest text-center">
+                  {error}
+                </div>
+              )}
+
+              <button 
+                type="submit"
+                disabled={loading}
+                className="w-full bg-foreground text-background py-5 font-black uppercase tracking-[0.4em] text-[11px] rounded-full hover:bg-foreground/90 transition-all flex items-center justify-center gap-4 group disabled:opacity-50 hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                {loading ? <Loader2 className="animate-spin" size={18} /> : (
+                  <>
+                    Continue Entry
+                    <div className="transition-transform group-hover:rotate-12 group-hover:translate-x-1">
+                      <ArrowRight size={18} />
+                    </div>
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-12 space-y-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border"></div></div>
+                <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]"><span className="bg-background px-4 text-foreground/20">External Audit</span></div>
               </div>
-            )}
 
-            {error && <p className="text-red-500 text-[8px] font-bold uppercase tracking-widest text-center">{error}</p>}
-
-            {/* Sign In Button */}
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-[#D4AF37] text-black py-3.5 font-black uppercase tracking-[0.3em] text-[10px] hover:bg-[#c4a132] transition-all flex items-center justify-center gap-2 shadow-2xl shadow-[#D4AF37]/10"
-            >
-              {loading ? <Loader2 className="animate-spin" size={12} /> : (loginMethod === 'password' || otpStep === 2 ? 'Authorize Session' : 'Request Access Code')}
-            </button>
-          </form>
-
-          {/* Google Auth - Moved to Bottom */}
-          <div className="space-y-4 pt-1">
-            {/* Divider */}
-            <div className="relative py-1">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-              <div className="relative flex justify-center text-[6px] font-black uppercase tracking-[0.3em] text-zinc-800">
-                <span className="bg-[#0a0a0a] px-3">Institutional SSO</span>
-              </div>
+              <button 
+                onClick={() => loginWithGoogle()}
+                className="w-full border border-border py-5 font-black uppercase tracking-[0.4em] text-[11px] rounded-full hover:bg-foreground/5 transition-all flex items-center justify-center gap-4 group"
+              >
+                <Chrome size={18} className="group-hover:scale-110 transition-transform" />
+                Auth via Google Node
+              </button>
             </div>
-
-            <button 
-              onClick={loginWithGoogle}
-              className="w-full border border-white/5 py-3 font-bold uppercase tracking-[0.1em] text-[8px] flex items-center justify-center gap-2 hover:bg-white/5 transition-all text-white/50 hover:text-white"
-            >
-              <Chrome size={10} className="text-[#D4AF37]" />
-              Continue with Google
-            </button>
           </div>
 
-          {/* Footer Link */}
-          <p className="text-center text-[9px] font-bold text-zinc-700 uppercase tracking-[0.2em] mt-4">
-            New Entity? <Link to="/register" className="text-[#D4AF37] hover:underline underline-offset-4">Register Now</Link>
-          </p>
+          <div className="flex justify-center gap-10">
+            <div className="flex items-center gap-2 opacity-30 group hover:opacity-100 transition-opacity">
+              <ShieldCheck size={16} className="text-accent-orange"/>
+              <span className="text-[9px] font-black uppercase tracking-[0.3em]">SOC 2 Compliant</span>
+            </div>
+            <div className="flex items-center gap-2 opacity-30 group hover:opacity-100 transition-opacity">
+              <Lock size={16} className="text-accent-orange"/>
+              <span className="text-[9px] font-black uppercase tracking-[0.3em]">MPC Custody</span>
+            </div>
+          </div>
         </motion.div>
-      </main>
+      </div>
 
-      {/* Footer - Extra Compact */}
-      <footer className="px-6 md:px-12 h-10 md:h-12 flex flex-col md:flex-row items-center justify-between border-t border-white/5 text-[7px] font-bold text-zinc-800 uppercase tracking-[0.3em] gap-2 md:gap-0">
-        <div className="hidden sm:block">© 2024 EstateX.</div>
-        <div className="flex gap-4 md:gap-6">
-           {['Privacy', 'Terms', 'Disclosure'].map(link => (
-             <button key={link} className="hover:text-white transition-colors">{link}</button>
-           ))}
+      <footer className="px-12 py-10 border-t border-border text-[9px] font-black text-foreground/20 uppercase tracking-[0.4em] flex justify-between items-center">
+        <span>© 2024 EstateX Protocol.</span>
+        <div className="flex gap-8">
+           <button className="hover:text-foreground transition-colors">Terms</button>
+           <button className="hover:text-foreground transition-colors">Privacy</button>
         </div>
       </footer>
     </div>

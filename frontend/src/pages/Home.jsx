@@ -1,159 +1,153 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ArrowRight, ShieldCheck, TrendingUp, Building } from 'lucide-react';
-import { Button } from '../components/ui/Button';
-import PropertyGrid from '../components/property/PropertyGrid';
-import propertyService from '../services/propertyService';
-import LiquidChrome from '../components/ui/LiquidChrome';
+import { ArrowRight, Globe, Shield, Zap, BarChart3, Lock, Clock, TrendingUp } from 'lucide-react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 const Home = () => {
-  const [featuredProperties, setFeaturedProperties] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    const fetchFeatured = async () => {
-      try {
-        const data = await propertyService.getProperties('active');
-        setFeaturedProperties(data.slice(0, 4));
-      } catch (error) {
-        console.error("Failed to fetch featured properties", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeatured();
-  }, []);
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 500], [0, -100]);
+  const y2 = useTransform(scrollY, [0, 500], [0, 100]);
+  const rotate = useTransform(scrollY, [0, 1000], [0, 45]);
 
   return (
-    <div className="flex flex-col bg-[#0a0a0a]">
+    <div className="flex flex-col bg-background text-foreground min-h-screen font-sans selection:bg-accent-orange/10 selection:text-accent-orange overflow-x-hidden transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden px-6 lg:px-8">
-        {/* Local Background - Localized to Home Only */}
-        <div className="absolute inset-0 z-0">
-          <LiquidChrome
-            baseColor={[1.0, 1.0, 1.0]}
-            speed={0.12}
-            amplitude={0.6}
-            interactive={true}
-          />
-        </div>
+      <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden blueprint-grid-dashed pt-32 pb-20">
+        
+        {/* Animated Background Details */}
+        <div className="absolute inset-0 pointer-events-none opacity-50">
+          <div className="absolute top-[25%] w-full h-px border-t border-dashed border-foreground/10"></div>
+          <div className="absolute top-[50%] w-full h-px border-t border-dashed border-foreground/10"></div>
+          <div className="absolute top-[75%] w-full h-px border-t border-dashed border-foreground/10"></div>
+          
+          <div className="absolute left-[23%] h-full w-px border-l border-dashed border-foreground/10 hidden md:block"></div>
+          <div className="absolute left-[39.5%] h-full w-px border-l border-dashed border-foreground/10"></div>
+          <div className="absolute left-[61%] h-full w-px border-l border-dashed border-foreground/10"></div>
+          <div className="absolute left-[77.5%] h-full w-px border-l border-dashed border-foreground/10 hidden md:block"></div>
 
-        <div className="mx-auto max-w-5xl text-center space-y-16 relative z-10">
-          <div className="inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.4em] text-zinc-500 font-bold mb-4">
-            <span className="h-px w-10 bg-white/10"></span>
-            System Status: 01 // Wealth Synchronization
+          {/* Data Markers */}
+          <div className="absolute top-10 left-10 text-[9px] font-black tracking-[0.3em] text-foreground/20 uppercase hidden lg:block">
+            LAT: 51.5074 N <br/> LON: 0.1278 W
+          </div>
+          <div className="absolute top-10 right-10 text-[9px] font-black tracking-[0.3em] text-foreground/20 uppercase text-right hidden lg:block">
+            TERMINAL: EST_X_01 <br/> NODE: ACTIVE
           </div>
 
-          <h1 className="text-4xl sm:text-7xl md:text-9xl font-bold text-white leading-tight md:leading-[0.9] tracking-tighter uppercase font-heading">
-            Architect your <br />
-            <span className="italic opacity-20">Attention.</span>
-          </h1>
-
-          <p className="mt-12 text-lg md:text-xl leading-relaxed text-zinc-400 max-w-3xl mx-auto font-medium tracking-tight">
-            Real estate investment is a fractured landscape of noise. <br className="hidden md:block" />
-            EstateX is the fortress—an adaptive digital environment for institutional-grade growth.
-          </p>
-
-          {/* Action Nodes Removed for Minimalist Landing State */}
+          {/* Crosshairs */}
+          {[25, 50, 75].map(top => 
+            [23, 39.5, 61, 77.5].map(left => (
+              <div key={`${top}-${left}`} className="absolute crosshair hidden md:flex" style={{ top: `${top}%`, left: `${left}%`, transform: 'translate(-50%, -50%)' }}></div>
+            ))
+          )}
         </div>
 
-        {/* Bottom Credits */}
-        <div className="absolute bottom-12 left-12 hidden lg:block z-10">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 font-bold leading-loose">
-            Validation Protocol // <br />
-            <span className="text-zinc-400 font-semibold uppercase">Linear, OpenAI, and Teenage Engineering.</span>
-          </p>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="methodology" className="py-32 relative">
-        <div className="mx-auto max-w-7xl px-6 lg:px-12">
-          <div className="mx-auto max-w-2xl text-center space-y-4">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-accent-red font-bold">The Methodology</div>
-            <h2 className="text-4xl md:text-5xl font-serif text-white">
-              Why Invest with EstateX
-            </h2>
-            <p className="text-white/40 font-light tracking-wide max-w-lg mx-auto">
-              A sovereign approach to capital allocation. We've removed the noise from real estate acquisition.
+        <div className="mx-auto max-w-7xl px-6 relative z-10 flex flex-col items-center">
+          
+          {/* Floating Nodes with Parallax */}
+          <motion.div style={{ y: y1 }} className="absolute top-[0%] left-[5%] lg:left-[20%] -translate-x-1/2 w-48 space-y-3 hidden lg:block">
+            <div className="h-10 w-10 bg-accent-orange/5 border border-accent-orange/10 rounded-lg flex items-center justify-center">
+               <Zap size={18} className="text-accent-orange fill-accent-orange" />
+            </div>
+            <p className="text-[11px] font-black text-foreground leading-tight tracking-tight uppercase">
+              Trade, Store, and <br/> Invest in Real Estate Assets 24/7
             </p>
-          </div>
-          <div className="mx-auto mt-24 max-w-2xl lg:max-w-none">
-            <dl className="grid grid-cols-1 gap-x-12 gap-y-16 lg:grid-cols-3">
-              <div className="flex flex-col space-y-6">
-                <dt className="flex flex-col gap-4">
-                  <div className="h-px w-12 bg-accent-red"></div>
-                  <span className="text-xl font-serif text-white">Institutional Sovereignty</span>
-                </dt>
-                <dd className="text-white/40 font-light leading-relaxed">
-                  Fully audited KYC, secure escrow protocols, and blockchain-immutable records ensure your positions are absolute.
-                </dd>
-              </div>
-              <div className="flex flex-col space-y-6 border-l border-white/5 lg:pl-12">
-                <dt className="flex flex-col gap-4">
-                  <div className="h-px w-12 bg-white/20"></div>
-                  <span className="text-xl font-serif text-white">Fractional Precision</span>
-                </dt>
-                <dd className="text-white/40 font-light leading-relaxed">
-                  Start with focus. Deploy capital into premium commercial and residential tranches with total liquidity.
-                </dd>
-              </div>
-              <div className="flex flex-col space-y-6 border-l border-white/5 lg:pl-12">
-                <dt className="flex flex-col gap-4">
-                  <div className="h-px w-12 bg-white/20"></div>
-                  <span className="text-xl font-serif text-white">Curated Sanctuaries</span>
-                </dt>
-                <dd className="text-white/40 font-light leading-relaxed">
-                  Every asset undergoes multi-point legal validation and financial symmetry modeling before entering the vault.
-                </dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </section>
+          </motion.div>
 
-      {/* Featured Properties */}
-      <section className="py-32 px-6 lg:px-12 border-t border-white/5">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-end justify-between mb-20">
-            <div className="space-y-4">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-red font-bold">Featured Assets</div>
-              <h2 className="text-4xl md:text-5xl font-serif text-white">Current Listings</h2>
+          <motion.div style={{ y: y2 }} className="absolute top-[35%] right-[-8%] lg:right-[8%] w-56 space-y-4 hidden lg:block text-right flex flex-col items-end">
+            <div className="space-y-1">
+              <p className="text-[12px] font-black text-foreground opacity-70">Regulated.</p>
+              <p className="text-[12px] font-black text-foreground opacity-70">Built for Execution</p>
+              <p className="text-[12px] font-black text-accent-orange underline decoration-2 underline-offset-4">With Institutional Liquidity</p>
             </div>
-            <Link to="/properties" className="hidden sm:block pb-1">
-              <Button variant="ghost" className="text-[10px] uppercase tracking-widest flex items-center gap-2">
-                All Properties <ArrowRight size={12} />
-              </Button>
-            </Link>
+            <div className="h-8 w-8 bg-accent-orange/5 border border-accent-orange/10 rounded-lg flex items-center justify-center">
+               <BarChart3 size={16} className="text-accent-orange" />
+            </div>
+          </motion.div>
+
+          {/* Central Bolt with Parallax & Glow */}
+          <motion.div 
+            style={{ rotate }}
+            className="relative mb-16 md:mb-24 orange-glow group flex items-center justify-center"
+          >
+            <div className="absolute inset-0 bg-accent-orange/20 blur-[80px] md:blur-[120px] rounded-full scale-125 md:scale-150 opacity-20 group-hover:opacity-40 transition-opacity"></div>
+            <div className="relative z-10 scale-[0.5] md:scale-[0.85] transition-all duration-700 group-hover:scale-[0.9]">
+              <svg width="220" height="280" viewBox="0 0 220 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M120 0L40 160H100L80 280L220 80H140L120 0Z" fill="url(#bolt_grad)" />
+                <defs>
+                  <linearGradient id="bolt_grad" x1="40" y1="0" x2="220" y2="280" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#FF8A00" />
+                    <stop offset="1" stopColor="#FF5F05" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </motion.div>
+
+          {/* Main Content */}
+          <div className="text-center space-y-4 md:space-y-10 mb-20 md:mb-28 relative">
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-5xl sm:text-7xl md:text-[8rem] font-heading font-black text-foreground tracking-[-0.05em] leading-[0.85] uppercase transition-all duration-700"
+            >
+              Your Real <br className="hidden md:block" /> Estate Edge
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              transition={{ delay: 0.5 }}
+              className="max-w-xl mx-auto text-[14px] md:text-[22px] text-foreground font-heading font-medium tracking-tight leading-relaxed px-6"
+            >
+              Built for Execution. Trusted to Deliver.
+            </motion.p>
           </div>
 
-          <PropertyGrid properties={featuredProperties} loading={loading} />
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-32 border-t border-white/5">
-        <div className="mx-auto max-w-7xl px-6 lg:px-12">
-          <div className="bg-[#141414] px-6 py-24 sm:p-24 border border-white/5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-red/5 blur-[100px] rounded-full"></div>
-            <div className="mx-auto max-w-2xl text-center space-y-8">
-              <h2 className="text-4xl md:text-6xl font-serif text-white leading-tight">
-                Begin your <br />
-                <span className="italic opacity-80">Sovereign Session.</span>
-              </h2>
-              <p className="mx-auto mt-6 max-w-xl text-lg font-light text-white/40 tracking-wide">
-                Join the vanguard of institutional fractional investing. Secure your position in the next generation of real estate.
-              </p>
-              <div className="mt-12 flex items-center justify-center">
-                <Link to="/register">
-                  <Button size="lg" className="px-16 bg-white text-black hover:bg-neutral-200">Get started today</Button>
-                </Link>
+          {/* Action Button */}
+          <Link to="/register">
+            <button className="bg-accent-orange hover:bg-accent-orange/90 text-white rounded-full pl-10 pr-2 py-2 text-[14px] font-black uppercase tracking-[0.3em] flex items-center gap-8 shadow-[0_20px_60px_-10px_rgba(255,95,5,0.4)] transition-all hover:scale-105 hover:-rotate-1 active:scale-95 group border border-white/10 h-16">
+              <span>Request Access</span>
+              <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center transition-all group-hover:bg-white group-hover:scale-110 group-hover:rotate-12">
+                <ArrowRight size={22} className="text-accent-orange" />
               </div>
+            </button>
+          </Link>
+        </div>
+
+        {/* Bottom Logo Row - Scrolling Pills */}
+        <div className="absolute bottom-6 md:bottom-10 w-full overflow-hidden">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="flex flex-nowrap justify-start items-center opacity-40 hover:opacity-100 transition-opacity pointer-events-none gap-4 animate-scroll">
+               {[
+                 'Apex Capital', 'Nova Equity', 'Nexus REIT', 'Vertex Funds', 
+                 'Prism Realty', 'Solaris Group', 'Quantum Assets', 'Echelon Partners',
+                 'Apex Capital', 'Nova Equity', 'Nexus REIT', 'Vertex Funds' 
+               ].map((brand, i) => (
+                 <div key={`${brand}-${i}`} className="flex-shrink-0 px-10 py-3.5 bg-foreground/5 border border-border rounded-full flex items-center gap-4 backdrop-blur-md transition-all hover:bg-foreground/10">
+                   <div className="w-2 h-2 rounded-full bg-accent-orange shadow-[0_0_10px_rgba(255,95,5,0.8)] animate-pulse"></div>
+                   <span className="text-[11px] font-black tracking-[0.3em] text-foreground uppercase whitespace-nowrap">
+                     {brand}
+                   </span>
+                 </div>
+               ))}
             </div>
           </div>
         </div>
       </section>
+
+      <style>{`
+        .animate-scroll {
+          animation: scroll 30s linear infinite;
+          width: max-content;
+        }
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .crosshair::before, .crosshair::after {
+          background: var(--color-foreground);
+          opacity: 0.2;
+        }
+      `}</style>
     </div>
   );
 };
