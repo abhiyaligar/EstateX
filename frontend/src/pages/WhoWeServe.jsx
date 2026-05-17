@@ -18,11 +18,11 @@ const WhoWeServe = () => {
 
       <section className="py-20 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-border">
          {[
-           { title: 'Asset Managers', icon: Briefcase, desc: 'Optimize portfolios with liquid, fractional real estate holdings.' },
-           { title: 'Property Builders', icon: Building2, desc: 'Access secondary market liquidity for ongoing developments.' },
-           { title: 'Family Offices', icon: Landmark, desc: 'Direct, secured exposure to prime global real estate assets.' }
+           { id: 'family-offices', title: 'Family Offices', icon: Landmark, desc: 'Direct, secured exposure to prime global real estate assets with customized portfolio tracking.' },
+           { id: 'asset-managers', title: 'Asset Managers', icon: Briefcase, desc: 'Optimize portfolios with liquid, fractional real estate holdings and automated compliance.' },
+           { id: 'builders', title: 'Builders', icon: Building2, desc: 'Access secondary market liquidity for ongoing developments and seamlessly tokenize new projects.' }
          ].map((item, i) => (
-           <div key={i} className="space-y-6 group">
+           <div key={i} id={item.id} className="space-y-6 group pt-20 -mt-20">
              <div className="h-12 w-12 bg-accent-orange/5 border border-accent-orange/10 rounded-lg flex items-center justify-center transition-colors group-hover:bg-accent-orange/10">
                <item.icon size={24} className="text-accent-orange" />
              </div>

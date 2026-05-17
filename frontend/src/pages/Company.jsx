@@ -18,11 +18,11 @@ const Company = () => {
 
       <section className="py-20 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-border">
          {[
-           { title: 'About Us', icon: Info, desc: 'Our mission is to bring institutional liquidity to the global real estate market.' },
-           { title: 'Documentation', icon: FileText, desc: 'Technical manifests and regulatory compliance papers.' },
-           { title: 'Contact', icon: Mail, desc: 'Connect with our institutional desk for partnership inquiries.' }
+           { id: 'about-us', title: 'About Us', icon: Info, desc: 'Our mission is to bring institutional liquidity to the global real estate market through decentralized infrastructure.' },
+           { id: 'careers', title: 'Careers', icon: FileText, desc: 'Join our elite team of protocol engineers, quant traders, and legal experts shaping the future of property markets.' },
+           { id: 'contact', title: 'Contact', icon: Mail, desc: 'Connect with our institutional desk for partnership inquiries, API access, and liquidity provisioning.' }
          ].map((item, i) => (
-           <div key={i} className="space-y-6 group">
+           <div key={i} id={item.id} className="space-y-6 group pt-20 -mt-20">
              <div className="h-12 w-12 bg-accent-orange/5 border border-accent-orange/10 rounded-lg flex items-center justify-center transition-colors group-hover:bg-accent-orange/10">
                <item.icon size={24} className="text-accent-orange" />
              </div>

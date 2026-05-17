@@ -9,6 +9,20 @@ import Footer from '../components/layout/Footer';
 const MainLayout = () => {
   const location = useLocation();
 
+  React.useEffect(() => {
+    if (location.hash) {
+      const element = document.getElementById(location.hash.slice(1));
+      if (element) {
+        // slight timeout ensures DOM is ready if navigating to new page
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location]);
+
   // Show footer only on true public pages, not on app pages within MainLayout
   const publicPages = ['/', '/trading', '/solutions', '/who-we-serve', '/company'];
   const showFooter = publicPages.includes(location.pathname);

@@ -18,11 +18,11 @@ const Solutions = () => {
 
       <section className="py-20 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-border">
          {[
-           { title: 'API Integration', icon: Cpu, desc: 'Connect your existing platforms directly to our liquidity nodes.' },
-           { title: 'White Label', icon: LayoutGrid, desc: 'Launch your own branded real estate marketplace in weeks.' },
-           { title: 'Compliance', icon: ShieldCheck, desc: 'Built-in KYC/AML protocols tailored for global jurisdictions.' }
+           { id: 'api', title: 'API Integration', icon: Cpu, desc: 'Connect your existing platforms directly to our liquidity nodes for programmatic trading and asset management.' },
+           { id: 'yield', title: 'Yield Generation', icon: LayoutGrid, desc: 'Automated staking and yield farming protocols on fractional real estate assets to maximize returns.' },
+           { id: 'custody', title: 'Secured Custody', icon: ShieldCheck, desc: 'Enterprise-grade multi-party computation (MPC) wallets with built-in KYC/AML protocols tailored for global jurisdictions.' }
          ].map((item, i) => (
-           <div key={i} className="space-y-6 group">
+           <div key={i} id={item.id} className="space-y-6 group pt-20 -mt-20">
              <div className="h-12 w-12 bg-accent-orange/5 border border-accent-orange/10 rounded-lg flex items-center justify-center transition-colors group-hover:bg-accent-orange/10">
                <item.icon size={24} className="text-accent-orange" />
              </div>
