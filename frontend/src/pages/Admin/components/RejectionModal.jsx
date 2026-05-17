@@ -16,24 +16,24 @@ const RejectionModal = ({ isOpen, onClose, onConfirm, title, message }) => {
         animate={{ scale: 1, opacity: 1 }}
         className="max-w-md w-full"
       >
-        <Card className="bg-[#0a0a0a] border-red-500/20 shadow-2xl p-0">
-          <CardHeader className="border-b border-white/5 p-8 bg-red-500/5">
+        <Card className="bg-background border-red-500/20 shadow-2xl p-0">
+          <CardHeader className="border-b border-black/5 dark:border-white/5 p-8 bg-red-500/5">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-red-500/10">
                 <AlertTriangle className="text-red-500" size={24} />
               </div>
               <div>
                 <CardTitle className="text-xl font-bold uppercase tracking-tighter">{title || 'Rejection Required'}</CardTitle>
-                <p className="text-[10px] uppercase tracking-widest text-white/40">Manual Review Protocol</p>
+                <p className="text-[10px] uppercase tracking-widest text-black/40 dark:text-white/40">Manual Review Protocol</p>
               </div>
             </div>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
-            <p className="text-sm text-white/60 leading-relaxed">{message || 'Please provide a detailed reason for this rejection.'}</p>
+            <p className="text-sm text-black/60 dark:text-white/60 leading-relaxed">{message || 'Please provide a detailed reason for this rejection.'}</p>
             <div className="space-y-3">
-              <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/40">Audit Comments / Rejection Reason</label>
+              <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-black/40 dark:text-white/40">Audit Comments / Rejection Reason</label>
               <textarea 
-                className="w-full bg-[#050505] border border-white/10 p-4 text-xs font-mono text-white focus:border-red-500 outline-none min-h-[120px]"
+                className="w-full bg-background border border-black/10 dark:border-white/10 p-4 text-xs font-mono text-foreground focus:border-red-500 outline-none min-h-[120px]"
                 placeholder="Entry required..."
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}

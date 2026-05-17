@@ -9,15 +9,15 @@ const MilestonesModal = ({ isOpen, onClose, project, onVerify }) => {
       <div className="absolute top-6 right-6 z-[110]">
         <Button variant="outline" size="sm" onClick={onClose}>CLOSE ESC</Button>
       </div>
-      <Card className="max-w-4xl w-full bg-[#0a0a0a] border-white/10 max-h-[90vh] overflow-hidden flex flex-col p-0">
-        <CardHeader className="border-b border-white/5 p-8">
+      <Card className="max-w-4xl w-full bg-background border-black/10 dark:border-white/10 max-h-[90vh] overflow-hidden flex flex-col p-0">
+        <CardHeader className="border-b border-black/5 dark:border-white/5 p-8">
           <CardTitle className="text-3xl font-bold uppercase tracking-tighter">{project.title}</CardTitle>
           <CardDescription className="uppercase tracking-widest text-[10px] mt-2">Construction Progress & Milestone Verification</CardDescription>
         </CardHeader>
         <CardContent className="overflow-y-auto p-0">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/30">
+              <tr className="border-b border-black/5 dark:border-white/5 text-[10px] uppercase tracking-[0.2em] text-black/30 dark:text-white/30">
                  <th className="p-6 md:p-8">#</th>
                  <th className="p-6 md:p-8">Description</th>
                  <th className="p-6 md:p-8">Release %</th>
@@ -28,22 +28,22 @@ const MilestonesModal = ({ isOpen, onClose, project, onVerify }) => {
             </thead>
             <tbody>
                {project.milestones?.sort((a,b) => a.milestone_number - b.milestone_number).map((m) => (
-                 <tr key={m.id} className="border-b border-white/5 hover:bg-white/[0.01]">
-                    <td className="p-6 md:p-8 font-mono text-xs text-white/40">{m.milestone_number}</td>
+                 <tr key={m.id} className="border-b border-black/5 dark:border-white/5 hover:bg-black/[0.02] dark:bg-white/[0.01]">
+                    <td className="p-6 md:p-8 font-mono text-xs text-black/40 dark:text-white/40">{m.milestone_number}</td>
                     <td className="p-6 md:p-8">
-                       <span className="text-sm text-white font-medium block max-w-sm">{m.description}</span>
+                       <span className="text-sm text-foreground font-medium block max-w-sm">{m.description}</span>
                     </td>
                     <td className="p-6 md:p-8">
-                       <span className="text-sm font-bold text-white bg-white/5 px-2 py-1 border border-white/10">{m.release_percentage}%</span>
+                       <span className="text-sm font-bold text-foreground bg-black/5 dark:bg-black/5 dark:bg-white/5 px-2 py-1 border border-black/10 dark:border-white/10">{m.release_percentage}%</span>
                     </td>
                     <td className="p-6 md:p-8">
-                       <span className="text-xs text-white/40">{m.target_date ? new Date(m.target_date).toLocaleDateString() : 'TBD'}</span>
+                       <span className="text-xs text-black/40 dark:text-white/40">{m.target_date ? new Date(m.target_date).toLocaleDateString() : 'TBD'}</span>
                     </td>
                     <td className="p-6 md:p-8">
                        <span className={`px-2 py-1 text-[8px] font-bold uppercase tracking-widest rounded-none border ${
                          m.status === 'completed' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
                          m.status === 'in_progress' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 
-                         'bg-white/10 text-white/30 border-white/10'
+                         'bg-black/10 dark:bg-black/10 dark:bg-white/10 text-black/30 dark:text-white/30 border-black/10 dark:border-white/10'
                        }`}>
                          {m.status}
                        </span>
@@ -51,7 +51,7 @@ const MilestonesModal = ({ isOpen, onClose, project, onVerify }) => {
                     <td className="p-6 md:p-8 text-right">
                        {m.status !== 'completed' && (
                          <div className="flex flex-col items-end gap-2">
-                           <span className="text-[10px] text-white/40 font-mono">PAYOUT: ₹{((m.release_percentage / 100) * (project.funding_raised || 0)).toLocaleString()}</span>
+                           <span className="text-[10px] text-black/40 dark:text-white/40 font-mono">PAYOUT: ₹{((m.release_percentage / 100) * (project.funding_raised || 0)).toLocaleString()}</span>
                            <Button 
                              size="sm" 
                              variant="primary" 
