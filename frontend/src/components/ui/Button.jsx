@@ -21,10 +21,10 @@ export const Button = React.forwardRef(({
   const baseStyles = "inline-flex items-center justify-center rounded-none font-heading font-black uppercase text-[10px] tracking-[0.2em] transition-all duration-500 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-30";
   
   const variants = {
-    primary: "bg-[#C5A059] text-black hover:bg-[#D4AF37] hover:shadow-[0_0_30px_rgba(212,175,55,0.15)]",
+    primary: "bg-surface text-black hover:bg-surface hover:shadow-[0_0_30px_rgba(212,175,55,0.15)]",
     secondary: "bg-white text-black hover:bg-zinc-200",
-    outline: "border border-[#C5A059]/30 text-[#C5A059] hover:bg-[#C5A059]/5 hover:border-[#C5A059]",
-    ghost: "text-zinc-500 hover:text-white hover:bg-white/5",
+    outline: "border border-[#C5A059]/30 text-[#C5A059] hover:bg-surface/5 hover:border-[#C5A059]",
+    ghost: "text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 hover:text-foreground hover:bg-black/5 dark:bg-black/5 dark:bg-white/5",
     danger: "border border-red-500/30 text-red-500 hover:bg-red-500/5 hover:border-red-500",
     success: "bg-green-500 text-black hover:bg-green-400",
   };

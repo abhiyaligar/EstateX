@@ -12,7 +12,7 @@ export const Input = React.forwardRef(({
   return (
     <div className="w-full">
       {label && (
-        <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] font-medium text-white/40">
+        <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] font-medium text-black/40 dark:text-white/40">
           {label}
         </label>
       )}
@@ -25,7 +25,7 @@ export const Input = React.forwardRef(({
         <input
           ref={ref}
           className={cn(
-            "flex h-12 w-full rounded-none border border-white/5 bg-[#111] px-4 py-2 text-sm text-white transition-all placeholder:text-white/20 focus-visible:outline-none focus-visible:border-white/20 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-12 w-full rounded-none border border-black/5 dark:border-white/5 bg-surface px-4 py-2 text-sm text-foreground transition-all placeholder:text-black/20 dark:text-white/20 focus-visible:outline-none focus-visible:border-black/20 dark:border-white/20 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
             Icon && "pl-12",
             error && "border-accent-red focus-visible:border-accent-red",
             className

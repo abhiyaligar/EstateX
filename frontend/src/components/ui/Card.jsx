@@ -30,7 +30,7 @@ export const CardTitle = ({ className, children, ...props }) => (
 );
 
 export const CardDescription = ({ className, children, ...props }) => (
-  <p className={cn("text-sm text-zinc-500 font-medium leading-relaxed", className)} {...props}>
+  <p className={cn("text-sm text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed", className)} {...props}>
     {children}
   </p>
 );
