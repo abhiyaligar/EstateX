@@ -27,6 +27,7 @@ import {
 } from 'recharts';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
+import { DelayedChart } from '../../../components/ui/DelayedChart';
 import StatCard from '../components/StatCard';
 
 const DashboardTab = ({ stats }) => {
@@ -91,66 +92,74 @@ const DashboardTab = ({ stats }) => {
               </div>
             </div>
 
-            <div className="h-[300px] w-full">
-               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} debounce={50}>
-                  <AreaChart data={historyData}>
-                    <defs>
-                      <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="#ffffff20" 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      tick={{ dy: 10 }}
-                    />
-                    <YAxis 
-                      stroke="#ffffff20" 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      tickFormatter={(value) => chartMetric === 'volume' ? `₹${value/1000}k` : value}
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', fontSize: '10px', borderRadius: '8px' }}
-                      itemStyle={{ color: 'var(--color-foreground)', fontWeight: 'bold' }}
-                    />
-                    <Area type="monotone" dataKey={chartMetric} stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorMetric)" />
-                  </AreaChart>
-               </ResponsiveContainer>
+            <div className="relative h-[300px] w-full">
+               <div className="absolute inset-0">
+                 <DelayedChart>
+                   <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={historyData}>
+                        <defs>
+                          <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                        <XAxis 
+                          dataKey="name" 
+                          stroke="#ffffff20" 
+                          fontSize={10} 
+                          tickLine={false} 
+                          axisLine={false}
+                          tick={{ dy: 10 }}
+                        />
+                        <YAxis 
+                          stroke="#ffffff20" 
+                          fontSize={10} 
+                          tickLine={false} 
+                          axisLine={false}
+                          tickFormatter={(value) => chartMetric === 'volume' ? `₹${value/1000}k` : value}
+                        />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', fontSize: '10px', borderRadius: '8px' }}
+                          itemStyle={{ color: 'var(--color-foreground)', fontWeight: 'bold' }}
+                        />
+                        <Area type="monotone" dataKey={chartMetric} stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorMetric)" />
+                      </AreaChart>
+                   </ResponsiveContainer>
+                 </DelayedChart>
+               </div>
             </div>
          </Card>
 
          {/* Distribution Chart */}
          <Card className="lg:col-span-4 p-8 flex flex-col items-center justify-center text-center">
             <h4 className="text-xs font-bold uppercase tracking-[0.2em] mb-8 text-foreground/40">Capital Distribution</h4>
-            <div className="h-[240px] w-full relative">
-               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} debounce={50}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', fontSize: '10px', borderRadius: '8px' }}
-                      labelStyle={{ color: '#ffffff', opacity: 0.6 }}
-                    />
-                  </PieChart>
-               </ResponsiveContainer>
+            <div className="relative h-[240px] w-full">
+               <div className="absolute inset-0">
+                 <DelayedChart>
+                   <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={pieData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {pieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', fontSize: '10px', borderRadius: '8px' }}
+                          labelStyle={{ color: '#ffffff', opacity: 0.6 }}
+                        />
+                      </PieChart>
+                   </ResponsiveContainer>
+                 </DelayedChart>
+               </div>
                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-[10px] uppercase tracking-widest text-foreground/30">Total</span>
                   <span className="text-lg font-bold">₹{(stats?.total_platform_escrow + stats?.total_investments_locked_inr || 0).toLocaleString()}</span>

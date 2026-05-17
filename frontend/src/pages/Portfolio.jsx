@@ -6,6 +6,7 @@ import { Building, TrendingUp, ArrowUpRight, ArrowDownRight, ArrowRight, Loader2
 import { Loader } from '../components/ui/Loader';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { DelayedChart } from '../components/ui/DelayedChart';
 
 const Portfolio = () => {
   const [loading, setLoading] = useState(true);
@@ -104,24 +105,28 @@ const Portfolio = () => {
                    <PieChartIcon size={16} className="text-foreground/40" />
                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/50">Exposure by City</h3>
                 </div>
-                <div className="h-[250px] p-4">
-                   <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} debounce={50}>
-                      <PieChart>
-                         <Pie
-                           data={cityAllocation}
-                           innerRadius={60}
-                           outerRadius={80}
-                           paddingAngle={5}
-                           dataKey="value"
-                         >
-                           {cityAllocation.map((entry, index) => (
-                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                           ))}
-                         </Pie>
-                         <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{ backgroundColor: 'var(--color-background)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0px', color: 'var(--color-foreground)' }} />
-                         <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                      </PieChart>
-                   </ResponsiveContainer>
+                <div className="relative h-[250px] w-full">
+                   <div className="absolute inset-4">
+                     <DelayedChart>
+                       <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                             <Pie
+                               data={cityAllocation}
+                               innerRadius={60}
+                               outerRadius={80}
+                               paddingAngle={5}
+                               dataKey="value"
+                             >
+                               {cityAllocation.map((entry, index) => (
+                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                               ))}
+                             </Pie>
+                             <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{ backgroundColor: 'var(--color-background)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0px', color: 'var(--color-foreground)' }} />
+                             <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                          </PieChart>
+                       </ResponsiveContainer>
+                     </DelayedChart>
+                   </div>
                 </div>
              </Card>
 
@@ -130,24 +135,28 @@ const Portfolio = () => {
                    <Building size={16} className="text-foreground/40" />
                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/50">Exposure by Property Type</h3>
                 </div>
-                <div className="h-[250px] p-4">
-                   <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} debounce={50}>
-                      <PieChart>
-                         <Pie
-                           data={typeAllocation}
-                           innerRadius={60}
-                           outerRadius={80}
-                           paddingAngle={5}
-                           dataKey="value"
-                         >
-                           {typeAllocation.map((entry, index) => (
-                             <Cell key={`cell-${index}`} fill={COLORS[(index + 1) % COLORS.length]} />
-                           ))}
-                         </Pie>
-                         <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{ backgroundColor: 'var(--color-background)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0px', color: 'var(--color-foreground)' }} />
-                         <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                      </PieChart>
-                   </ResponsiveContainer>
+                <div className="relative h-[250px] w-full">
+                   <div className="absolute inset-4">
+                     <DelayedChart>
+                       <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                             <Pie
+                               data={typeAllocation}
+                               innerRadius={60}
+                               outerRadius={80}
+                               paddingAngle={5}
+                               dataKey="value"
+                             >
+                               {typeAllocation.map((entry, index) => (
+                                 <Cell key={`cell-${index}`} fill={COLORS[(index + 1) % COLORS.length]} />
+                               ))}
+                             </Pie>
+                             <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{ backgroundColor: 'var(--color-background)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0px', color: 'var(--color-foreground)' }} />
+                             <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                          </PieChart>
+                       </ResponsiveContainer>
+                     </DelayedChart>
+                   </div>
                 </div>
              </Card>
           </div>
@@ -231,24 +240,26 @@ const Portfolio = () => {
           )
         ) : (
            <Card className="p-0 overflow-hidden bg-background border-border rounded-none">
-              <table className="w-full text-left">
-                 <thead className="bg-foreground/[0.02] border-b border-border">
-                    <tr className="text-[9px] uppercase tracking-[0.2em] font-black text-foreground/40">
-                       <th className="px-6 py-4">Asset Node</th>
-                       <th className="px-6 py-4">Cycle Period</th>
-                       <th className="px-6 py-4">Mature Bricks</th>
-                       <th className="px-6 py-4">Yield Output</th>
-                       <th className="px-6 py-4">Settlement Date</th>
-                    </tr>
-                 </thead>
-                 <tbody>
-                    <tr>
-                       <td colSpan="5" className="px-6 py-24 text-center text-foreground/30 uppercase font-black tracking-widest text-[10px]">
-                          No revenue yields recorded in the active ledger.
-                       </td>
-                    </tr>
-                 </tbody>
-              </table>
+              <div className="w-full overflow-x-auto custom-scrollbar">
+                <table className="w-full text-left min-w-[600px]">
+                   <thead className="bg-foreground/[0.02] border-b border-border">
+                      <tr className="text-[9px] uppercase tracking-[0.2em] font-black text-foreground/40">
+                         <th className="px-6 py-4">Asset Node</th>
+                         <th className="px-6 py-4">Cycle Period</th>
+                         <th className="px-6 py-4">Mature Bricks</th>
+                         <th className="px-6 py-4">Yield Output</th>
+                         <th className="px-6 py-4">Settlement Date</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                      <tr>
+                         <td colSpan="5" className="px-6 py-24 text-center text-foreground/30 uppercase font-black tracking-widest text-[10px]">
+                            No revenue yields recorded in the active ledger.
+                         </td>
+                      </tr>
+                   </tbody>
+                </table>
+              </div>
            </Card>
         )}
       </div>

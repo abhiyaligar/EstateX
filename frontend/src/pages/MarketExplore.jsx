@@ -9,29 +9,34 @@ import { LineChart, Line, ResponsiveContainer, YAxis, AreaChart, Area } from 're
 import { Button } from '../components/ui/Button';
 import propertyService from '../services/propertyService';
 import { Loader } from '../components/ui/Loader';
+import { DelayedChart } from '../components/ui/DelayedChart';
 
 const Sparkline = ({ data, color = "#D4AF37", height = 32 }) => (
-  <div className={`w-full`} style={{ height: `${height}px` }}>
-    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} debounce={50}>
-      <AreaChart data={data}>
-        <defs>
-          <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={color} stopOpacity={0.2}/>
-            <stop offset="95%" stopColor={color} stopOpacity={0}/>
-          </linearGradient>
-        </defs>
-        <Area 
-          type="monotone" 
-          dataKey="pv" 
-          stroke={color} 
-          strokeWidth={1.5} 
-          fill={`url(#grad-${color})`}
-          dot={false} 
-          isAnimationActive={false}
-        />
-        <YAxis hide domain={['auto', 'auto']} />
-      </AreaChart>
-    </ResponsiveContainer>
+  <div className="relative w-full" style={{ height: `${height}px` }}>
+    <div className="absolute inset-0">
+      <DelayedChart>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={color} stopOpacity={0.2}/>
+                <stop offset="95%" stopColor={color} stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <Area 
+              type="monotone" 
+              dataKey="pv" 
+              stroke={color} 
+              strokeWidth={1.5} 
+              fill={`url(#grad-${color})`}
+              dot={false} 
+              isAnimationActive={false}
+            />
+            <YAxis hide domain={['auto', 'auto']} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </DelayedChart>
+    </div>
   </div>
 );
 
