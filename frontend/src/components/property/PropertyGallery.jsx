@@ -39,7 +39,7 @@ const PropertyGallery = ({ images = [] }) => {
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
           />
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md text-foreground px-3 py-1.5 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             View Gallery
           </div>
         </div>
@@ -53,7 +53,7 @@ const PropertyGallery = ({ images = [] }) => {
           <div className="relative h-full cursor-pointer group overflow-hidden" onClick={() => { setSelectedIndex(2); setIsFullscreen(true); }}>
             <img src={displayImages[2]} alt="Property View 3" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
             <div className="absolute inset-0 bg-black/50 transition-opacity duration-300 flex items-center justify-center">
-              <span className="text-white font-medium text-lg">+{displayImages.length - 2} Photos</span>
+              <span className="text-foreground font-medium text-lg">+{displayImages.length - 2} Photos</span>
             </div>
           </div>
         </div>
@@ -63,14 +63,14 @@ const PropertyGallery = ({ images = [] }) => {
       {isFullscreen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-xl">
           <button 
-            className="absolute top-6 right-6 text-white/70 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors z-50"
+            className="absolute top-6 right-6 text-black/70 dark:text-white/70 hover:text-foreground p-2 rounded-full hover:bg-black/10 dark:bg-black/10 dark:bg-white/10 transition-colors z-50"
             onClick={() => setIsFullscreen(false)}
           >
             <X size={32} />
           </button>
           
           <button 
-            className="absolute left-4 md:left-12 text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors z-50 backdrop-blur-md bg-black/20 hidden md:block"
+            className="absolute left-4 md:left-12 text-black/70 dark:text-white/70 hover:text-foreground p-3 rounded-full hover:bg-black/10 dark:bg-black/10 dark:bg-white/10 transition-colors z-50 backdrop-blur-md bg-black/20 hidden md:block"
             onClick={handlePrev}
           >
             <ChevronLeft size={36} />
@@ -85,17 +85,17 @@ const PropertyGallery = ({ images = [] }) => {
              
              {/* Mobile Navigation */}
              <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-6 md:hidden z-50">
-                <button onClick={handlePrev} className="bg-black/50 backdrop-blur-md text-white p-3 rounded-full border border-white/20">
+                <button onClick={handlePrev} className="bg-black/50 backdrop-blur-md text-foreground p-3 rounded-full border border-black/20 dark:border-white/20">
                   <ChevronLeft size={24} />
                 </button>
-                <button onClick={handleNext} className="bg-black/50 backdrop-blur-md text-white p-3 rounded-full border border-white/20">
+                <button onClick={handleNext} className="bg-black/50 backdrop-blur-md text-foreground p-3 rounded-full border border-black/20 dark:border-white/20">
                   <ChevronRight size={24} />
                 </button>
              </div>
           </div>
           
           <button 
-            className="absolute right-4 md:right-12 text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors z-50 backdrop-blur-md bg-black/20 hidden md:block"
+            className="absolute right-4 md:right-12 text-black/70 dark:text-white/70 hover:text-foreground p-3 rounded-full hover:bg-black/10 dark:bg-black/10 dark:bg-white/10 transition-colors z-50 backdrop-blur-md bg-black/20 hidden md:block"
             onClick={handleNext}
           >
             <ChevronRight size={36} />
