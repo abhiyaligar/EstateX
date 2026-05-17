@@ -9,7 +9,7 @@ const MainLayout = () => {
   const isHomePage = location.pathname === '/';
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0a0a0a] text-white font-sans selection:bg-[#D4AF37]/30">
+    <div className="flex min-h-screen flex-col bg-background text-foreground font-sans selection:bg-surface/30">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
         {/* Universal Sidebar Node - Hidden on Landing Page for expansive "Normal Old" feel */}

@@ -9,7 +9,7 @@ const DashboardLayout = () => {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white">Loading Dashboard...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-background text-foreground">Loading Dashboard...</div>;
   }
 
   if (!isAuthenticated) {
@@ -17,7 +17,7 @@ const DashboardLayout = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0a0a0a] text-white font-sans">
+    <div className="flex min-h-screen flex-col bg-background text-foreground font-sans">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar for Desktop */}

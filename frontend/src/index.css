@@ -22,19 +22,36 @@
   --font-heading: 'Space Grotesk', sans-serif;
 
   /* Structural Colors */
-  --color-background: #050505;
-  --color-foreground: #e5e2e1;
-  --color-surface: #0d0d0d;
-  --color-surface-bright: #3a3939;
-  
-  --color-border: rgba(197, 160, 89, 0.2); /* 20% Primary Gold Hairline */
-  --color-input: #0d0d0d;
-  
+  --color-background: var(--bg-color);
+  --color-foreground: var(--fg-color);
+  --color-surface: var(--surface-color);
+  --color-surface-bright: var(--surface-bright-color);
+  --color-input: var(--input-color);
+  --color-border: var(--border-color);
+
   /* Institutional Geometry */
   --radius: 0px;
 }
 
 @layer base {
+  :root {
+    --bg-color: #fdfdfd;
+    --fg-color: #1a1a1a;
+    --surface-color: #f3f3f3;
+    --surface-bright-color: #e5e5e5;
+    --input-color: #f3f3f3;
+    --border-color: rgba(197, 160, 89, 0.3);
+  }
+
+  .dark {
+    --bg-color: #050505;
+    --fg-color: #e5e2e1;
+    --surface-color: #0d0d0d;
+    --surface-bright-color: #3a3939;
+    --input-color: #0d0d0d;
+    --border-color: rgba(197, 160, 89, 0.2);
+  }
+
   * {
     border-color: var(--color-border);
     border-radius: 0px !important;
