@@ -8,20 +8,20 @@ const DesignationCard = ({ id, icon: Icon, title, description, selected, onClick
   <motion.div
     onClick={() => onClick(id)}
     whileHover={{ y: -4 }}
-    className={`group relative flex flex-col p-6 md:p-8 rounded-none border-t border-white/5 cursor-pointer transition-all duration-500 ${
+    className={`group relative flex flex-col p-6 md:p-8 rounded-none border-t border-black/5 dark:border-white/5 cursor-pointer transition-all duration-500 ${
       selected 
-        ? 'bg-white/[0.03] border-white/20' 
-        : 'hover:bg-white/[0.01] hover:border-white/10'
+        ? 'bg-black/[0.05] dark:bg-white/[0.03] border-black/20 dark:border-white/20' 
+        : 'hover:bg-black/[0.02] dark:bg-white/[0.01] hover:border-black/10 dark:border-white/10'
     }`}
   >
-    <div className={`mb-6 md:mb-8 transition-colors duration-500 ${selected ? 'text-[#D4AF37]' : 'text-zinc-600 group-hover:text-zinc-400'}`}>
+    <div className={`mb-6 md:mb-8 transition-colors duration-500 ${selected ? 'text-[#D4AF37]' : 'text-zinc-600 group-hover:text-zinc-600 dark:text-zinc-400'}`}>
       <Icon size={28} className="md:w-8 md:h-8" strokeWidth={1.5} />
     </div>
-    <h3 className={`text-lg md:text-xl font-bold mb-3 md:mb-4 tracking-tight transition-colors duration-500 ${selected ? 'text-white' : 'text-zinc-400 group-hover:text-zinc-200'}`}>
+    <h3 className={`text-lg md:text-xl font-bold mb-3 md:mb-4 tracking-tight transition-colors duration-500 ${selected ? 'text-foreground' : 'text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-200'}`}>
       {title}
     </h3>
-    <p className="text-xs md:text-sm leading-relaxed text-zinc-500 font-medium">{description}</p>
-    {selected && <motion.div layoutId="selected-indicator" className="absolute bottom-0 left-0 w-full h-0.5 bg-[#D4AF37]" />}
+    <p className="text-xs md:text-sm leading-relaxed text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 font-medium">{description}</p>
+    {selected && <motion.div layoutId="selected-indicator" className="absolute bottom-0 left-0 w-full h-0.5 bg-surface" />}
   </motion.div>
 );
 
@@ -45,10 +45,10 @@ const FormInput = ({ label, placeholder, name, value, onChange, type = "text", i
           required={required}
           maxLength={maxLength}
           autoComplete="off"
-          className={`w-full bg-transparent border-b border-white/10 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-800 font-medium ${Icon ? 'pl-7 md:pl-8' : ''} ${showPasswordToggle ? 'pr-10' : ''}`}
+          className={`w-full bg-transparent border-b border-black/10 dark:border-white/10 py-2.5 md:py-3 text-sm md:text-base text-foreground focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-800 dark:text-zinc-200 font-medium ${Icon ? 'pl-7 md:pl-8' : ''} ${showPasswordToggle ? 'pr-10' : ''}`}
         />
         {showPasswordToggle && (
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-0 top-1/2 -translate-y-1/2 text-zinc-700 hover:text-white transition-colors">
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-0 top-1/2 -translate-y-1/2 text-zinc-700 hover:text-foreground transition-colors">
             {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
           </button>
         )}
@@ -70,7 +70,7 @@ const FormSelect = ({ label, name, value, onChange, options, icon: Icon, require
         value={value}
         onChange={onChange}
         required={required}
-        className={`w-full bg-[#0a0a0a] border-b border-white/10 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-[#D4AF37] transition-all appearance-none cursor-pointer ${Icon ? 'pl-7 md:pl-8' : ''}`}
+        className={`w-full bg-background border-b border-black/10 dark:border-white/10 py-2.5 md:py-3 text-sm md:text-base text-foreground focus:outline-none focus:border-[#D4AF37] transition-all appearance-none cursor-pointer ${Icon ? 'pl-7 md:pl-8' : ''}`}
       >
         <option value="" disabled>Select Option</option>
         {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -86,8 +86,8 @@ const ProgressHeader = ({ current, total, title }) => (
       <span className="text-[#D4AF37]">Step {current} of {total}</span>
       <span className="text-zinc-700 hidden sm:inline">{title}</span>
     </div>
-    <div className="h-0.5 w-full bg-white/5">
-      <motion.div initial={{ width: 0 }} animate={{ width: `${(current / total) * 100}%` }} className="h-full bg-[#D4AF37]" />
+    <div className="h-0.5 w-full bg-black/5 dark:bg-black/5 dark:bg-white/5">
+      <motion.div initial={{ width: 0 }} animate={{ width: `${(current / total) * 100}%` }} className="h-full bg-surface" />
     </div>
   </div>
 );
@@ -269,8 +269,8 @@ const Register = () => {
           <FormInput label="Create Password" name="password" value={formData.password} onChange={handleInputChange} placeholder="Min 8 characters" icon={KeyRound} showPasswordToggle />
           <FormInput label="Confirm Password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} placeholder="Repeat password" icon={KeyRound} showPasswordToggle />
           <div className="mt-8 md:mt-12 pt-6 md:pt-8 flex justify-between items-center">
-             <button onClick={() => setStep(1)} className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-700 hover:text-white transition-colors flex items-center gap-2"><ArrowLeft size={14}/> Back</button>
-             <button onClick={() => setSubStep(2)} disabled={!validateStep()} className={`px-8 md:px-10 py-4 md:py-5 flex items-center gap-4 group transition-all ${validateStep() ? 'bg-[#D4AF37] text-black' : 'bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50'}`}>
+             <button onClick={() => setStep(1)} className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-700 hover:text-foreground transition-colors flex items-center gap-2"><ArrowLeft size={14}/> Back</button>
+             <button onClick={() => setSubStep(2)} disabled={!validateStep()} className={`px-8 md:px-10 py-4 md:py-5 flex items-center gap-4 group transition-all ${validateStep() ? 'bg-surface text-black' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50'}`}>
                 <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em]">Next Step</span>
                 <ArrowRight size={14} />
              </button>
@@ -318,8 +318,8 @@ const Register = () => {
           )}
 
           <div className="mt-8 md:mt-12 pt-6 md:pt-8 flex justify-between items-center">
-             <button onClick={() => setSubStep(1)} className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-700 hover:text-white transition-colors flex items-center gap-2"><ArrowLeft size={14}/> Back</button>
-             <button onClick={() => setSubStep(3)} disabled={!validateStep()} className={`px-8 md:px-10 py-4 md:py-5 flex items-center gap-4 group transition-all ${validateStep() ? 'bg-[#D4AF37] text-black' : 'bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50'}`}>
+             <button onClick={() => setSubStep(1)} className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-700 hover:text-foreground transition-colors flex items-center gap-2"><ArrowLeft size={14}/> Back</button>
+             <button onClick={() => setSubStep(3)} disabled={!validateStep()} className={`px-8 md:px-10 py-4 md:py-5 flex items-center gap-4 group transition-all ${validateStep() ? 'bg-surface text-black' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50'}`}>
                 <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em]">Next: Identity</span>
                 <ArrowRight size={14} />
              </button>
@@ -340,11 +340,11 @@ const Register = () => {
           {error && <p className="text-red-500 text-[10px] mt-6 font-bold uppercase tracking-widest text-center animate-pulse">{error}</p>}
 
           <div className="mt-8 md:mt-12 pt-6 md:pt-8 flex justify-between items-center">
-             <button onClick={() => setSubStep(2)} className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-700 hover:text-white transition-colors flex items-center gap-2"><ArrowLeft size={14}/> Back</button>
+             <button onClick={() => setSubStep(2)} className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-700 hover:text-foreground transition-colors flex items-center gap-2"><ArrowLeft size={14}/> Back</button>
              <button 
                 onClick={handleRegisterUser} 
                 disabled={loading || !validateStep()}
-                className={`px-8 md:px-10 py-4 md:py-5 flex items-center gap-4 group transition-all ${validateStep() ? 'bg-[#D4AF37] text-black' : 'bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50'}`}
+                className={`px-8 md:px-10 py-4 md:py-5 flex items-center gap-4 group transition-all ${validateStep() ? 'bg-surface text-black' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50'}`}
              >
                 {loading ? <Loader2 className="animate-spin" size={14} /> : (
                   <>
@@ -375,8 +375,8 @@ const Register = () => {
               disabled={resendTimer > 0}
               className={`text-[9px] font-black uppercase tracking-[0.2em] px-6 py-2 transition-all duration-300 ${
                 resendTimer > 0 
-                ? 'text-zinc-700 bg-white/5 cursor-not-allowed' 
-                : 'text-[#D4AF37] hover:text-white border border-[#D4AF37]/30 hover:border-[#D4AF37] hover:bg-[#D4AF37]/5'
+                ? 'text-zinc-700 bg-black/5 dark:bg-black/5 dark:bg-white/5 cursor-not-allowed' 
+                : 'text-[#D4AF37] hover:text-foreground border border-[#D4AF37]/30 hover:border-[#D4AF37] hover:bg-surface/5'
               }`}
             >
               {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : 'Resend Verification Code'}
@@ -384,11 +384,11 @@ const Register = () => {
           </div>
           
           <div className="mt-12 md:mt-20 pt-6 md:pt-8 flex flex-col sm:flex-row items-center justify-between gap-6 md:gap-8">
-            <button onClick={() => setSubStep(3)} className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700 hover:text-white transition-colors flex items-center gap-2"><ArrowLeft size={14}/> Back</button>
+            <button onClick={() => setSubStep(3)} className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700 hover:text-foreground transition-colors flex items-center gap-2"><ArrowLeft size={14}/> Back</button>
             <button 
               onClick={handleSubmit} 
               disabled={loading || !validateStep()} 
-              className={`w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 flex items-center justify-center gap-4 group transition-all ${loading || !validateStep() ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50' : 'bg-[#D4AF37] text-black'}`}
+              className={`w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 flex items-center justify-center gap-4 group transition-all ${loading || !validateStep() ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50' : 'bg-surface text-black'}`}
             >
               {loading ? <Loader2 className="animate-spin" size={16} /> : (
                 <>
@@ -405,11 +405,11 @@ const Register = () => {
     // Step 5: Success
     return (
       <motion.div key="substep5" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-10 md:py-20">
-         <div className="w-20 h-20 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-[#D4AF37]/20">
+         <div className="w-20 h-20 bg-surface/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-[#D4AF37]/20">
             <CheckCircle2 size={40} className="text-[#D4AF37]" />
          </div>
          <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tighter leading-none">Verification Submitted.</h2>
-         <p className="text-zinc-500 mb-12 max-w-sm mx-auto font-medium leading-relaxed">Our compliance officers are reviewing your submission on the private ledger. Manual verification typically concludes within 24 hours.</p>
+         <p className="text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 mb-12 max-w-sm mx-auto font-medium leading-relaxed">Our compliance officers are reviewing your submission on the private ledger. Manual verification typically concludes within 24 hours.</p>
          <Link to="/dashboard">
             <button className="bg-white text-black px-12 py-6 font-black uppercase tracking-[0.4em] text-[10px] hover:bg-zinc-200 transition-colors shadow-2xl shadow-white/10">Enter Terminal</button>
          </Link>
@@ -418,19 +418,19 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37]/30 font-sans">
+    <div className="min-h-screen bg-background text-foreground selection:bg-surface/30 font-sans">
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed inset-0 z-[60] bg-black p-8 flex flex-col items-center justify-center gap-8 md:hidden">
-             <button onClick={() => setIsMenuOpen(false)} className="absolute right-8 top-8 text-zinc-500"><X size={32} /></button>
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed inset-0 z-[60] bg-background p-8 flex flex-col items-center justify-center gap-8 md:hidden">
+             <button onClick={() => setIsMenuOpen(false)} className="absolute right-8 top-8 text-zinc-600 dark:text-zinc-600 dark:text-zinc-400"><X size={32} /></button>
              {['Properties', 'Investors', 'About'].map(link => (
-               <button key={link} className="text-2xl font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors">{link}</button>
+               <button key={link} className="text-2xl font-black uppercase tracking-[0.3em] text-black/40 dark:text-white/40 hover:text-foreground transition-colors">{link}</button>
              ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <nav className="h-16 md:h-20 px-6 md:px-12 flex items-center justify-between border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
+      <nav className="h-16 md:h-20 px-6 md:px-12 flex items-center justify-between border-b border-black/5 dark:border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
         <Link to="/" className="flex items-center gap-2 group">
            <div className="w-7 h-7 md:w-8 md:h-8 bg-white flex items-center justify-center transition-transform group-hover:scale-110">
              <Building2 className="text-black" size={16} />
@@ -439,20 +439,20 @@ const Register = () => {
         </Link>
         <div className="hidden md:flex items-center gap-8">
            {['Properties', 'Investors', 'About'].map(link => (
-             <button key={link} className="text-[10px] uppercase tracking-widest font-bold text-zinc-500 hover:text-white transition-colors">{link}</button>
+             <button key={link} className="text-[10px] uppercase tracking-widest font-bold text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 hover:text-foreground transition-colors">{link}</button>
            ))}
-           <button className="text-[10px] uppercase tracking-widest font-bold text-white border border-white/10 px-4 py-2 hover:bg-white/5 transition-all">Get Started</button>
+           <button className="text-[10px] uppercase tracking-widest font-bold text-foreground border border-black/10 dark:border-white/10 px-4 py-2 hover:bg-black/5 dark:bg-black/5 dark:bg-white/5 transition-all">Get Started</button>
         </div>
-        <button onClick={() => setIsMenuOpen(true)} className="md:hidden p-2"><Menu size={24} className="text-zinc-500" /></button>
+        <button onClick={() => setIsMenuOpen(true)} className="md:hidden p-2"><Menu size={24} className="text-zinc-600 dark:text-zinc-600 dark:text-zinc-400" /></button>
       </nav>
 
       {step === 1 ? (
         <main className="max-w-7xl mx-auto px-6 md:px-12 pt-16 md:pt-32 pb-16 md:pb-20">
           <div className="text-center mb-16 md:mb-24">
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl md:text-6xl font-bold tracking-tight mb-6 md:mb-8">Select Designation</motion.h1>
-            <p className="text-zinc-500 text-sm md:text-lg max-w-2xl mx-auto leading-relaxed font-medium">To configure your institutional ledger and ensure regulatory compliance, please define your capacity.</p>
+            <p className="text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 text-sm md:text-lg max-w-2xl mx-auto leading-relaxed font-medium">To configure your institutional ledger and ensure regulatory compliance, please define your capacity.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-b border-white/5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-b border-black/5 dark:border-white/5">
             {designations.map((item) => (
               <DesignationCard key={item.id} {...item} selected={designation === item.id} onClick={setDesignation} />
             ))}
@@ -461,7 +461,7 @@ const Register = () => {
             <button
               onClick={() => designation && setStep(2)}
               disabled={!designation}
-              className={`w-full md:w-auto group flex items-center justify-center gap-4 px-10 py-5 transition-all duration-500 ${designation ? 'bg-[#D4AF37] text-black' : 'bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50'}`}
+              className={`w-full md:w-auto group flex items-center justify-center gap-4 px-10 py-5 transition-all duration-500 ${designation ? 'bg-surface text-black' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 cursor-not-allowed opacity-50'}`}
             >
               <span className="text-[11px] font-black uppercase tracking-[0.4em]">Continue</span>
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -470,14 +470,14 @@ const Register = () => {
         </main>
       ) : (
         <div className="flex min-h-[calc(100vh-5rem)]">
-          <div className="hidden lg:flex w-1/2 bg-[#0c0c0c] flex-col p-20 justify-between relative overflow-hidden border-r border-white/5">
+          <div className="hidden lg:flex w-1/2 bg-surface flex-col p-20 justify-between relative overflow-hidden border-r border-black/5 dark:border-white/5">
             <div className="absolute inset-0 opacity-10 grayscale">
                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80" alt="Architecture" className="w-full h-full object-cover" />
             </div>
             <div className="relative z-10">
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37] mb-8">Capacity: {designation?.toUpperCase()}</p>
               <h1 className="text-6xl font-bold tracking-tighter leading-tight mb-8">Institutional<br />Grade Entry.</h1>
-              <p className="text-zinc-500 max-w-sm leading-relaxed font-medium">Your onboarding journey is secured with enterprise-grade encryption and audited by top-tier compliance partners.</p>
+              <p className="text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 max-w-sm leading-relaxed font-medium">Your onboarding journey is secured with enterprise-grade encryption and audited by top-tier compliance partners.</p>
             </div>
             <div className="relative z-10 flex gap-8">
                <div className="flex items-center gap-3 opacity-30 group hover:opacity-100 transition-opacity"><ShieldCheck size={18}/><span className="text-[9px] font-bold uppercase tracking-widest">SOC 2 AUDITED</span></div>
@@ -485,7 +485,7 @@ const Register = () => {
             </div>
           </div>
 
-          <div className="w-full lg:w-1/2 p-6 md:p-12 lg:p-20 bg-[#0a0a0a]">
+          <div className="w-full lg:w-1/2 p-6 md:p-12 lg:p-20 bg-background">
             <div className="max-w-md mx-auto h-full flex flex-col justify-center">
               <ProgressHeader current={subStep} total={5} title="Audit Progression" />
               <AnimatePresence mode="wait">
@@ -496,10 +496,10 @@ const Register = () => {
         </div>
       )}
 
-      <footer className="px-6 md:px-12 py-8 md:py-10 flex flex-col md:flex-row items-center justify-between border-t border-white/5 opacity-40 gap-6 md:gap-0 text-center md:text-left">
+      <footer className="px-6 md:px-12 py-8 md:py-10 flex flex-col md:flex-row items-center justify-between border-t border-black/5 dark:border-white/5 opacity-40 gap-6 md:gap-0 text-center md:text-left">
         <div className="text-[10px] font-black tracking-[0.3em] uppercase">EstateX</div>
         <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-           {['Terms', 'Privacy', 'Legal', 'Contact'].map(link => <button key={link} className="text-[9px] uppercase tracking-widest font-bold hover:text-white transition-colors">{link}</button>)}
+           {['Terms', 'Privacy', 'Legal', 'Contact'].map(link => <button key={link} className="text-[9px] uppercase tracking-widest font-bold hover:text-foreground transition-colors">{link}</button>)}
         </div>
         <div className="text-[9px] uppercase tracking-widest font-bold">© 2024 EstateX. Institutional Stability.</div>
       </footer>

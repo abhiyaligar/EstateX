@@ -97,18 +97,18 @@ const MarketExplore = () => {
 
   if (loading) {
     return (
-      <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
          <Loader size={48} text="Synchronizing Market Nodes..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37]/30 pb-20 px-6 md:px-12 pt-10">
+    <div className="min-h-screen bg-background text-foreground selection:bg-surface/30 pb-20 px-6 md:px-12 pt-10">
       <div className="max-w-[1600px] mx-auto">
         
         {/* Institutional Header Section */}
-        <header className="mb-16 space-y-10 border-b border-white/5 pb-12">
+        <header className="mb-16 space-y-10 border-b border-black/5 dark:border-white/5 pb-12">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
              <div className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -118,7 +118,7 @@ const MarketExplore = () => {
                 <h1 className="text-4xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
                   Global <span className="text-[#D4AF37]">Explore</span>
                 </h1>
-                <p className="text-sm md:text-lg text-zinc-500 max-w-2xl leading-relaxed">
+                <p className="text-sm md:text-lg text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
                   Real-time auditing of verified real estate assets across global nodes. Transparent ledger tracking for secondary market liquidity.
                 </p>
              </div>
@@ -132,7 +132,7 @@ const MarketExplore = () => {
                      placeholder="SEARCH NODES..."
                      value={searchQuery}
                      onChange={(e) => setSearchQuery(e.target.value)}
-                     className="w-full bg-white/[0.02] border border-white/5 py-3.5 pl-12 pr-4 text-[10px] font-black tracking-widest uppercase focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-zinc-800"
+                     className="w-full bg-black/[0.04] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 py-3.5 pl-12 pr-4 text-[10px] font-black tracking-widest uppercase focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-zinc-800 dark:text-zinc-200"
                    />
                 </div>
              </div>
@@ -146,7 +146,7 @@ const MarketExplore = () => {
                 className={`text-[9px] font-black uppercase tracking-[0.3em] transition-all pb-2 border-b-2 whitespace-nowrap ${
                   activeTab === tab 
                   ? 'text-[#D4AF37] border-[#D4AF37]' 
-                  : 'text-zinc-700 border-transparent hover:text-zinc-400'
+                  : 'text-zinc-700 border-transparent hover:text-zinc-600 dark:text-zinc-400'
                 }`}
               >
                 {tab}
@@ -156,7 +156,7 @@ const MarketExplore = () => {
         </header>
 
         {/* Asset List Header */}
-        <div className="hidden lg:grid grid-cols-12 px-6 py-4 text-[9px] uppercase tracking-[0.3em] font-black text-zinc-700 mb-4 border-y border-white/5 bg-white/[0.01]">
+        <div className="hidden lg:grid grid-cols-12 px-6 py-4 text-[9px] uppercase tracking-[0.3em] font-black text-zinc-700 mb-4 border-y border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.01]">
           <div className="col-span-5">Sovereign Asset Node</div>
           <div className="col-span-2 text-right">Market Value</div>
           <div className="col-span-1 text-right">Delta</div>
@@ -182,30 +182,30 @@ const MarketExplore = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                     onClick={() => navigate(`/trade?assetId=${asset.id}`)}
-                    className="flex flex-col lg:grid lg:grid-cols-12 items-center px-6 py-6 bg-white/[0.01] border border-white/5 hover:border-[#D4AF37]/30 transition-all cursor-pointer group gap-6 lg:gap-0"
+                    className="flex flex-col lg:grid lg:grid-cols-12 items-center px-6 py-6 bg-black/[0.02] dark:bg-white/[0.01] border border-black/5 dark:border-white/5 hover:border-[#D4AF37]/30 transition-all cursor-pointer group gap-6 lg:gap-0"
                   >
                     {/* Asset Identity */}
                     <div className="lg:col-span-5 flex items-center gap-6 w-full min-w-0">
-                      <div className="w-14 h-14 rounded-none overflow-hidden border border-white/10 shrink-0 bg-[#0c0c0c]">
+                      <div className="w-14 h-14 rounded-none overflow-hidden border border-black/10 dark:border-white/10 shrink-0 bg-surface">
                         <img 
                           src={asset.images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=100'} 
                           alt={asset.title} 
-                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                          className="w-full h-full object-cover transition-all duration-700" 
                         />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-lg font-bold text-white group-hover:text-[#D4AF37] transition-colors truncate uppercase tracking-tight">{asset.title}</h4>
+                        <h4 className="text-lg font-bold text-foreground group-hover:text-[#D4AF37] transition-colors truncate uppercase tracking-tight">{asset.title}</h4>
                         <div className="text-[10px] text-zinc-600 truncate uppercase tracking-widest font-black mt-1 flex items-center gap-2">
-                           <MapPin size={10} className="text-zinc-800" />
+                           <MapPin size={10} className="text-zinc-800 dark:text-zinc-200" />
                            {asset.location?.city || 'Prime Cluster'}, {asset.location?.state}
                         </div>
                       </div>
                     </div>
                     
                     {/* Price Node */}
-                    <div className="lg:col-span-2 w-full lg:text-right border-t lg:border-0 border-white/5 pt-4 lg:pt-0">
+                    <div className="lg:col-span-2 w-full lg:text-right border-t lg:border-0 border-black/5 dark:border-white/5 pt-4 lg:pt-0">
                        <p className="lg:hidden text-[8px] font-black text-zinc-700 uppercase tracking-widest mb-1">Market Value</p>
-                       <p className="text-xl font-bold text-white font-mono tracking-tighter">
+                       <p className="text-xl font-bold text-foreground font-mono tracking-tighter">
                          ₹{(asset.financial?.market_value || asset.financial?.ipo_price || 0).toLocaleString()}
                        </p>
                     </div>
@@ -225,8 +225,8 @@ const MarketExplore = () => {
                     </div>
 
                     {/* Action Node */}
-                    <div className="lg:col-span-2 w-full lg:text-right border-t lg:border-0 border-white/5 pt-4 lg:pt-0">
-                       <button className="w-full lg:w-auto px-6 py-2 bg-white text-black text-[9px] font-black uppercase tracking-[0.2em] hover:bg-[#D4AF37] transition-all">
+                    <div className="lg:col-span-2 w-full lg:text-right border-t lg:border-0 border-black/5 dark:border-white/5 pt-4 lg:pt-0">
+                       <button className="w-full lg:w-auto px-6 py-2 bg-white text-black text-[9px] font-black uppercase tracking-[0.2em] hover:bg-surface transition-all">
                           Audit Node
                        </button>
                     </div>
@@ -234,8 +234,8 @@ const MarketExplore = () => {
                 ))}
               </motion.div>
             ) : (
-              <div className="text-center py-40 border border-white/5 bg-white/[0.01]">
-                <p className="text-zinc-800 text-[10px] uppercase font-black tracking-[0.4em]">Sovereign Node empty // No relational data</p>
+              <div className="text-center py-40 border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.01]">
+                <p className="text-zinc-800 dark:text-zinc-200 text-[10px] uppercase font-black tracking-[0.4em]">Sovereign Node empty // No relational data</p>
               </div>
             )}
           </AnimatePresence>
@@ -243,7 +243,7 @@ const MarketExplore = () => {
 
         {/* Pagination Controls */}
         {!loading && filteredProjects.length > itemsPerPage && (
-          <div className="mt-12 flex items-center justify-between border-t border-white/5 pt-10">
+          <div className="mt-12 flex items-center justify-between border-t border-black/5 dark:border-white/5 pt-10">
             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700">
               SEQUENCE {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, filteredProjects.length)} OF {filteredProjects.length}
             </p>
@@ -251,14 +251,14 @@ const MarketExplore = () => {
               <button 
                 onClick={() => paginate(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="w-10 h-10 flex items-center justify-center border border-white/5 text-zinc-700 hover:text-white disabled:opacity-10 transition-all hover:border-white/20"
+                className="w-10 h-10 flex items-center justify-center border border-black/5 dark:border-white/5 text-zinc-700 hover:text-foreground disabled:opacity-10 transition-all hover:border-black/20 dark:border-white/20"
               >
                 <ChevronLeft size={18} />
               </button>
               <button 
                 onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="w-10 h-10 flex items-center justify-center border border-white/5 text-zinc-700 hover:text-white disabled:opacity-10 transition-all hover:border-white/20"
+                className="w-10 h-10 flex items-center justify-center border border-black/5 dark:border-white/5 text-zinc-700 hover:text-foreground disabled:opacity-10 transition-all hover:border-black/20 dark:border-white/20"
               >
                 <ChevronRight size={18} />
               </button>

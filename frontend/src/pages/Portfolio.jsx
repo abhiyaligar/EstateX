@@ -59,7 +59,7 @@ const Portfolio = () => {
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white font-heading">
+          <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-foreground font-heading">
             My Portfolio
           </h1>
           <p className="mt-2 text-secondary-600 dark:text-secondary-400">
@@ -84,13 +84,13 @@ const Portfolio = () => {
              </Button>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-secondary-100 dark:border-secondary-800 shadow-sm flex items-center gap-4">
+        <div className="bg-surface p-4 rounded-2xl border border-secondary-100 dark:border-secondary-800 shadow-sm flex items-center gap-4">
            <div className="bg-primary-50 dark:bg-primary-900/20 p-2 rounded-xl text-primary-600 dark:text-primary-400">
               <TrendingUp size={24} />
            </div>
            <div>
               <p className="text-xs text-secondary-500 uppercase font-bold tracking-wider">Total Holdings</p>
-              <p className="text-2xl font-bold text-secondary-900 dark:text-white font-heading">
+              <p className="text-2xl font-bold text-secondary-900 dark:text-foreground font-heading">
                 ₹{totalValue.toLocaleString()}
               </p>
            </div>
@@ -102,7 +102,7 @@ const Portfolio = () => {
              <Card>
                 <div className="p-4 border-b border-secondary-100 dark:border-secondary-800 flex items-center gap-2">
                    <PieChartIcon size={16} className="text-primary-500" />
-                   <h3 className="text-sm font-bold uppercase tracking-wider text-secondary-900 dark:text-white">Exposure by City</h3>
+                   <h3 className="text-sm font-bold uppercase tracking-wider text-secondary-900 dark:text-foreground">Exposure by City</h3>
                 </div>
                 <div className="h-[250px] p-4">
                    <ResponsiveContainer width="99%" height="99%" minWidth={1} minHeight={1}>
@@ -118,7 +118,11 @@ const Portfolio = () => {
                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                            ))}
                          </Pie>
-                         <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                         <Tooltip 
+                           formatter={(value) => `₹${value.toLocaleString()}`} 
+                           contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} 
+                           labelStyle={{ color: '#ffffff', opacity: 0.6 }}
+                         />
                          <Legend verticalAlign="bottom" height={36} iconType="circle" />
                       </PieChart>
                    </ResponsiveContainer>
@@ -128,7 +132,7 @@ const Portfolio = () => {
              <Card>
                 <div className="p-4 border-b border-secondary-100 dark:border-secondary-800 flex items-center gap-2">
                    <Building size={16} className="text-sky-500" />
-                   <h3 className="text-sm font-bold uppercase tracking-wider text-secondary-900 dark:text-white">Exposure by Property Type</h3>
+                   <h3 className="text-sm font-bold uppercase tracking-wider text-secondary-900 dark:text-foreground">Exposure by Property Type</h3>
                 </div>
                 <div className="h-[250px] p-4">
                    <ResponsiveContainer width="99%" height="99%" minWidth={1} minHeight={1}>
@@ -144,7 +148,11 @@ const Portfolio = () => {
                              <Cell key={`cell-${index}`} fill={COLORS[(index + 1) % COLORS.length]} />
                            ))}
                          </Pie>
-                         <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                         <Tooltip 
+                           formatter={(value) => `₹${value.toLocaleString()}`} 
+                           contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} 
+                           labelStyle={{ color: '#ffffff', opacity: 0.6 }}
+                         />
                          <Legend verticalAlign="bottom" height={36} iconType="circle" />
                       </PieChart>
                    </ResponsiveContainer>
@@ -176,7 +184,7 @@ const Portfolio = () => {
                       <div className="flex-1 p-6 flex flex-col justify-between">
                         <div className="flex flex-col md:flex-row justify-between gap-4">
                           <div>
-                            <h3 className="text-lg font-bold text-secondary-900 dark:text-white hover:text-primary-600 transition-colors">
+                            <h3 className="text-lg font-bold text-secondary-900 dark:text-foreground hover:text-primary-600 transition-colors">
                               <Link to={`/properties/${holding.project_id}`}>{holding.project?.title}</Link>
                             </h3>
                             <p className="text-sm text-secondary-500 flex items-center gap-1 mt-1">
@@ -186,11 +194,11 @@ const Portfolio = () => {
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
                             <div>
                               <p className="text-xs text-secondary-400 uppercase font-bold mb-1">Quantity</p>
-                              <p className="font-bold text-secondary-900 dark:text-white">{holding.quantity} Bricks</p>
+                              <p className="font-bold text-secondary-900 dark:text-foreground">{holding.quantity} Bricks</p>
                             </div>
                             <div>
                               <p className="text-xs text-secondary-400 uppercase font-bold mb-1">Market Price</p>
-                              <p className="font-bold text-secondary-900 dark:text-white">₹{currentPrice.toLocaleString()}</p>
+                              <p className="font-bold text-secondary-900 dark:text-foreground">₹{currentPrice.toLocaleString()}</p>
                             </div>
                             <div>
                               <p className="text-xs text-secondary-400 uppercase font-bold mb-1">Profit/Loss</p>
@@ -216,11 +224,11 @@ const Portfolio = () => {
               );
             })
           ) : (
-            <Card className="p-12 text-center bg-secondary-50/50 border-dashed dark:bg-slate-900/30">
+            <Card className="p-12 text-center bg-black/[0.02] dark:bg-white/[0.02] border border-dashed border-black/10 dark:border-white/10">
               <div className="bg-white dark:bg-slate-800 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-secondary-100 dark:border-secondary-800">
                 <Building size={32} className="text-secondary-300" />
               </div>
-              <h3 className="text-xl font-bold text-secondary-900 dark:text-white mb-2 font-heading">Your portfolio is empty</h3>
+              <h3 className="text-xl font-bold text-secondary-900 dark:text-foreground mb-2 font-heading">Your portfolio is empty</h3>
               <p className="text-secondary-500 mb-8 max-w-sm mx-auto">
                 You haven't invested in any real estate projects yet. Start by browsing the market.
               </p>
@@ -232,7 +240,7 @@ const Portfolio = () => {
         ) : (
            <Card className="p-0 overflow-hidden">
               <table className="w-full text-left">
-                 <thead className="bg-secondary-50 dark:bg-slate-800/50">
+                 <thead className="bg-black/5 dark:bg-white/5">
                     <tr className="text-[10px] uppercase tracking-widest font-bold text-secondary-400">
                        <th className="px-6 py-4">Asset</th>
                        <th className="px-6 py-4">Period</th>

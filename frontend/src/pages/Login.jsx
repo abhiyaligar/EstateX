@@ -96,13 +96,13 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-[#0a0a0a] text-white flex flex-col selection:bg-[#D4AF37]/30">
+    <div className="h-screen overflow-hidden bg-background text-foreground flex flex-col selection:bg-surface/30">
       {/* Header - More compact */}
-      <nav className="h-14 md:h-16 px-6 md:px-12 flex items-center justify-between border-b border-white/5 bg-[#0a0a0a] z-50">
+      <nav className="h-14 md:h-16 px-6 md:px-12 flex items-center justify-between border-b border-black/5 dark:border-white/5 bg-background z-50">
         <Link to="/" className="flex items-center gap-2 group">
           <span className="text-xs md:text-sm font-black tracking-[0.4em] uppercase text-[#D4AF37]">EstateX</span>
         </Link>
-        <Link to="/register" className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors">
+        <Link to="/register" className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 hover:text-foreground transition-colors">
           Register
         </Link>
       </nav>
@@ -110,7 +110,7 @@ const Login = () => {
       {/* Main Content - Centered and Viewport Constrained */}
       <main className="flex-1 flex flex-col items-center justify-center p-4 relative">
         {/* Subtle Glows */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl max-h-[600px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none opacity-40" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl max-h-[600px] bg-surface/5 rounded-full blur-[120px] pointer-events-none opacity-40" />
 
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }} 
@@ -119,19 +119,19 @@ const Login = () => {
         >
           {/* Titles - Compacted */}
           <div className="text-center space-y-1 mb-1">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white leading-none">Welcome Back</h1>
-            <p className="text-zinc-500 text-[9px] md:text-[10px] font-medium tracking-wide uppercase tracking-[0.2em]">Institutional Wealth Terminal</p>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground leading-none">Welcome Back</h1>
+            <p className="text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 text-[9px] md:text-[10px] font-medium tracking-wide uppercase tracking-[0.2em]">Institutional Wealth Terminal</p>
           </div>
 
-          <div className="flex bg-white/5 p-1 rounded-sm mb-4">
+          <div className="flex bg-black/5 dark:bg-black/5 dark:bg-white/5 p-1 rounded-sm mb-4">
             <button 
-              className={`flex-1 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] py-2 transition-all ${loginMethod === 'password' ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'text-zinc-500 hover:text-white'}`}
+              className={`flex-1 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] py-2 transition-all ${loginMethod === 'password' ? 'bg-surface text-black shadow-lg shadow-[#D4AF37]/20' : 'text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 hover:text-foreground'}`}
               onClick={() => { setLoginMethod('password'); setOtpStep(1); setError(''); }}
             >
               Password
             </button>
             <button 
-              className={`flex-1 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] py-2 transition-all ${loginMethod === 'otp' ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'text-zinc-500 hover:text-white'}`}
+              className={`flex-1 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] py-2 transition-all ${loginMethod === 'otp' ? 'bg-surface text-black shadow-lg shadow-[#D4AF37]/20' : 'text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 hover:text-foreground'}`}
               onClick={() => { setLoginMethod('otp'); setOtpStep(1); setError(''); }}
             >
               OTP Login
@@ -150,7 +150,7 @@ const Login = () => {
                   onChange={handleInputChange}
                   placeholder="investor@domain.com"
                   required
-                  className="w-full bg-transparent border-b border-white/5 py-1.5 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 font-medium"
+                  className="w-full bg-transparent border-b border-black/5 dark:border-white/5 py-1.5 text-sm text-foreground focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 dark:text-zinc-100 font-medium"
                 />
               </div>
             )}
@@ -166,7 +166,7 @@ const Login = () => {
                   onChange={handleInputChange}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-transparent border-b border-white/5 py-1.5 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 font-medium"
+                  className="w-full bg-transparent border-b border-black/5 dark:border-white/5 py-1.5 text-sm text-foreground focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 dark:text-zinc-100 font-medium"
                 />
               </div>
             )}
@@ -182,7 +182,7 @@ const Login = () => {
                   placeholder="000000"
                   required
                   maxLength={6}
-                  className="w-full bg-transparent border-b border-white/5 py-1.5 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 font-medium text-center tracking-[0.5em]"
+                  className="w-full bg-transparent border-b border-black/5 dark:border-white/5 py-1.5 text-sm text-foreground focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 dark:text-zinc-100 font-medium text-center tracking-[0.5em]"
                 />
                 <p className="text-[8px] text-zinc-600 mt-1 text-center uppercase tracking-widest">Sent to {formData.email}</p>
                 <div className="flex flex-col gap-2 mt-2">
@@ -196,7 +196,7 @@ const Login = () => {
                   >
                     {resendTimer > 0 ? `Resend Code in ${resendTimer}s` : 'Resend Access Code'}
                   </button>
-                  <button type="button" onClick={() => setOtpStep(1)} className="w-full text-center text-[7px] text-zinc-700 hover:text-zinc-500 uppercase font-bold tracking-widest transition-colors">Change Email</button>
+                  <button type="button" onClick={() => setOtpStep(1)} className="w-full text-center text-[7px] text-zinc-700 hover:text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 uppercase font-bold tracking-widest transition-colors">Change Email</button>
                 </div>
               </div>
             )}
@@ -205,11 +205,11 @@ const Login = () => {
             {loginMethod === 'password' && (
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative w-3 h-3 border border-white/10 rounded-none bg-transparent flex items-center justify-center transition-all group-hover:border-[#D4AF37]">
+                  <div className="relative w-3 h-3 border border-black/10 dark:border-white/10 rounded-none bg-transparent flex items-center justify-center transition-all group-hover:border-[#D4AF37]">
                     <input type="checkbox" name="rememberMe" checked={formData.rememberMe} onChange={handleInputChange} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    {formData.rememberMe && <div className="w-1 h-1 bg-[#D4AF37]" />}
+                    {formData.rememberMe && <div className="w-1 h-1 bg-surface" />}
                   </div>
-                  <span className="text-[8px] font-bold text-zinc-700 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Remember</span>
+                  <span className="text-[8px] font-bold text-zinc-700 uppercase tracking-widest group-hover:text-zinc-600 dark:text-zinc-400 transition-colors">Remember</span>
                 </label>
                 <Link to="/forgot-password" university className="text-[8px] font-bold text-[#D4AF37]/50 hover:text-[#D4AF37] transition-colors uppercase tracking-widest">Forgot Password?</Link>
               </div>
@@ -221,7 +221,7 @@ const Login = () => {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-[#D4AF37] text-black py-3.5 font-black uppercase tracking-[0.3em] text-[10px] hover:bg-[#c4a132] transition-all flex items-center justify-center gap-2 shadow-2xl shadow-[#D4AF37]/10"
+              className="w-full bg-surface text-black py-3.5 font-black uppercase tracking-[0.3em] text-[10px] hover:bg-surface transition-all flex items-center justify-center gap-2 shadow-2xl shadow-[#D4AF37]/10"
             >
               {loading ? <Loader2 className="animate-spin" size={12} /> : (loginMethod === 'password' || otpStep === 2 ? 'Authorize Session' : 'Request Access Code')}
             </button>
@@ -231,15 +231,15 @@ const Login = () => {
           <div className="space-y-4 pt-1">
             {/* Divider */}
             <div className="relative py-1">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-              <div className="relative flex justify-center text-[6px] font-black uppercase tracking-[0.3em] text-zinc-800">
-                <span className="bg-[#0a0a0a] px-3">Institutional SSO</span>
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-black/5 dark:border-white/5"></div></div>
+              <div className="relative flex justify-center text-[6px] font-black uppercase tracking-[0.3em] text-zinc-800 dark:text-zinc-200">
+                <span className="bg-background px-3">Institutional SSO</span>
               </div>
             </div>
 
             <button 
               onClick={loginWithGoogle}
-              className="w-full border border-white/5 py-3 font-bold uppercase tracking-[0.1em] text-[8px] flex items-center justify-center gap-2 hover:bg-white/5 transition-all text-white/50 hover:text-white"
+              className="w-full border border-black/5 dark:border-white/5 py-3 font-bold uppercase tracking-[0.1em] text-[8px] flex items-center justify-center gap-2 hover:bg-black/5 dark:bg-black/5 dark:bg-white/5 transition-all text-black/50 dark:text-white/50 hover:text-foreground"
             >
               <Chrome size={10} className="text-[#D4AF37]" />
               Continue with Google
@@ -254,11 +254,11 @@ const Login = () => {
       </main>
 
       {/* Footer - Extra Compact */}
-      <footer className="px-6 md:px-12 h-10 md:h-12 flex flex-col md:flex-row items-center justify-between border-t border-white/5 text-[7px] font-bold text-zinc-800 uppercase tracking-[0.3em] gap-2 md:gap-0">
+      <footer className="px-6 md:px-12 h-10 md:h-12 flex flex-col md:flex-row items-center justify-between border-t border-black/5 dark:border-white/5 text-[7px] font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-[0.3em] gap-2 md:gap-0">
         <div className="hidden sm:block">© 2024 EstateX.</div>
         <div className="flex gap-4 md:gap-6">
            {['Privacy', 'Terms', 'Disclosure'].map(link => (
-             <button key={link} className="hover:text-white transition-colors">{link}</button>
+             <button key={link} className="hover:text-foreground transition-colors">{link}</button>
            ))}
         </div>
       </footer>

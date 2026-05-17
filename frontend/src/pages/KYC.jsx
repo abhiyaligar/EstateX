@@ -83,7 +83,7 @@ const KYC = () => {
                <Shield size={40} />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-secondary-900 dark:text-white font-heading">Identity Verification</h2>
+              <h2 className="text-2xl font-bold text-secondary-900 dark:text-foreground font-heading">Identity Verification</h2>
               <p className="text-secondary-500 max-w-sm mx-auto">
                 Secure your account and unlock higher investment limits by completing our quick KYC process.
               </p>
@@ -121,7 +121,7 @@ const KYC = () => {
               <ArrowLeft size={16} /> Back
             </button>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-secondary-900 dark:text-white font-heading">Verify Email</h2>
+              <h2 className="text-2xl font-bold text-secondary-900 dark:text-foreground font-heading">Verify Email</h2>
               <p className="text-secondary-500">Enter the 6-digit code sent to your email.</p>
             </div>
             <div className="space-y-4">
@@ -143,7 +143,7 @@ const KYC = () => {
         return (
           <div className="space-y-6">
              <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-secondary-900 dark:text-white font-heading">PAN Verification</h2>
+              <h2 className="text-2xl font-bold text-secondary-900 dark:text-foreground font-heading">PAN Verification</h2>
               <p className="text-secondary-500">Government ID is required for real estate tax compliance.</p>
             </div>
             <div className="space-y-4">
@@ -167,7 +167,7 @@ const KYC = () => {
                <CheckCircle2 size={40} />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-secondary-900 dark:text-white font-heading">KYC Submitted!</h2>
+              <h2 className="text-2xl font-bold text-secondary-900 dark:text-foreground font-heading">KYC Submitted!</h2>
               <p className="text-secondary-500">Your documents are being processed. This usually takes 2-4 hours.</p>
             </div>
             <Button className="w-full h-12" onClick={() => navigate('/dashboard/profile')}>
@@ -178,11 +178,11 @@ const KYC = () => {
       case 4: // Already Approved
         return (
           <div className="text-center space-y-6">
-             <div className="w-20 h-20 bg-primary-600 rounded-3xl flex items-center justify-center mx-auto text-white shadow-xl shadow-primary-500/20">
+             <div className="w-20 h-20 bg-primary-600 rounded-3xl flex items-center justify-center mx-auto text-foreground shadow-xl shadow-primary-500/20">
                <Shield size={40} />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-secondary-900 dark:text-white font-heading">You're Verified!</h2>
+              <h2 className="text-2xl font-bold text-secondary-900 dark:text-foreground font-heading">You're Verified!</h2>
               <p className="text-secondary-500">Your identity is successfully verified. You have full access to all features.</p>
             </div>
             <Button className="w-full h-12" onClick={() => navigate('/dashboard')}>

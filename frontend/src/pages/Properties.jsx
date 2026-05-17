@@ -33,15 +33,15 @@ const IPOCenter = () => {
 
   if (loading) {
      return (
-       <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
+       <div className="h-screen bg-background flex items-center justify-center">
           <Loader size={48} text="Synchronizing Asset Node..." />
        </div>
      );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-20 px-6 md:px-12">
-      <header className="mb-20 space-y-8 border-b border-white/5 pb-16">
+    <div className="min-h-screen bg-background text-foreground pt-10 pb-20 px-6 md:px-12">
+      <header className="mb-20 space-y-8 border-b border-black/5 dark:border-white/5 pb-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
            <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -51,7 +51,7 @@ const IPOCenter = () => {
               <h1 className="text-4xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
                 IPO <span className="text-[#D4AF37]">Center</span>
               </h1>
-              <p className="text-sm md:text-lg text-zinc-500 max-w-2xl leading-relaxed">
+              <p className="text-sm md:text-lg text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
                 Direct access to institutional-grade primary offerings. Verified real estate assets undergoing initial capital deployment.
               </p>
            </div>
@@ -61,7 +61,7 @@ const IPOCenter = () => {
                 <button 
                   key={cat}
                   onClick={() => setActiveFilter(cat)}
-                  className={`text-[9px] font-black uppercase tracking-[0.3em] transition-all pb-2 border-b-2 ${activeFilter === cat ? 'text-[#D4AF37] border-[#D4AF37]' : 'text-zinc-700 border-transparent hover:text-zinc-400'}`}
+                  className={`text-[9px] font-black uppercase tracking-[0.3em] transition-all pb-2 border-b-2 ${activeFilter === cat ? 'text-[#D4AF37] border-[#D4AF37]' : 'text-zinc-700 border-transparent hover:text-zinc-600 dark:text-zinc-400'}`}
                 >
                   {cat}
                 </button>
@@ -78,16 +78,16 @@ const IPOCenter = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="group flex flex-col bg-white/[0.01] border border-white/5 hover:border-[#D4AF37]/30 transition-all duration-500 cursor-pointer"
+              className="group flex flex-col bg-black/[0.02] dark:bg-white/[0.01] border border-black/5 dark:border-white/5 hover:border-[#D4AF37]/30 transition-all duration-500 cursor-pointer"
               onClick={() => window.location.href = `/properties/${property.id}`}
             >
                <div className="relative aspect-[16/10] overflow-hidden">
                   <img 
                     src={property.images?.[0] || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80'} 
                     alt={property.title} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100"
+                    className="w-full h-full object-cover transition-all duration-700 scale-105 group-hover:scale-100"
                   />
-                  <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-md px-3 py-1.5 text-[8px] font-black uppercase tracking-widest border border-white/10 flex items-center gap-2">
+                  <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-md px-3 py-1.5 text-[8px] font-black text-white uppercase tracking-widest border border-black/10 dark:border-white/10 flex items-center gap-2">
                      <span className={`w-1.5 h-1.5 rounded-full ${property.ipo_status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`} />
                      {property.ipo_status === 'active' ? 'Live IPO' : 'Upcoming'}
                   </div>
@@ -97,7 +97,7 @@ const IPOCenter = () => {
                   <div className="space-y-4">
                      <div>
                         <h3 className="text-xl font-bold tracking-tight mb-2 group-hover:text-[#D4AF37] transition-colors">{property.title}</h3>
-                        <p className="text-[10px] text-zinc-500 font-medium flex items-center gap-2">
+                        <p className="text-[10px] text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 font-medium flex items-center gap-2">
                           <MapPin size={10} /> {property.location?.city}, {property.location?.state}
                         </p>
                      </div>
@@ -107,17 +107,17 @@ const IPOCenter = () => {
                            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Deployment Progress</p>
                            <p className="text-[10px] font-bold text-[#D4AF37]">{Math.round((property.financial?.funding_raised / property.financial?.total_budget) * 100)}%</p>
                         </div>
-                        <div className="h-1 bg-white/5 overflow-hidden">
+                        <div className="h-1 bg-black/5 dark:bg-black/5 dark:bg-white/5 overflow-hidden">
                            <motion.div 
                              initial={{ width: 0 }}
                              animate={{ width: `${(property.financial?.funding_raised / property.financial?.total_budget) * 100}%` }}
-                             className="h-full bg-[#D4AF37]"
+                             className="h-full bg-surface"
                            />
                         </div>
                      </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-8 pt-8 border-t border-white/5">
+                  <div className="grid grid-cols-2 gap-8 pt-8 border-t border-black/5 dark:border-white/5">
                      <div>
                         <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-1">Target Capital</p>
                         <p className="text-sm font-bold">₹{(property.financial?.total_budget / 10000000).toFixed(1)}Cr</p>
@@ -129,7 +129,7 @@ const IPOCenter = () => {
                   </div>
 
                   <div className="pt-4">
-                     <button className="w-full bg-white text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-[#D4AF37] transition-all flex items-center justify-center gap-3 group/btn">
+                     <button className="w-full bg-white text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-surface transition-all flex items-center justify-center gap-3 group/btn">
                         {property.ipo_status === 'active' ? 'Invest in Node' : 'View Details'} <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                      </button>
                   </div>
@@ -137,13 +137,13 @@ const IPOCenter = () => {
             </motion.div>
           ))
         ) : (
-          <div className="col-span-full py-40 border border-white/5 bg-white/[0.01] flex flex-col items-center justify-center gap-6 text-center px-6">
-             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
+          <div className="col-span-full py-40 border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.01] flex flex-col items-center justify-center gap-6 text-center px-6">
+             <div className="w-16 h-16 rounded-full bg-black/5 dark:bg-black/5 dark:bg-white/5 flex items-center justify-center">
                 <Info size={24} className="text-zinc-700" />
              </div>
              <div className="space-y-2">
                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-700">No Active IPO Listings Identified</p>
-                <p className="text-xs text-zinc-500 max-w-sm">There are currently no primary market offerings undergoing capital deployment.</p>
+                <p className="text-xs text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 max-w-sm">There are currently no primary market offerings undergoing capital deployment.</p>
              </div>
           </div>
         )}
