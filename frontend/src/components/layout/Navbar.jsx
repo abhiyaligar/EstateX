@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import ThemeSwitch from '../ui/ThemeSwitch';
 
 // ─── PILL NAV (Landing pages) ────────────────────────────────────────────────
 // Used in MainLayout: /, /trading, /solutions, /who-we-serve, /company
@@ -36,10 +37,7 @@ export const LandingNav = () => {
     <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-7xl scrypt-nav rounded-full px-2 py-2 flex items-center justify-between transition-all">
       {/* Left: Logo + Nav Links */}
       <div className="flex items-center gap-4 lg:gap-8 pl-4">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-accent-orange rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,95,5,0.4)] transition-transform hover:scale-105">
-            <Zap size={20} className="text-white fill-white" />
-          </div>
+        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <span className="hidden sm:block text-lg md:text-xl font-heading font-black tracking-tighter text-white uppercase">EstateX</span>
         </Link>
 
@@ -69,10 +67,15 @@ export const LandingNav = () => {
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-accent-orange/5 to-transparent pointer-events-none" />
                     {item.dropdown.map(subItem => (
-                      <button key={subItem} className="relative w-full text-left text-[10px] font-black text-foreground/50 hover:text-foreground hover:bg-foreground/5 px-5 py-3.5 rounded-xl transition-all uppercase tracking-[0.2em] group/item flex items-center justify-between">
+                      <Link 
+                        key={subItem} 
+                        to={`${item.path}#${subItem.toLowerCase().replace(/\\s+/g, '-')}`}
+                        onClick={() => setActiveDropdown(null)}
+                        className="relative w-full text-left text-[10px] font-black text-foreground/50 hover:text-foreground hover:bg-foreground/5 px-5 py-3.5 rounded-xl transition-all uppercase tracking-[0.2em] group/item flex items-center justify-between"
+                      >
                         {subItem}
                         <ArrowRight size={10} className="opacity-0 -translate-x-2 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all text-accent-orange" />
-                      </button>
+                      </Link>
                     ))}
                   </motion.div>
                 )}
@@ -83,10 +86,8 @@ export const LandingNav = () => {
       </div>
 
       {/* Right: Theme + Auth actions */}
-      <div className="flex items-center gap-1 md:gap-2 pr-2">
-        <button onClick={toggleTheme} className="p-2 text-white/50 hover:text-white transition-colors">
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
+      <div className="flex items-center gap-1 md:gap-3 pr-2">
+        <ThemeSwitch isPublic={true} />
 
         {isAuthenticated ? (
           <div className="hidden sm:flex items-center gap-2">
@@ -193,7 +194,7 @@ export const AppNav = () => {
 
           {/* Logo — always links back to landing page */}
           <Link to="/" className="flex items-center gap-3 group shrink-0">
-            <div className="h-9 w-9 bg-accent-orange rounded-full flex items-center justify-center shadow-[0_0_16px_rgba(255,95,5,0.35)] transition-transform group-hover:scale-110">
+            <div className="h-9 w-9 bg-accent-orange rounded-full flex items-center justify-center shadow-[0_0_16px_rgba(176, 38, 255,0.35)] transition-transform group-hover:scale-110">
               <Zap size={18} className="text-white fill-white" />
             </div>
           </Link>
@@ -219,9 +220,7 @@ export const AppNav = () => {
 
           {/* Theme + Bell */}
           <div className="flex items-center gap-1 bg-foreground/[0.03] p-1 rounded-full border border-border">
-            <button onClick={toggleTheme} className="p-2 text-foreground/30 hover:text-foreground hover:bg-foreground/5 rounded-full transition-all">
-              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
+            <ThemeSwitch />
             <button className="p-2 text-foreground/30 hover:text-accent-orange hover:bg-foreground/5 rounded-full transition-all">
               <Bell size={17} />
             </button>
@@ -229,7 +228,7 @@ export const AppNav = () => {
 
           {/* User profile pill */}
           <Link to="/dashboard/profile" className="flex items-center gap-2.5 pl-1.5 pr-4 py-1.5 bg-foreground/[0.04] hover:bg-accent-orange/[0.06] border border-border rounded-full transition-all group">
-            <div className="h-8 w-8 bg-accent-orange text-white rounded-full flex items-center justify-center font-black text-xs shadow-[0_0_16px_rgba(255,95,5,0.3)]">
+            <div className="h-8 w-8 bg-accent-orange text-white rounded-full flex items-center justify-center font-black text-xs shadow-[0_0_16px_rgba(176, 38, 255,0.3)]">
               {user?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="hidden lg:flex flex-col items-start leading-none gap-0.5">

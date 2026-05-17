@@ -48,7 +48,7 @@ const Preloader = ({ onComplete }) => {
     >
       {/* Cinematic Background */}
       <div className="absolute inset-0 blueprint-grid-dashed opacity-10" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,95,5,0.05)_0%,transparent_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(176, 38, 255,0.05)_0%,transparent_70%)]" />
 
       {/* Scanning Laser Line */}
       <motion.div
@@ -134,7 +134,7 @@ const Preloader = ({ onComplete }) => {
         <div className="w-full space-y-8" style={{ transformStyle: 'preserve-3d', transform: 'rotateX(5deg)' }}>
           <div className="h-2 w-full bg-foreground/[0.04] border border-border rounded-full relative overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
             <motion.div
-              className="h-full bg-gradient-to-r from-accent-orange via-white to-accent-orange rounded-full shadow-[0_0_20px_rgba(255,95,5,1)]"
+              className="h-full bg-gradient-to-r from-accent-orange via-white to-accent-orange rounded-full shadow-[0_0_20px_rgba(176, 38, 255,1)]"
               style={{ width: `${progress}%` }}
             />
             {/* Shimmer Light */}
@@ -183,7 +183,7 @@ const Home = () => {
 
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, -100]);
-  const y2 = useTransform(scrollY, [0, 500], [0, 100]);
+  const y2 = useTransform(scrollY, [0, 500], [0, -80]);
   const rotate = useTransform(scrollY, [0, 1000], [0, 45]);
 
   const handleLoadingComplete = () => {
@@ -240,7 +240,7 @@ const Home = () => {
               </p>
             </motion.div>
 
-            <motion.div style={{ y: y2 }} className="absolute top-[35%] right-[-8%] lg:right-[8%] w-56 space-y-4 hidden lg:block text-right flex flex-col items-end">
+            <motion.div style={{ y: y2 }} className="absolute z-20 top-[25%] right-[-8%] lg:right-[8%] w-56 space-y-4 hidden lg:block text-right flex flex-col items-end">
               <div className="space-y-1">
                 <p className="text-[12px] font-black text-foreground opacity-70">Regulated.</p>
                 <p className="text-[12px] font-black text-foreground opacity-70">Built for Execution</p>
@@ -263,7 +263,7 @@ const Home = () => {
                   <defs>
                     <linearGradient id="bolt_grad" x1="40" y1="0" x2="220" y2="280" gradientUnits="userSpaceOnUse">
                       <stop stopColor="#FF8A00" />
-                      <stop offset="1" stopColor="#FF5F05" />
+                      <stop offset="1" stopColor="#B026FF" />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -291,7 +291,7 @@ const Home = () => {
 
             {/* Action Button */}
             <Link to="/register">
-              <button className="bg-accent-orange hover:bg-accent-orange/90 text-foreground rounded-full pl-10 pr-2 py-2 text-[14px] font-black uppercase tracking-[0.3em] flex items-center gap-8 shadow-[0_20px_60px_-10px_rgba(255,95,5,0.4)] transition-all hover:scale-105 hover:-rotate-1 active:scale-95 group border border-border h-16">
+              <button className="bg-accent-orange hover:bg-accent-orange/90 text-foreground rounded-full pl-10 pr-2 py-2 text-[14px] font-black uppercase tracking-[0.3em] flex items-center gap-8 shadow-[0_20px_60px_-10px_rgba(176, 38, 255,0.4)] transition-all hover:scale-105 hover:-rotate-1 active:scale-95 group border border-border h-16">
                 <span>Request Access</span>
                 <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center transition-all group-hover:bg-white group-hover:scale-110 group-hover:rotate-12">
                   <ArrowRight size={22} className="text-accent-orange" />
@@ -310,7 +310,7 @@ const Home = () => {
                   'Apex Capital', 'Nova Equity', 'Nexus REIT', 'Vertex Funds'
                 ].map((brand, i) => (
                   <div key={`${brand}-${i}`} className="flex-shrink-0 px-10 py-3.5 bg-foreground/5 border border-border rounded-full flex items-center gap-4 backdrop-blur-md transition-all hover:bg-foreground/10">
-                    <div className="w-2 h-2 rounded-full bg-accent-orange shadow-[0_0_10px_rgba(255,95,5,0.8)] animate-pulse"></div>
+                    <div className="w-2 h-2 rounded-full bg-accent-orange shadow-[0_0_10px_rgba(176, 38, 255,0.8)] animate-pulse"></div>
                     <span className="text-[11px] font-black tracking-[0.3em] text-foreground uppercase whitespace-nowrap">
                       {brand}
                     </span>

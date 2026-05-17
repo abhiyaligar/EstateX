@@ -62,14 +62,14 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-16 md:w-24 flex-shrink-0 hidden md:flex flex-col border-r border-border bg-background z-50 transition-all duration-500 relative overflow-hidden">
+    <aside className="w-16 md:w-20 flex-shrink-0 hidden md:flex flex-col border-r border-border bg-background z-50 transition-all duration-500 relative overflow-hidden">
       {/* Background Glow */}
       <div className="absolute top-0 left-0 w-full h-full bg-accent-orange/[0.02] pointer-events-none" />
 
 
 
       {/* Primary Navigation */}
-      <nav className="flex-1 py-10 flex flex-col items-center gap-4 md:gap-8 overflow-y-auto scrollbar-hide relative z-10">
+      <nav className="flex-1 py-8 flex flex-col items-center gap-3 md:gap-6 overflow-y-auto scrollbar-hide relative z-10">
         {allLinks.map((link) => {
           const Icon = link.icon;
           const isActive = location.pathname === link.path || (link.exact === false && location.pathname.startsWith(link.path));
@@ -80,21 +80,21 @@ const Sidebar = () => {
               to={link.path}
               end={link.exact}
               className={({ isActive }) =>
-                `relative group p-3 md:p-4 transition-all duration-300 rounded-2xl flex items-center justify-center ${
+                `relative group p-2.5 md:p-3.5 transition-all duration-300 rounded-2xl flex items-center justify-center ${
                   isActive 
-                  ? 'bg-accent-orange/10 text-accent-orange shadow-[0_0_20px_rgba(255,95,5,0.1)]' 
+                  ? 'bg-accent-orange/10 text-accent-orange shadow-[0_0_20px_rgba(176, 38, 255,0.1)]' 
                   : 'text-foreground/20 hover:text-foreground hover:bg-foreground/[0.03]'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} className="transition-transform group-hover:scale-110" />
+                  <Icon size={18} strokeWidth={isActive ? 2.5 : 1.5} className="transition-transform group-hover:scale-110" />
                   
                   {isActive && (
                     <motion.div 
                       layoutId="sidebar-active-indicator"
-                      className="absolute -right-3 top-1/2 -translate-y-1/2 w-1 h-8 bg-accent-orange rounded-full shadow-[0_0_15px_rgba(255,95,5,0.8)]" 
+                      className="absolute -right-3 top-1/2 -translate-y-1/2 w-1 h-8 bg-accent-orange rounded-full shadow-[0_0_15px_rgba(176, 38, 255,0.8)]" 
                     />
                   )}
 
