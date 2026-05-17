@@ -61,9 +61,9 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-16 md:w-20 flex-shrink-0 hidden md:flex flex-col border-r border-white/5 bg-[#0a0a0a] z-50">
+    <aside className="w-16 md:w-20 flex-shrink-0 hidden md:flex flex-col border-r border-black/5 dark:border-white/5 bg-background z-50">
       {/* Branding */}
-      <div className="h-16 md:h-20 flex items-center justify-center border-b border-white/5">
+      <div className="h-16 md:h-20 flex items-center justify-center border-b border-black/5 dark:border-white/5">
         <span className="text-[10px] font-black text-[#D4AF37] tracking-tighter">EX</span>
       </div>
 
@@ -79,7 +79,7 @@ const Sidebar = () => {
               title={link.name}
               className={({ isActive }) =>
                 `relative group p-3 transition-all duration-500 rounded-none ${
-                  isActive ? 'text-[#D4AF37]' : 'text-zinc-700 hover:text-white'
+                  isActive ? 'text-[#D4AF37]' : 'text-zinc-700 hover:text-foreground'
                 }`
               }
             >
@@ -89,11 +89,11 @@ const Sidebar = () => {
                   {isActive && (
                     <motion.div 
                       layoutId="sidebar-active"
-                      className="absolute right-0 top-0 w-[2px] h-full bg-[#D4AF37] shadow-[0_0_10px_rgba(212,175,55,0.5)]" 
+                      className="absolute right-0 top-0 w-[2px] h-full bg-surface shadow-[0_0_10px_rgba(212,175,55,0.5)]" 
                     />
                   )}
                   {/* Tooltip */}
-                  <div className="absolute left-full ml-4 px-2 py-1 bg-black border border-white/10 text-[8px] font-black uppercase tracking-widest text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100]">
+                  <div className="absolute left-full ml-4 px-2 py-1 bg-background border border-black/10 dark:border-white/10 text-[8px] font-black uppercase tracking-widest text-foreground opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100]">
                     {link.name}
                   </div>
                 </>
@@ -104,7 +104,7 @@ const Sidebar = () => {
       </nav>
 
       {/* Bottom Navigation */}
-      <div className="py-8 flex flex-col items-center gap-6 border-t border-white/5">
+      <div className="py-8 flex flex-col items-center gap-6 border-t border-black/5 dark:border-white/5">
         {bottomLinks.map((link) => {
           const Icon = link.icon;
           return (
@@ -112,7 +112,7 @@ const Sidebar = () => {
               key={link.name}
               to={link.path}
               title={link.name}
-              className="text-zinc-700 hover:text-white transition-colors p-3"
+              className="text-zinc-700 hover:text-foreground transition-colors p-3"
             >
               <Icon size={18} strokeWidth={1.5} />
             </NavLink>
