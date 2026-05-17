@@ -16,7 +16,7 @@
 
   /* Institutional Accents */
   --color-accent-gold: #D4AF37;
-  --color-accent-orange: #FF5F05; /* Sovereign Orange — Primary CTA */
+  --color-accent-orange: #B026FF; /* Sovereign Orange — Primary CTA */
 
   /* Typography Nodes */
   --font-sans: 'Inter', sans-serif;
@@ -196,7 +196,7 @@
   }
 
   .orange-glow {
-    filter: drop-shadow(0 0 30px rgba(255, 95, 5, 0.3));
+    filter: drop-shadow(0 0 30px rgba(176, 38, 255, 0.3));
   }
 
   .scrollbar-hide::-webkit-scrollbar {
@@ -219,7 +219,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 95, 5, 0.2);
+    background: rgba(176, 38, 255, 0.2);
     border-radius: 0px;
   }
 

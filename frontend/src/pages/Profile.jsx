@@ -66,7 +66,7 @@ const Profile = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-12">
             {/* Avatar Section */}
             <div className="relative group">
-              <div className="w-32 h-32 md:w-40 md:h-40 bg-accent-orange rounded-3xl flex items-center justify-center text-foreground text-5xl md:text-6xl font-heading font-black shadow-[0_20px_60px_-10px_rgba(255,95,5,0.4)] group-hover:scale-105 transition-transform duration-500">
+              <div className="w-32 h-32 md:w-40 md:h-40 bg-accent-orange rounded-3xl flex items-center justify-center text-foreground text-5xl md:text-6xl font-heading font-black shadow-[0_20px_60px_-10px_rgba(176, 38, 255,0.4)] group-hover:scale-105 transition-transform duration-500">
                 {authUser?.first_name?.[0] || authUser?.email?.[0]?.toUpperCase()}
               </div>
               <div className="absolute -bottom-4 -right-4 h-12 w-12 bg-background border border-border rounded-2xl flex items-center justify-center shadow-xl group-hover:rotate-12 transition-transform">

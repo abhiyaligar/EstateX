@@ -37,7 +37,7 @@ const Login = () => {
       {/* Header */}
       <nav className="h-20 px-6 md:px-12 flex items-center justify-between border-b border-border bg-background sticky top-0 z-50 transition-colors">
         <Link to="/" className="flex items-center gap-3 group">
-           <div className="w-10 h-10 bg-accent-orange flex items-center justify-center rounded-full shadow-[0_0_20px_rgba(255,95,5,0.4)] transition-transform group-hover:scale-110">
+           <div className="w-10 h-10 bg-accent-orange flex items-center justify-center rounded-full shadow-[0_0_20px_rgba(176, 38, 255,0.4)] transition-transform group-hover:scale-110">
              <Zap className="text-foreground fill-white" size={20} />
            </div>
            <span className="text-xl font-heading font-black tracking-tighter uppercase">EstateX</span>

@@ -146,7 +146,7 @@ const AddBankAccountModal = ({ isOpen, onClose, onSuccess }) => {
                <button 
                  type="submit" 
                  disabled={loading}
-                 className="w-full bg-accent-orange text-foreground py-6 text-[12px] font-black uppercase tracking-[0.5em] hover:bg-accent-orange/80 transition-all disabled:opacity-50 shadow-[0_15px_40px_rgba(255,95,5,0.2)]"
+                 className="w-full bg-accent-orange text-foreground py-6 text-[12px] font-black uppercase tracking-[0.5em] hover:bg-accent-orange/80 transition-all disabled:opacity-50 shadow-[0_15px_40px_rgba(176, 38, 255,0.2)]"
                >
                  {loading ? 'SYNCHRONIZING...' : 'ADD BANK ACCOUNT'}
                </button>

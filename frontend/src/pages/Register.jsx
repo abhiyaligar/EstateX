@@ -22,7 +22,7 @@ const DesignationCard = ({ id, icon: Icon, title, description, selected, onClick
       {title}
     </h3>
     <p className="text-sm leading-relaxed text-foreground/50 font-medium">{description}</p>
-    {selected && <motion.div layoutId="selected-indicator" className="absolute bottom-0 left-0 w-full h-1 bg-accent-orange shadow-[0_0_20px_rgba(255,95,5,0.4)]" />}
+    {selected && <motion.div layoutId="selected-indicator" className="absolute bottom-0 left-0 w-full h-1 bg-accent-orange shadow-[0_0_20px_rgba(176, 38, 255,0.4)]" />}
   </motion.div>
 );
 
@@ -88,7 +88,7 @@ const ProgressHeader = ({ current, total, title }) => (
       <span className="text-foreground/30 hidden sm:inline">{title}</span>
     </div>
     <div className="h-1 w-full bg-foreground/5">
-      <motion.div initial={{ width: 0 }} animate={{ width: `${(current / total) * 100}%` }} className="h-full bg-accent-orange shadow-[0_0_10px_rgba(255,95,5,0.4)]" />
+      <motion.div initial={{ width: 0 }} animate={{ width: `${(current / total) * 100}%` }} className="h-full bg-accent-orange shadow-[0_0_10px_rgba(176, 38, 255,0.4)]" />
     </div>
   </div>
 );
@@ -241,7 +241,7 @@ const Register = () => {
              <button 
                onClick={() => setSubStep(2)} 
                disabled={!validateStep()} 
-               className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-foreground shadow-[0_15px_40px_-10px_rgba(255,95,5,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
+               className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-foreground shadow-[0_15px_40px_-10px_rgba(176, 38, 255,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
              >
                 <span className="text-[11px] font-black uppercase tracking-[0.4em]">Next Step</span>
                 <div className="transition-transform group-hover:rotate-12 group-hover:translate-x-1">
@@ -295,7 +295,7 @@ const Register = () => {
              <button 
                onClick={() => setSubStep(3)} 
                disabled={!validateStep()} 
-               className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-foreground shadow-[0_15px_40px_-10px_rgba(255,95,5,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
+               className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-foreground shadow-[0_15px_40px_-10px_rgba(176, 38, 255,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
              >
                 <span className="text-[11px] font-black uppercase tracking-[0.4em]">Next: Identity</span>
                 <div className="transition-transform group-hover:rotate-12 group-hover:translate-x-1">
@@ -322,7 +322,7 @@ const Register = () => {
              <button 
                 onClick={handleRegisterUser} 
                 disabled={loading || !validateStep()}
-                className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-foreground shadow-[0_15px_40px_-10px_rgba(255,95,5,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
+                className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-foreground shadow-[0_15px_40px_-10px_rgba(176, 38, 255,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
              >
                 {loading ? <Loader2 className="animate-spin" size={16} /> : (
                   <>
@@ -385,7 +385,7 @@ const Register = () => {
 
     return (
       <motion.div key="substep5" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-20">
-         <div className="w-28 h-28 bg-accent-orange/10 rounded-full flex items-center justify-center mx-auto mb-10 border border-accent-orange/20 shadow-[0_0_30px_rgba(255,95,5,0.2)]">
+         <div className="w-28 h-28 bg-accent-orange/10 rounded-full flex items-center justify-center mx-auto mb-10 border border-accent-orange/20 shadow-[0_0_30px_rgba(176, 38, 255,0.2)]">
             <CheckCircle2 size={56} className="text-accent-orange" />
          </div>
          <h2 className="text-5xl font-heading font-black mb-6 tracking-tighter uppercase">Audit Synchronized.</h2>
@@ -401,7 +401,7 @@ const Register = () => {
     <div className="min-h-screen bg-background text-foreground selection:bg-accent-orange/10 selection:text-accent-orange font-sans transition-colors duration-500">
       <nav className="h-20 px-6 md:px-12 flex items-center justify-between border-b border-border bg-background sticky top-0 z-50">
         <Link to="/" className="flex items-center gap-3 group">
-           <div className="w-10 h-10 bg-accent-orange flex items-center justify-center rounded-full transition-transform group-hover:scale-110 shadow-[0_0_20px_rgba(255,95,5,0.4)]">
+           <div className="w-10 h-10 bg-accent-orange flex items-center justify-center rounded-full transition-transform group-hover:scale-110 shadow-[0_0_20px_rgba(176, 38, 255,0.4)]">
              <Zap className="text-foreground fill-white" size={20} />
            </div>
            <span className="text-xl font-heading font-black tracking-tighter uppercase">EstateX</span>

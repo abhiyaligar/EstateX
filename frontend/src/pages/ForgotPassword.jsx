@@ -108,7 +108,7 @@ const ForgotPassword = () => {
       {/* Header */}
       <nav className="h-20 px-8 flex items-center justify-between border-b border-border bg-background z-50">
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="h-10 w-10 bg-accent-orange rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,95,5,0.4)] transition-transform group-hover:scale-105">
+          <div className="h-10 w-10 bg-accent-orange rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(176, 38, 255,0.4)] transition-transform group-hover:scale-105">
             <Zap size={20} className="text-foreground fill-white" />
           </div>
           <span className="text-lg md:text-xl font-heading font-black tracking-tighter text-foreground uppercase">EstateX</span>
@@ -166,7 +166,7 @@ const ForgotPassword = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full bg-accent-orange text-foreground py-6 rounded-full font-black uppercase tracking-[0.3em] text-[11px] hover:bg-accent-orange/90 transition-all flex items-center justify-center gap-4 shadow-[0_20px_60px_-10px_rgba(255,95,5,0.3)] hover:scale-[1.02] hover:-rotate-1 active:scale-[0.98] group"
+                  className="w-full bg-accent-orange text-foreground py-6 rounded-full font-black uppercase tracking-[0.3em] text-[11px] hover:bg-accent-orange/90 transition-all flex items-center justify-center gap-4 shadow-[0_20px_60px_-10px_rgba(176, 38, 255,0.3)] hover:scale-[1.02] hover:-rotate-1 active:scale-[0.98] group"
                 >
                   {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : (
                     <>
@@ -254,7 +254,7 @@ const ForgotPassword = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full bg-accent-orange text-foreground py-6 rounded-full font-black uppercase tracking-[0.3em] text-[11px] hover:bg-accent-orange/90 transition-all flex items-center justify-center gap-4 shadow-[0_20px_60px_-10px_rgba(255,95,5,0.3)] hover:scale-[1.02] hover:-rotate-1 active:scale-[0.98] group"
+                  className="w-full bg-accent-orange text-foreground py-6 rounded-full font-black uppercase tracking-[0.3em] text-[11px] hover:bg-accent-orange/90 transition-all flex items-center justify-center gap-4 shadow-[0_20px_60px_-10px_rgba(176, 38, 255,0.3)] hover:scale-[1.02] hover:-rotate-1 active:scale-[0.98] group"
                 >
                   {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : (
                     <>
