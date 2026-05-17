@@ -25,17 +25,17 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
       />
       
       {/* Modal Content */}
-      <div className="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-[#050505] p-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all border border-white/10">
+      <div className="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-background p-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all border border-black/10 dark:border-white/10">
         <div className="flex items-center justify-between mb-8">
           <div className="space-y-1">
             <p className="text-[7px] uppercase tracking-[0.4em] text-zinc-600 font-black leading-none">Security Protocol Active</p>
-            <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-tighter">
+            <h3 className="text-lg md:text-xl font-black text-foreground uppercase tracking-tighter">
                 {title}
             </h3>
           </div>
           <button 
             onClick={onClose}
-            className="rounded-full h-10 w-10 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/5 transition-all border border-white/5 hover:border-white/20"
+            className="rounded-full h-10 w-10 flex items-center justify-center text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 hover:text-foreground hover:bg-black/5 dark:bg-black/5 dark:bg-white/5 transition-all border border-black/5 dark:border-white/5 hover:border-black/20 dark:border-white/20"
           >
             <X size={20} />
           </button>
