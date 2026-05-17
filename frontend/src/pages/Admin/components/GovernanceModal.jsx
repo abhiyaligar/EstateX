@@ -34,17 +34,17 @@ const GovernanceModal = ({ isOpen, onClose, projects, onSave }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <Card className="max-w-xl w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
-        <CardHeader className="border-b border-white/5">
+      <Card className="max-w-xl w-full bg-background border-black/10 dark:border-white/10 shadow-2xl">
+        <CardHeader className="border-b border-black/5 dark:border-white/5">
           <CardTitle className="text-xl font-bold uppercase tracking-tighter">Initialize Governance Proposal</CardTitle>
           <CardDescription className="uppercase tracking-widest text-[8px] mt-1">On-chain consensus protocol generation</CardDescription>
         </CardHeader>
         <CardContent className="p-6 max-h-[70vh] overflow-y-auto">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-white/40">Select Asset</label>
+              <label className="text-[10px] uppercase tracking-widest text-black/40 dark:text-white/40">Select Asset</label>
               <select 
-                className="w-full bg-white/5 border border-white/10 p-3 text-sm font-mono text-white outline-none focus:border-primary-500"
+                className="w-full bg-black/5 dark:bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 p-3 text-sm font-mono text-foreground outline-none focus:border-primary-500"
                 value={formData.project_id}
                 onChange={(e) => setFormData({...formData, project_id: e.target.value})}
                 required
@@ -57,7 +57,7 @@ const GovernanceModal = ({ isOpen, onClose, projects, onSave }) => {
             </div>
             
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-white/40">Proposal Title</label>
+              <label className="text-[10px] uppercase tracking-widest text-black/40 dark:text-white/40">Proposal Title</label>
               <Input 
                 placeholder="e.g. Asset Liquidation Offer"
                 value={formData.title}
@@ -67,9 +67,9 @@ const GovernanceModal = ({ isOpen, onClose, projects, onSave }) => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-white/40">Description & Rationale</label>
+              <label className="text-[10px] uppercase tracking-widest text-black/40 dark:text-white/40">Description & Rationale</label>
               <textarea 
-                className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-primary-500 outline-none min-h-[100px]"
+                className="w-full bg-black/5 dark:bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 p-4 text-sm text-foreground focus:border-primary-500 outline-none min-h-[100px]"
                 placeholder="Detailed explanation of the decision required..."
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -79,7 +79,7 @@ const GovernanceModal = ({ isOpen, onClose, projects, onSave }) => {
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] uppercase tracking-widest text-white/40">Voting Options</label>
+                <label className="text-[10px] uppercase tracking-widest text-black/40 dark:text-white/40">Voting Options</label>
                 <Button type="button" variant="ghost" size="sm" className="text-[8px]" onClick={addOption}>+ ADD OPTION</Button>
               </div>
               {formData.options.map((opt, i) => (
@@ -96,7 +96,7 @@ const GovernanceModal = ({ isOpen, onClose, projects, onSave }) => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-white/40">Voting Deadline</label>
+              <label className="text-[10px] uppercase tracking-widest text-black/40 dark:text-white/40">Voting Deadline</label>
               <Input 
                 type="datetime-local"
                 value={formData.end_date}
