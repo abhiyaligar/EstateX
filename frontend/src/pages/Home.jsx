@@ -275,7 +275,7 @@ const Home = () => {
               <motion.h1
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-5xl sm:text-7xl md:text-[8rem] font-heading font-black text-foreground tracking-[-0.05em] leading-[0.85] uppercase transition-all duration-700"
+                className="text-5xl sm:text-7xl md:text-[8rem] font-heading font-black text-foreground tracking-[-0.05em] leading-[0.85] uppercase transition-all duration-700 break-words hyphens-auto"
               >
                 Your Real <br className="hidden md:block" /> Estate Edge
               </motion.h1>

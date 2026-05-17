@@ -29,17 +29,17 @@ const DashboardLayout = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
+    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans overflow-x-hidden">
       {/* Top Nav Bar — full width, always at top */}
       <AppNav />
 
       {/* Body: Sidebar + Content side by side */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden w-full">
         {/* Sidebar — desktop only, fixed width */}
         <Sidebar />
 
         {/* Main scrollable content area */}
-        <main className="flex-1 overflow-y-auto w-full min-w-0 scrollbar-hide">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full min-w-0 scrollbar-hide">
           <div className="mx-auto w-full min-h-full">
             <Outlet />
           </div>

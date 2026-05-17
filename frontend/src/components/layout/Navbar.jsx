@@ -158,18 +158,30 @@ export const LandingNav = () => {
             className="absolute top-full left-0 right-0 mt-4 bg-background rounded-3xl p-6 border border-border lg:hidden shadow-2xl"
           >
             <div className="flex flex-col gap-2">
-              <Link to="/" onClick={() => setIsOpen(false)} className="text-sm font-bold text-foreground/70 hover:text-foreground py-3 border-b border-border">Home</Link>
+              <motion.div whileTap={{ scale: 0.95, backgroundColor: "rgba(234, 179, 8, 0.1)" }} className="rounded-lg">
+                <Link to="/" onClick={() => setIsOpen(false)} className="block text-sm font-bold text-foreground/70 px-4 py-3 border-b border-border">Home</Link>
+              </motion.div>
               {menuItems.map(item => (
-                <Link key={item.name} to={item.path} onClick={() => setIsOpen(false)} className="text-sm font-bold text-foreground/70 hover:text-foreground py-3 border-b border-border">{item.name}</Link>
+                <motion.div key={item.name} whileTap={{ scale: 0.95, backgroundColor: "rgba(234, 179, 8, 0.1)" }} className="rounded-lg">
+                  <Link to={item.path} onClick={() => setIsOpen(false)} className="block text-sm font-bold text-foreground/70 px-4 py-3 border-b border-border">{item.name}</Link>
+                </motion.div>
               ))}
               {isAuthenticated ? (
                 <>
-                  <Link to="/dashboard" onClick={() => setIsOpen(false)} className="text-sm font-bold text-foreground/70 py-3">Dashboard</Link>
-                  <Link to="/trade" onClick={() => setIsOpen(false)} className="text-sm font-bold text-accent-orange py-3">Trade Now</Link>
-                  <button onClick={handleLogout} className="text-sm font-bold text-foreground/40 py-3 text-left">Logout</button>
+                  <motion.div whileTap={{ scale: 0.95, backgroundColor: "rgba(234, 179, 8, 0.1)" }} className="rounded-lg">
+                    <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block text-sm font-bold text-foreground/70 px-4 py-3">Dashboard</Link>
+                  </motion.div>
+                  <motion.div whileTap={{ scale: 0.95, backgroundColor: "rgba(234, 179, 8, 0.1)" }} className="rounded-lg">
+                    <Link to="/trade" onClick={() => setIsOpen(false)} className="block text-sm font-bold text-accent-orange px-4 py-3">Trade Now</Link>
+                  </motion.div>
+                  <motion.div whileTap={{ scale: 0.95, backgroundColor: "rgba(239, 68, 68, 0.1)" }} className="rounded-lg">
+                    <button onClick={handleLogout} className="block w-full text-sm font-bold text-foreground/40 px-4 py-3 text-left">Logout</button>
+                  </motion.div>
                 </>
               ) : (
-                <Link to="/register" onClick={() => setIsOpen(false)} className="text-sm font-bold text-accent-orange py-3">Open Account</Link>
+                <motion.div whileTap={{ scale: 0.95, backgroundColor: "rgba(234, 179, 8, 0.1)" }} className="rounded-lg">
+                  <Link to="/register" onClick={() => setIsOpen(false)} className="block text-sm font-bold text-accent-orange px-4 py-3">Open Account</Link>
+                </motion.div>
               )}
             </div>
           </motion.div>
@@ -271,7 +283,7 @@ export const AppNav = () => {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-background border-b border-border overflow-hidden"
           >
-            <div className="p-5 space-y-3">
+            <div className="flex flex-col">
               {(() => {
                 const baseLinks = [
                   { name: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
@@ -294,16 +306,46 @@ export const AppNav = () => {
                 }
                 const allLinks = [...baseLinks, ...roleLinks];
 
-                return allLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-4 p-4 bg-foreground/[0.03] border border-border rounded-2xl text-[11px] font-black uppercase tracking-widest text-foreground/40 hover:text-accent-orange transition-all"
-                  >
-                    <link.icon size={18} /> {link.name}
-                  </Link>
-                ));
+                return allLinks.map((link) => {
+                  const isActive = location.pathname === link.path || (link.path !== '/' && location.pathname.startsWith(link.path));
+                  return (
+                    <motion.div
+                      key={link.name}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-full relative mb-1"
+                    >
+                      <Link
+                        to={link.path}
+                        onClick={(e) => {
+                          // Prevent immediate navigation/close to allow the touch animation to play
+                          e.preventDefault();
+                          setTimeout(() => {
+                            setIsOpen(false);
+                            window.location.href = link.path; // Navigate after animation
+                          }, 150);
+                        }}
+                        className={`group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 ease-out ${
+                          isActive 
+                            ? 'bg-accent-orange/10 text-accent-orange shadow-[0_0_20px_rgba(234,179,8,0.05)]' 
+                            : 'text-foreground/50 bg-transparent hover:bg-accent-orange/5 hover:text-accent-orange hover:scale-[1.03] hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(234,179,8,0.15)] border border-transparent hover:border-accent-orange/20 hover:z-10'
+                        }`}
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
+                      >
+                        <div className={`${isActive ? 'text-accent-orange' : 'text-foreground/40 group-hover:text-accent-orange'} transition-colors duration-300`}>
+                          <link.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} className="transition-transform duration-300 group-hover:scale-110" />
+                        </div>
+                        <span className="text-[11px] font-black uppercase tracking-[0.2em]">{link.name}</span>
+                        
+                        {isActive && (
+                          <motion.div 
+                            layoutId="mobile-active-indicator"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-accent-orange rounded-full shadow-[0_0_10px_rgba(234,179,8,0.8)]" 
+                          />
+                        )}
+                      </Link>
+                    </motion.div>
+                  );
+                });
               })()}
             </div>
           </motion.div>

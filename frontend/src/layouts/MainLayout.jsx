@@ -48,10 +48,10 @@ const MainLayout = () => {
   const showFooter = publicPages.includes(location.pathname);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans selection:bg-accent-orange/10">
+    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans selection:bg-accent-orange/10 overflow-x-hidden">
       <LandingNav />
       {/* pt-24 to clear the fixed pill nav height */}
-      <main className="flex-1 w-full pt-24">
+      <main className="flex-1 w-full pt-24 overflow-x-hidden">
         <Outlet />
       </main>
       {showFooter && <Footer />}

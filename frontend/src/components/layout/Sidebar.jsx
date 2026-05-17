@@ -80,10 +80,10 @@ const Sidebar = () => {
               to={link.path}
               end={link.exact}
               className={({ isActive }) =>
-                `relative group p-2.5 md:p-3.5 transition-all duration-300 rounded-2xl flex items-center justify-center ${
+                `relative group p-3 transition-all duration-300 rounded-2xl flex items-center justify-center ${
                   isActive 
-                  ? 'bg-accent-orange/10 text-accent-orange shadow-[0_0_20px_rgba(176, 38, 255,0.1)]' 
-                  : 'text-foreground/20 hover:text-foreground hover:bg-foreground/[0.03]'
+                  ? 'bg-accent-orange/15 text-accent-orange shadow-[0_0_20px_rgba(234,179,8,0.15)]' 
+                  : 'text-foreground/40 hover:text-foreground hover:bg-foreground/10 hover:shadow-sm'
                 }`
               }
             >
@@ -94,7 +94,7 @@ const Sidebar = () => {
                   {isActive && (
                     <motion.div 
                       layoutId="sidebar-active-indicator"
-                      className="absolute -right-3 top-1/2 -translate-y-1/2 w-1 h-8 bg-accent-orange rounded-full shadow-[0_0_15px_rgba(176, 38, 255,0.8)]" 
+                      className="absolute -right-3 top-1/2 -translate-y-1/2 w-1 h-8 bg-accent-orange rounded-full shadow-[0_0_15px_rgba(234,179,8,0.8)]" 
                     />
                   )}
 
