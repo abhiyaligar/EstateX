@@ -15,9 +15,9 @@ import { Link } from 'react-router-dom';
 import dashboardService from '../services/dashboardService';
 import { Loader } from '../components/ui/Loader';
 
-const Sparkline = ({ data, color = "#FF5F05", height = 24 }) => (
+const Sparkline = ({ data, color = "#B026FF", height = 24 }) => (
   <div className={`w-full`} style={{ height: `${height}px` }}>
-    <ResponsiveContainer width="99%" height="99%" minWidth={1} minHeight={1}>
+    <ResponsiveContainer width="100%" height="100%" debounce={50}>
       <AreaChart data={data}>
         <Area 
           type="monotone" 
@@ -223,19 +223,19 @@ const Dashboard = () => {
                 <div className="absolute top-10 right-10 z-20 bg-accent-orange text-foreground px-3 py-1.5 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl">
                    {dashboardData?.portfolio?.length > 0 ? '+14.2% YTD' : '0.0% Delta'}
                 </div>
-                <ResponsiveContainer width="99%" height="99%" minWidth={1} minHeight={1}>
+                <ResponsiveContainer width="100%" height="100%" debounce={50}>
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="orangeGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#FF5F05" stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor="#FF5F05" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#B026FF" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="#B026FF" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 95, 5, 0.05)" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(176, 38, 255, 0.05)" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'var(--color-foreground)', fillOpacity: 0.2, fontSize: 9, fontWeight: 900}} dy={20}/>
                     <YAxis hide />
-                    <Tooltip contentStyle={{ backgroundColor: 'var(--color-background)', border: '1px solid rgba(255,95,5,0.2)', borderRadius: '12px' }} itemStyle={{ color: '#FF5F05', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase' }} />
-                    <Area type="monotone" dataKey="value" stroke="#FF5F05" strokeWidth={2} fill="url(#orangeGradient)" animationDuration={2000}/>
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--color-background)', border: '1px solid rgba(176, 38, 255,0.2)', borderRadius: '12px' }} itemStyle={{ color: '#B026FF', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase' }} />
+                    <Area type="monotone" dataKey="value" stroke="#B026FF" strokeWidth={2} fill="url(#orangeGradient)" animationDuration={2000}/>
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

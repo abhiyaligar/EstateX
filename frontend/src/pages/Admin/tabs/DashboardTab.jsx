@@ -92,7 +92,7 @@ const DashboardTab = ({ stats }) => {
             </div>
 
             <div className="h-[300px] w-full">
-               <ResponsiveContainer width="99%" height="99%" minWidth={1} minHeight={1}>
+               <ResponsiveContainer width="100%" height="100%" debounce={50}>
                   <AreaChart data={historyData}>
                     <defs>
                       <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
@@ -130,7 +130,7 @@ const DashboardTab = ({ stats }) => {
          <Card className="lg:col-span-4 p-8 flex flex-col items-center justify-center text-center">
             <h4 className="text-xs font-bold uppercase tracking-[0.2em] mb-8 text-foreground/40">Capital Distribution</h4>
             <div className="h-[240px] w-full relative">
-               <ResponsiveContainer width="99%" height="99%" minWidth={1} minHeight={1}>
+               <ResponsiveContainer width="100%" height="100%" debounce={50}>
                   <PieChart>
                     <Pie
                       data={pieData}
