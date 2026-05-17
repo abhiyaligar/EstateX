@@ -22,10 +22,10 @@ const AnalyticsTab = ({ macroList, onNew, onEdit, onDelete }) => {
       className="space-y-6"
     >
       <Card noPadding className="overflow-hidden">
-        <div className="p-8 border-b border-white/5 flex items-center justify-between">
+        <div className="p-8 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold uppercase tracking-tight text-white">Macro Intelligence Nodes</h3>
-            <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Global Market Telemetry Database</p>
+            <h3 className="text-xl font-bold uppercase tracking-tight text-foreground">Macro Intelligence Nodes</h3>
+            <p className="text-xs text-black/40 dark:text-white/40 mt-1 uppercase tracking-widest">Global Market Telemetry Database</p>
           </div>
           <Button 
             variant="primary" 
@@ -45,7 +45,7 @@ const AnalyticsTab = ({ macroList, onNew, onEdit, onDelete }) => {
                 <td colSpan="6" className="p-32 text-center">
                    <div className="flex flex-col items-center gap-4 opacity-20">
                       <Database size={48} />
-                      <p className="text-xs uppercase tracking-[0.4em] font-bold text-white">Registry Empty: No Intelligence Nodes</p>
+                      <p className="text-xs uppercase tracking-[0.4em] font-bold text-foreground">Registry Empty: No Intelligence Nodes</p>
                    </div>
                 </td>
               </tr>
@@ -56,7 +56,7 @@ const AnalyticsTab = ({ macroList, onNew, onEdit, onDelete }) => {
                     <div className="w-9 h-9 bg-primary-500/10 border border-primary-500/20 rounded-lg flex items-center justify-center text-primary-500">
                        <Activity size={16} />
                     </div>
-                    <span className="font-mono text-xs text-white font-bold tracking-widest">{macro.pincode}</span>
+                    <span className="font-mono text-xs text-foreground font-bold tracking-widest">{macro.pincode}</span>
                   </div>
                 </AdminTableCell>
                 <AdminTableCell>
@@ -73,7 +73,7 @@ const AnalyticsTab = ({ macroList, onNew, onEdit, onDelete }) => {
                 </AdminTableCell>
                 <AdminTableCell>
                   <div className="flex items-center gap-4 min-w-[120px]">
-                     <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                     <div className="flex-1 h-1.5 bg-black/5 dark:bg-black/5 dark:bg-white/5 rounded-full overflow-hidden border border-black/5 dark:border-white/5">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: `${macro.demand_score}%` }}
@@ -84,7 +84,7 @@ const AnalyticsTab = ({ macroList, onNew, onEdit, onDelete }) => {
                   </div>
                 </AdminTableCell>
                 <AdminTableCell>
-                  <span className="text-[10px] text-white/30 uppercase font-medium">
+                  <span className="text-[10px] text-black/30 dark:text-white/30 uppercase font-medium">
                     {new Date(macro.last_updated).toLocaleDateString()}
                   </span>
                 </AdminTableCell>
@@ -92,11 +92,11 @@ const AnalyticsTab = ({ macroList, onNew, onEdit, onDelete }) => {
                    <div className="flex justify-end gap-2">
                     <Button 
                       variant="ghost" 
-                      className="h-9 w-9 p-0 hover:bg-white/5"
+                      className="h-9 w-9 p-0 hover:bg-black/5 dark:bg-black/5 dark:bg-white/5"
                       onClick={() => onEdit(macro)}
                       title="Edit Node"
                     >
-                      <Edit2 size={16} className="text-white/20 hover:text-white transition-colors" />
+                      <Edit2 size={16} className="text-black/20 dark:text-white/20 hover:text-foreground transition-colors" />
                     </Button>
                     <Button 
                       variant="ghost" 
