@@ -30,7 +30,7 @@ const PropertyCard = ({ property }) => {
   const displayStatus = ipo_status === 'active' ? 'Live IPO' : status || 'Project';
 
   return (
-    <Card className="group flex h-full flex-col overflow-hidden bg-[#141414] border-white/5 hover:border-white/20 transition-all duration-500 rounded-none" noPadding>
+    <Card className="group flex h-full flex-col overflow-hidden bg-surface border-black/5 dark:border-white/5 hover:border-black/20 dark:border-white/20 transition-all duration-500 rounded-none" noPadding>
       <div className="relative aspect-[4/5] overflow-hidden">
         <img
           src={imageUrl || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
@@ -42,59 +42,59 @@ const PropertyCard = ({ property }) => {
         {/* Badges */}
         <div className="absolute left-6 top-6 flex gap-2">
           {type && (
-            <span className="inline-flex items-center bg-black/40 backdrop-blur-md text-white border border-white/10 px-3 py-1 text-[9px] font-bold uppercase tracking-widest">
+            <span className="inline-flex items-center bg-black/40 backdrop-blur-md text-foreground border border-black/10 dark:border-white/10 px-3 py-1 text-[9px] font-bold uppercase tracking-widest">
               {type}
             </span>
           )}
           {ipo_status === 'active' && (
-            <span className="inline-flex items-center bg-red-600 text-white px-3 py-1 text-[9px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.3)]">
+            <span className="inline-flex items-center bg-red-600 text-foreground px-3 py-1 text-[9px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.3)]">
               Live IPO
             </span>
           )}
         </div>
 
         {/* Favorite Button */}
-        <button className="absolute right-4 top-4 rounded-full bg-white/20 p-2 text-white backdrop-blur-md transition-colors hover:bg-white/40 hover:text-red-500">
+        <button className="absolute right-4 top-4 rounded-full bg-black/20 dark:bg-white/20 p-2 text-foreground backdrop-blur-md transition-colors hover:bg-black/40 dark:bg-white/40 hover:text-red-500">
           <Heart size={20} />
         </button>
 
         {/* Price Tag */}
         <div className="absolute bottom-4 left-4">
-          <p className="text-2xl font-bold text-white shadow-sm">
+          <p className="text-2xl font-bold text-foreground shadow-sm">
             ₹{(price || 0).toLocaleString()}
           </p>
         </div>
       </div>
 
       <CardContent className="flex flex-1 flex-col p-8 space-y-4">
-        <div className="space-y-1">
-          <div className="flex items-center text-[10px] uppercase tracking-[0.2em] text-white/40 font-medium">
-            <MapPin size={10} className="mr-2" />
-            {locationStr}
+        <div className="space-y-1 overflow-hidden">
+          <div className="flex items-center text-[10px] uppercase tracking-[0.2em] text-zinc-600 dark:text-zinc-400 font-medium w-full">
+            <MapPin size={10} className="mr-2 flex-shrink-0" />
+            <span className="truncate">{locationStr}</span>
           </div>
           <Link to={`/properties/${id}`}>
-            <h3 className="font-serif text-2xl text-white group-hover:text-white/80 transition-colors">
+            <h3 className="font-serif text-2xl text-foreground group-hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors line-clamp-2">
               {title}
             </h3>
           </Link>
         </div>
 
-        <div className="text-xl font-light text-white/90">
-          ₹{(price || 0).toLocaleString()} <span className="text-[10px] uppercase tracking-widest opacity-40 ml-1">Total Value</span>
+        <div className="text-xl font-light text-foreground">
+          ₹{(price || 0).toLocaleString()} <span className="text-[10px] uppercase tracking-widest text-zinc-500 ml-1">Total Value</span>
         </div>
 
-        <div className="pt-6 flex items-center justify-between border-t border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/40 font-medium">
-          <div className="flex flex-col gap-1">
-            <span className="text-white/60">{bedsValue}</span>
-            <span>Investors</span>
+        <div className="pt-6 flex items-center justify-between border-t border-black/10 dark:border-white/10 text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-medium">
+          <div className="flex flex-col gap-1 min-w-0">
+            <span className="text-foreground truncate">{bedsValue}</span>
+            <span className="truncate">Investors</span>
           </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-white/60">{bathsValue}</span>
-            <span>Views</span>
+          <div className="flex flex-col gap-1 min-w-0">
+            <span className="text-foreground truncate">{bathsValue}</span>
+            <span className="truncate">Views</span>
           </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-white/60">{(areaValue || 0).toLocaleString()}</span>
-            <span>Bricks</span>
+          <div className="flex flex-col gap-1 min-w-0 text-right">
+            <span className="text-foreground truncate">{(areaValue || 0).toLocaleString()}</span>
+            <span className="truncate">Bricks</span>
           </div>
         </div>
       </CardContent>

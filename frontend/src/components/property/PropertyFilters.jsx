@@ -10,7 +10,7 @@ const PropertyFilters = ({ filters, onFilterChange }) => {
   };
 
   return (
-    <div className="mb-16 bg-[#111] p-6 border border-white/5">
+    <div className="mb-16 bg-surface p-6 border border-black/5 dark:border-white/5">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
         <div className="md:col-span-4 lg:col-span-5">
           <Input
@@ -37,14 +37,14 @@ const PropertyFilters = ({ filters, onFilterChange }) => {
             name="type"
             value={filters.type || ''}
             onChange={handleChange}
-            className="flex h-12 w-full rounded-none border border-white/5 bg-[#111] px-4 py-2 text-[10px] uppercase tracking-widest text-white transition-all focus-visible:outline-none focus-visible:border-white/20 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+            className="flex h-12 w-full rounded-none border border-black/5 dark:border-white/5 bg-surface px-4 py-2 text-[10px] uppercase tracking-widest text-foreground transition-all focus-visible:outline-none focus-visible:border-black/20 dark:border-white/20 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
           >
-             <option value="" className="bg-[#111]">All Types</option>
-             <option value="House" className="bg-[#111]">House</option>
-             <option value="Apartment" className="bg-[#111]">Apartment</option>
-             <option value="Villa" className="bg-[#111]">Villa</option>
-             <option value="Commercial" className="bg-[#111]">Commercial</option>
-             <option value="Land" className="bg-[#111]">Land</option>
+             <option value="" className="bg-surface">All Types</option>
+             <option value="House" className="bg-surface">House</option>
+             <option value="Apartment" className="bg-surface">Apartment</option>
+             <option value="Villa" className="bg-surface">Villa</option>
+             <option value="Commercial" className="bg-surface">Commercial</option>
+             <option value="Land" className="bg-surface">Land</option>
           </select>
         </div>
         <div className="md:col-span-2 lg:col-span-2">
