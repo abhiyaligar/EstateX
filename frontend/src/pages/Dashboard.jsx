@@ -17,7 +17,7 @@ import { Loader } from '../components/ui/Loader';
 
 const Sparkline = ({ data, color = "#B026FF", height = 24 }) => (
   <div className={`w-full`} style={{ height: `${height}px` }}>
-    <ResponsiveContainer width="100%" height="100%" debounce={50}>
+    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} debounce={50}>
       <AreaChart data={data}>
         <Area 
           type="monotone" 
@@ -223,7 +223,7 @@ const Dashboard = () => {
                 <div className="absolute top-10 right-10 z-20 bg-accent-orange text-foreground px-3 py-1.5 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl">
                    {dashboardData?.portfolio?.length > 0 ? '+14.2% YTD' : '0.0% Delta'}
                 </div>
-                <ResponsiveContainer width="100%" height="100%" debounce={50}>
+                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} debounce={50}>
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="orangeGradient" x1="0" y1="0" x2="0" y2="1">

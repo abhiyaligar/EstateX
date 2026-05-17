@@ -12,7 +12,7 @@ import { Loader } from '../components/ui/Loader';
 
 const Sparkline = ({ data, color = "#D4AF37", height = 32 }) => (
   <div className={`w-full`} style={{ height: `${height}px` }}>
-    <ResponsiveContainer width="100%" height="100%" debounce={50}>
+    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} debounce={50}>
       <AreaChart data={data}>
         <defs>
           <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">

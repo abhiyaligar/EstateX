@@ -10,16 +10,36 @@ const MainLayout = () => {
   const location = useLocation();
 
   React.useEffect(() => {
-    if (location.hash) {
-      const element = document.getElementById(location.hash.slice(1));
-      if (element) {
-        // slight timeout ensures DOM is ready if navigating to new page
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
+    const scrollToHashElement = () => {
+      const { hash } = window.location;
+      if (hash) {
+        const id = hash.replace('#', '');
+        const element = document.getElementById(id);
+        if (element) {
+          const y = element.getBoundingClientRect().top + window.scrollY - 120;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+          return true;
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return true;
       }
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return false;
+    };
+
+    // If it's a hash link, try to scroll immediately
+    let found = scrollToHashElement();
+    
+    // If element not found (because of lazy loading), poll for it
+    if (!found && window.location.hash) {
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        if (scrollToHashElement() || attempts >= 50) { // Try for 5 seconds
+          clearInterval(interval);
+        }
+      }, 100);
+      return () => clearInterval(interval);
     }
   }, [location]);
 

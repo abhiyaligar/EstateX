@@ -67,17 +67,30 @@ export const LandingNav = () => {
                     className="absolute top-full left-0 mt-4 w-56 bg-background/90 backdrop-blur-3xl border border-border rounded-[24px] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden z-50"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-accent-orange/5 to-transparent pointer-events-none" />
-                    {item.dropdown.map(subItem => (
-                      <Link 
-                        key={subItem} 
-                        to={`${item.path}#${subItem.toLowerCase().replace(/\\s+/g, '-')}`}
-                        onClick={() => setActiveDropdown(null)}
-                        className="relative w-full text-left text-[10px] font-black text-foreground/50 hover:text-foreground hover:bg-foreground/5 px-5 py-3.5 rounded-xl transition-all uppercase tracking-[0.2em] group/item flex items-center justify-between"
-                      >
-                        {subItem}
-                        <ArrowRight size={10} className="opacity-0 -translate-x-2 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all text-accent-orange" />
-                      </Link>
-                    ))}
+                    {item.dropdown.map(subItem => {
+                      const targetId = subItem.toLowerCase().replace(/\s+/g, '-');
+                      return (
+                        <Link 
+                          key={subItem} 
+                          to={`${item.path}#${targetId}`}
+                          onClick={(e) => {
+                            setActiveDropdown(null);
+                            // If we are already on the target page, manually scroll to prevent React Router from ignoring the click
+                            if (location.pathname === item.path) {
+                              const element = document.getElementById(targetId);
+                              if (element) {
+                                const y = element.getBoundingClientRect().top + window.scrollY - 120;
+                                window.scrollTo({ top: y, behavior: 'smooth' });
+                              }
+                            }
+                          }}
+                          className="relative w-full text-left text-[10px] font-black text-foreground/50 hover:text-foreground hover:bg-foreground/5 px-5 py-3.5 rounded-xl transition-all uppercase tracking-[0.2em] group/item flex items-center justify-between"
+                        >
+                          {subItem}
+                          <ArrowRight size={10} className="opacity-0 -translate-x-2 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all text-accent-orange" />
+                        </Link>
+                      );
+                    })}
                   </motion.div>
                 )}
               </AnimatePresence>
