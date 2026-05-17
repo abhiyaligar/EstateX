@@ -147,6 +147,7 @@ const DashboardTab = ({ stats }) => {
                     </Pie>
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', fontSize: '10px', borderRadius: '8px' }}
+                      labelStyle={{ color: '#ffffff', opacity: 0.6 }}
                     />
                   </PieChart>
                </ResponsiveContainer>

@@ -689,7 +689,7 @@ const TradingRoom = () => {
 
     const chart = createChart(priceChartContainerRef.current, {
       layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: '#71717a' },
-      grid: { vertLines: { color: 'rgba(255, 255, 255, 0.02)' }, horzLines: { color: 'rgba(255, 255, 255, 0.02)' } },
+      grid: { vertLines: { color: 'rgba(128, 128, 128, 0.1)' }, horzLines: { color: 'rgba(128, 128, 128, 0.1)' } },
       width: priceChartContainerRef.current.clientWidth,
       height: priceChartContainerRef.current.clientHeight,
       timeScale: { timeVisible: true, secondsVisible: true },
@@ -738,7 +738,7 @@ const TradingRoom = () => {
             mainSeriesRef.current = chart.addSeries(LineSeries, { color: 'var(--color-foreground)', lineWidth: 1.5 });
         } else {
             mainSeriesRef.current = chart.addSeries(AreaSeries, {
-                lineColor: '#fff', topColor: 'rgba(255, 255, 255, 0.05)', bottomColor: 'rgba(255, 255, 255, 0)',
+                lineColor: '#c5a059', topColor: 'rgba(197, 160, 89, 0.2)', bottomColor: 'rgba(197, 160, 89, 0)',
                 lineWidth: 1.5, priceLineVisible: false
             });
         }

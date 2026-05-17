@@ -3,6 +3,7 @@ import { Renderer, Program, Mesh, Triangle } from 'ogl';
 
 export const LiquidChrome = ({
   baseColor = [1.0, 1.0, 1.0], // Silver/White base
+  backgroundColor = [0.0, 0.0, 0.0], // Black background by default
   speed = 0.5,
   amplitude = 1.0,
   frequencyX = 2.0,
@@ -21,7 +22,8 @@ export const LiquidChrome = ({
     const gl = renderer.gl;
     if (!gl) return;
 
-    gl.clearColor(0, 0, 0, 1);
+    // Use transparent background so the theme's background color shows through
+    gl.clearColor(0, 0, 0, 0);
     gl.canvas.style.position = 'absolute';
     gl.canvas.style.top = '0';
     gl.canvas.style.left = '0';
@@ -48,6 +50,7 @@ export const LiquidChrome = ({
       uniform float uSpeed;
       uniform vec3 uResolution;
       uniform vec3 uBaseColor;
+      uniform vec3 uBgColor;
       uniform float uAmplitude;
       uniform float uFrequencyX;
       uniform float uFrequencyY;
@@ -106,7 +109,7 @@ export const LiquidChrome = ({
           chrome = smoothstep(0.4, 0.9, chrome);
           
           // Deep sea glow and primary highlights
-          vec3 color = mix(vec3(0.0), uBaseColor, chrome);
+          vec3 color = mix(uBgColor, uBaseColor, chrome);
           
           // Subtle edge lighting
           float edge = smoothstep(0.4, 0.5, val) * smoothstep(0.6, 0.5, val);
@@ -115,7 +118,7 @@ export const LiquidChrome = ({
           // Interaction glow
           color += uBaseColor * strength * 0.8;
 
-          gl_FragColor = vec4(color, 1.0);
+          gl_FragColor = vec4(color, 1.0); // Keep it slightly transparent if desired, but 1.0 is fine
       }
     `;
 
@@ -129,6 +132,7 @@ export const LiquidChrome = ({
           value: new Float32Array([gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height])
         },
         uBaseColor: { value: new Float32Array(baseColor) },
+        uBgColor: { value: new Float32Array(backgroundColor) },
         uAmplitude: { value: amplitude },
         uFrequencyX: { value: frequencyX },
         uFrequencyY: { value: frequencyY },

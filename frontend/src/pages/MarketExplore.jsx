@@ -190,7 +190,7 @@ const MarketExplore = () => {
                         <img 
                           src={asset.images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=100'} 
                           alt={asset.title} 
-                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                          className="w-full h-full object-cover transition-all duration-700" 
                         />
                       </div>
                       <div className="min-w-0">

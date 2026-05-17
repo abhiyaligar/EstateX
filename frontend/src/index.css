@@ -40,6 +40,24 @@
 
 
 @layer base {
+  :root {
+    --bg-color: #fdfdfd;
+    --fg-color: #1a1a1a;
+    --surface-color: #f3f3f3;
+    --surface-bright-color: #e5e5e5;
+    --input-color: #f3f3f3;
+    --border-color: rgba(197, 160, 89, 0.3);
+  }
+
+  .dark {
+    --bg-color: #050505;
+    --fg-color: #e5e2e1;
+    --surface-color: #0d0d0d;
+    --surface-bright-color: #3a3939;
+    --input-color: #0d0d0d;
+    --border-color: rgba(197, 160, 89, 0.2);
+  }
+
   * {
     border-color: var(--color-border);
     transition-duration: 400ms;
