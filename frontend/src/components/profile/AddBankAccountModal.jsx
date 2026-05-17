@@ -58,7 +58,7 @@ const AddBankAccountModal = ({ isOpen, onClose, onSuccess }) => {
             initial={{ opacity: 0, scale: 0.98, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: 10 }}
-            className="relative w-full max-w-[520px] bg-[#080808] border border-white/5 shadow-[0_0_80px_rgba(0,0,0,1)] p-8 md:p-12 overflow-y-auto max-h-[90vh] scrollbar-hide rounded-none"
+            className="relative w-full max-w-[520px] bg-surface border border-black/5 dark:border-white/5 shadow-[0_0_80px_rgba(0,0,0,1)] p-8 md:p-12 overflow-y-auto max-h-[90vh] scrollbar-hide rounded-none"
           >
             {/* Header Node */}
             <div className="flex justify-between items-start mb-14">
@@ -66,13 +66,13 @@ const AddBankAccountModal = ({ isOpen, onClose, onSuccess }) => {
                   <div className="flex items-center gap-2">
                      <p className="text-[9px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">Security Protocol Active</p>
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase text-white leading-none">
-                    Link Bank <span className="text-white/10">Account</span>
+                  <h2 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase text-foreground leading-none">
+                    Link Bank <span className="text-black/10 dark:text-white/10">Account</span>
                   </h2>
                </div>
                <button 
                  onClick={onClose}
-                 className="w-10 h-10 flex items-center justify-center rounded-full border border-white/5 text-zinc-600 hover:text-white transition-all hover:bg-white/5"
+                 className="w-10 h-10 flex items-center justify-center rounded-full border border-black/5 dark:border-white/5 text-zinc-600 hover:text-foreground transition-all hover:bg-black/5 dark:bg-black/5 dark:bg-white/5"
                >
                  <X size={20} />
                </button>
@@ -89,7 +89,7 @@ const AddBankAccountModal = ({ isOpen, onClose, onSuccess }) => {
                        placeholder="As per bank records"
                        value={formData.account_holder_name}
                        onChange={handleChange}
-                       className="w-full bg-white/[0.01] border border-white/10 p-6 pl-16 text-[14px] font-medium text-white focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-zinc-800"
+                       className="w-full bg-black/[0.02] dark:bg-white/[0.01] border border-black/10 dark:border-white/10 p-6 pl-16 text-[14px] font-medium text-foreground focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-zinc-800 dark:text-zinc-200"
                        required
                      />
                   </div>
@@ -105,7 +105,7 @@ const AddBankAccountModal = ({ isOpen, onClose, onSuccess }) => {
                        placeholder="Enter 12-16 digit number"
                        value={formData.account_number}
                        onChange={handleChange}
-                       className="w-full bg-white/[0.01] border border-white/10 p-6 pl-16 text-[14px] font-medium text-white focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-zinc-800"
+                       className="w-full bg-black/[0.02] dark:bg-white/[0.01] border border-black/10 dark:border-white/10 p-6 pl-16 text-[14px] font-medium text-foreground focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-zinc-800 dark:text-zinc-200"
                        required
                      />
                   </div>
@@ -121,7 +121,7 @@ const AddBankAccountModal = ({ isOpen, onClose, onSuccess }) => {
                        placeholder="e.g. HDFC0001234"
                        value={formData.ifsc_code}
                        onChange={handleChange}
-                       className="w-full bg-white/[0.01] border border-white/10 p-6 pl-16 text-[14px] font-medium text-white focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-zinc-800"
+                       className="w-full bg-black/[0.02] dark:bg-white/[0.01] border border-black/10 dark:border-white/10 p-6 pl-16 text-[14px] font-medium text-foreground focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-zinc-800 dark:text-zinc-200"
                        required
                      />
                   </div>
@@ -135,9 +135,9 @@ const AddBankAccountModal = ({ isOpen, onClose, onSuccess }) => {
                     name="is_primary"
                     checked={formData.is_primary}
                     onChange={handleChange}
-                    className="w-5 h-5 bg-transparent border border-white/10 rounded-none checked:bg-[#00e676] appearance-none cursor-pointer relative checked:before:content-['✓'] checked:before:absolute checked:before:text-[12px] checked:before:text-black checked:before:font-black checked:before:left-1 checked:before:top-0"
+                    className="w-5 h-5 bg-transparent border border-black/10 dark:border-white/10 rounded-none checked:bg-surface appearance-none cursor-pointer relative checked:before:content-['✓'] checked:before:absolute checked:before:text-[12px] checked:before:text-black checked:before:font-black checked:before:left-1 checked:before:top-0"
                   />
-                  <label htmlFor="is_primary" className="text-xs font-bold text-zinc-500 cursor-pointer uppercase tracking-widest">
+                  <label htmlFor="is_primary" className="text-xs font-bold text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 cursor-pointer uppercase tracking-widest">
                     Set as primary bank account
                   </label>
                </div>
@@ -146,7 +146,7 @@ const AddBankAccountModal = ({ isOpen, onClose, onSuccess }) => {
                <button 
                  type="submit" 
                  disabled={loading}
-                 className="w-full bg-[#00e676] text-black py-6 text-[12px] font-black uppercase tracking-[0.5em] hover:bg-[#00ff84] transition-all disabled:opacity-50 shadow-[0_15px_40px_rgba(0,230,118,0.2)]"
+                 className="w-full bg-surface text-black py-6 text-[12px] font-black uppercase tracking-[0.5em] hover:bg-surface transition-all disabled:opacity-50 shadow-[0_15px_40px_rgba(0,230,118,0.2)]"
                >
                  {loading ? 'SYNCHRONIZING...' : 'ADD BANK ACCOUNT'}
                </button>
