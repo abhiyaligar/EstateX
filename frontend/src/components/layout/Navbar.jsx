@@ -37,7 +37,8 @@ export const LandingNav = () => {
     <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-7xl scrypt-nav rounded-full px-2 py-2 flex items-center justify-between transition-all">
       {/* Left: Logo + Nav Links */}
       <div className="flex items-center gap-4 lg:gap-8 pl-4">
-        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Zap size={20} className="text-accent-orange fill-accent-orange" />
           <span className="hidden sm:block text-lg md:text-xl font-heading font-black tracking-tighter text-white uppercase">EstateX</span>
         </Link>
 

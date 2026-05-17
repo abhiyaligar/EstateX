@@ -262,8 +262,8 @@ const Home = () => {
                   <path d="M120 0L40 160H100L80 280L220 80H140L120 0Z" fill="url(#bolt_grad)" />
                   <defs>
                     <linearGradient id="bolt_grad" x1="40" y1="0" x2="220" y2="280" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#FF8A00" />
-                      <stop offset="1" stopColor="#B026FF" />
+                      <stop stopColor="#facc15" />
+                      <stop offset="1" stopColor="#ca8a04" />
                     </linearGradient>
                   </defs>
                 </svg>
