@@ -137,7 +137,7 @@ const Dashboard = () => {
       <AnimatePresence>
         {showFullAudit && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowFullAudit(false)} className="fixed inset-0 z-[80] bg-black/80 backdrop-blur-md" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowFullAudit(false)} className="fixed inset-0 z-[80] bg-background/80 backdrop-blur-md" />
             <motion.div 
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
@@ -152,7 +152,7 @@ const Dashboard = () => {
                </div>
                <div className="space-y-6">
                   {paginatedEvents.map((event, i) => (
-                    <div key={i} className="group flex flex-col gap-2 p-6 border border-border bg-foreground/[0.01] hover:bg-foreground/[0.02] transition-all rounded-3xl">
+                    <div key={i} className="group flex flex-col gap-2 p-6 border border-border bg-foreground/[0.03] hover:bg-foreground/[0.02] transition-all rounded-3xl">
                        <div className="flex justify-between items-start">
                           <span className="text-[9px] font-black uppercase tracking-widest text-accent-orange">{event.type}</span>
                           <span className="text-[9px] font-bold text-foreground/20">{event.date}</span>
@@ -187,7 +187,7 @@ const Dashboard = () => {
                <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-foreground/30">Active Terminal Session</p>
             </div>
             <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-heading font-black tracking-[-0.05em] uppercase leading-[0.9]">
-              Sovereign <br /> <span className="text-white/10">Dashboard</span>
+              Sovereign <br /> <span className="text-foreground/10">Dashboard</span>
             </h1>
           </div>
 
@@ -200,7 +200,7 @@ const Dashboard = () => {
              </div>
              <div className="space-y-1 md:space-y-2 border-t border-border pt-4 sm:border-0 sm:pt-0">
                 <p className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] text-foreground/30 sm:text-right">Current Liquidity</p>
-                <p className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-heading font-black tracking-tighter text-accent-orange uppercase">
+                <p className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-heading font-black tracking-tighter text-foreground uppercase">
                   ₹{(dashboardData?.wallet?.balance || 0).toLocaleString()}
                 </p>
              </div>
@@ -219,8 +219,8 @@ const Dashboard = () => {
                     <button className="hover:text-foreground transition-colors">ALL</button>
                  </div>
               </div>
-              <div className="relative h-[250px] md:h-[450px] w-full min-w-0 group bg-foreground/[0.01] border border-border p-6 rounded-[40px] blueprint-grid-dashed-small overflow-hidden">
-                <div className="absolute top-10 right-10 z-20 bg-accent-orange text-white px-3 py-1.5 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl">
+              <div className="relative h-[250px] md:h-[450px] w-full min-w-0 group bg-foreground/[0.03] border border-border p-6 rounded-[40px] blueprint-grid-dashed-small overflow-hidden">
+                <div className="absolute top-10 right-10 z-20 bg-accent-orange text-foreground px-3 py-1.5 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl">
                    {dashboardData?.portfolio?.length > 0 ? '+14.2% YTD' : '0.0% Delta'}
                 </div>
                 <ResponsiveContainer width="99%" height="99%" minWidth={1} minHeight={1}>
@@ -232,9 +232,9 @@ const Dashboard = () => {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 95, 5, 0.05)" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'rgba(255,255,255,0.1)', fontSize: 9, fontWeight: 900}} dy={20}/>
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'var(--color-foreground)', fillOpacity: 0.2, fontSize: 9, fontWeight: 900}} dy={20}/>
                     <YAxis hide />
-                    <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid rgba(255,95,5,0.2)', borderRadius: '12px' }} itemStyle={{ color: '#FF5F05', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase' }} />
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--color-background)', border: '1px solid rgba(255,95,5,0.2)', borderRadius: '12px' }} itemStyle={{ color: '#FF5F05', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase' }} />
                     <Area type="monotone" dataKey="value" stroke="#FF5F05" strokeWidth={2} fill="url(#orangeGradient)" animationDuration={2000}/>
                   </AreaChart>
                 </ResponsiveContainer>
@@ -255,7 +255,7 @@ const Dashboard = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.05 }}
                         key={i} 
-                        className="group flex flex-col md:flex-row md:items-center justify-between p-5 md:p-6 bg-foreground/[0.01] border border-border hover:border-accent-orange/30 transition-all cursor-pointer gap-6 md:gap-4 rounded-[28px]"
+                        className="group flex flex-col md:flex-row md:items-center justify-between p-5 md:p-6 bg-foreground/[0.03] border border-border hover:border-accent-orange/30 transition-all cursor-pointer gap-6 md:gap-4 rounded-[28px]"
                       >
                          <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
                             <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 bg-background border border-border rounded-2xl overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-700">
@@ -287,7 +287,7 @@ const Dashboard = () => {
                          
                          <div className="shrink-0 w-full md:w-auto">
                             <Link to={`/properties/${item.project?.id}`} className="block">
-                               <button className="w-full md:w-auto px-8 py-3 bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-accent-orange hover:text-white transition-all shadow-lg shadow-black/20">
+                               <button className="w-full md:w-auto px-8 py-3 bg-white text-background text-[10px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-accent-orange hover:text-foreground transition-all shadow-lg shadow-black/20">
                                   Audit Node
                                 </button>
                             </Link>
@@ -296,7 +296,7 @@ const Dashboard = () => {
                     ))}
                  </div>
                ) : (
-                 <div className="py-24 rounded-[40px] border border-dashed border-border bg-foreground/[0.01] flex flex-col items-center justify-center gap-6 text-center px-10">
+                 <div className="py-24 rounded-[40px] border border-dashed border-border bg-foreground/[0.03] flex flex-col items-center justify-center gap-6 text-center px-10">
                     <div className="h-20 w-20 bg-foreground/5 rounded-full flex items-center justify-center">
                        <Briefcase size={32} className="text-foreground/20" />
                     </div>

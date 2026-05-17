@@ -12,22 +12,22 @@ export const Input = React.forwardRef(({
   return (
     <div className="w-full">
       {label && (
-        <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] font-medium text-white/40">
+        <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] font-medium text-foreground/40">
           {label}
         </label>
       )}
       <div className="relative">
         {Icon && (
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Icon className="h-5 w-5 text-secondary-400" />
+            <Icon className="h-5 w-5 text-foreground/20 group-focus-within:text-accent-orange transition-colors" />
           </div>
         )}
         <input
           ref={ref}
           className={cn(
-            "flex h-12 w-full rounded-none border border-white/5 bg-[#111] px-4 py-2 text-sm text-white transition-all placeholder:text-white/20 focus-visible:outline-none focus-visible:border-white/20 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-12 w-full rounded-none border border-border bg-foreground/[0.02] px-4 py-2 text-sm text-foreground transition-all placeholder:text-foreground/20 focus-visible:outline-none focus-visible:border-accent-orange focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
             Icon && "pl-12",
-            error && "border-accent-red focus-visible:border-accent-red",
+            error && "border-red-500/50 focus-visible:border-red-500",
             className
           )}
           {...props}

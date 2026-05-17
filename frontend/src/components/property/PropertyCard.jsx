@@ -30,7 +30,7 @@ const PropertyCard = ({ property }) => {
   const displayStatus = ipo_status === 'active' ? 'Live IPO' : status || 'Project';
 
   return (
-    <Card className="group flex h-full flex-col overflow-hidden bg-[#141414] border-white/5 hover:border-white/20 transition-all duration-500 rounded-none" noPadding>
+    <Card className="group flex h-full flex-col overflow-hidden bg-foreground/[0.03] border-border hover:border-border transition-all duration-500 rounded-none" noPadding>
       <div className="relative aspect-[4/5] overflow-hidden">
         <img
           src={imageUrl || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
@@ -42,25 +42,25 @@ const PropertyCard = ({ property }) => {
         {/* Badges */}
         <div className="absolute left-6 top-6 flex gap-2">
           {type && (
-            <span className="inline-flex items-center bg-black/40 backdrop-blur-md text-white border border-white/10 px-3 py-1 text-[9px] font-bold uppercase tracking-widest">
+            <span className="inline-flex items-center bg-background/40 backdrop-blur-md text-foreground border border-border px-3 py-1 text-[9px] font-bold uppercase tracking-widest">
               {type}
             </span>
           )}
           {ipo_status === 'active' && (
-            <span className="inline-flex items-center bg-red-600 text-white px-3 py-1 text-[9px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.3)]">
+            <span className="inline-flex items-center bg-red-600 text-foreground px-3 py-1 text-[9px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.3)]">
               Live IPO
             </span>
           )}
         </div>
 
         {/* Favorite Button */}
-        <button className="absolute right-4 top-4 rounded-full bg-white/20 p-2 text-white backdrop-blur-md transition-colors hover:bg-white/40 hover:text-red-500">
+        <button className="absolute right-4 top-4 rounded-full bg-foreground/20 p-2 text-foreground backdrop-blur-md transition-colors hover:bg-white/40 hover:text-red-500">
           <Heart size={20} />
         </button>
 
         {/* Price Tag */}
         <div className="absolute bottom-4 left-4">
-          <p className="text-2xl font-bold text-white shadow-sm">
+          <p className="text-2xl font-bold text-foreground shadow-sm">
             ₹{(price || 0).toLocaleString()}
           </p>
         </div>
@@ -68,32 +68,32 @@ const PropertyCard = ({ property }) => {
 
       <CardContent className="flex flex-1 flex-col p-8 space-y-4">
         <div className="space-y-1">
-          <div className="flex items-center text-[10px] uppercase tracking-[0.2em] text-white/40 font-medium">
+          <div className="flex items-center text-[10px] uppercase tracking-[0.2em] text-foreground/40 font-medium">
             <MapPin size={10} className="mr-2" />
             {locationStr}
           </div>
           <Link to={`/properties/${id}`}>
-            <h3 className="font-serif text-2xl text-white group-hover:text-white/80 transition-colors">
+            <h3 className="font-serif text-2xl text-foreground group-hover:text-foreground/80 transition-colors">
               {title}
             </h3>
           </Link>
         </div>
 
-        <div className="text-xl font-light text-white/90">
+        <div className="text-xl font-light text-foreground/90">
           ₹{(price || 0).toLocaleString()} <span className="text-[10px] uppercase tracking-widest opacity-40 ml-1">Total Value</span>
         </div>
 
-        <div className="pt-6 flex items-center justify-between border-t border-white/5 text-[10px] uppercase tracking-[0.2em] text-white/40 font-medium">
+        <div className="pt-6 flex items-center justify-between border-t border-border text-[10px] uppercase tracking-[0.2em] text-foreground/40 font-medium">
           <div className="flex flex-col gap-1">
-            <span className="text-white/60">{bedsValue}</span>
+            <span className="text-foreground/60">{bedsValue}</span>
             <span>Investors</span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-white/60">{bathsValue}</span>
+            <span className="text-foreground/60">{bathsValue}</span>
             <span>Views</span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-white/60">{(areaValue || 0).toLocaleString()}</span>
+            <span className="text-foreground/60">{(areaValue || 0).toLocaleString()}</span>
             <span>Bricks</span>
           </div>
         </div>

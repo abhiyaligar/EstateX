@@ -14,34 +14,28 @@
   --color-primary-900: #644a2c;
   --color-primary-950: #392816;
 
-  /* Institutional Accent */
+  /* Institutional Accents */
   --color-accent-gold: #D4AF37;
-  --color-accent-orange: #FF5F05; /* New Institutional Orange */
+  --color-accent-orange: #FF5F05; /* Sovereign Orange — Primary CTA */
 
-  /* Typography Node */
+  /* Typography Nodes */
   --font-sans: 'Inter', sans-serif;
   --font-heading: 'Space Grotesk', sans-serif;
 
-  /* Structural Colors */
-  --color-background: #050505;
-  --color-foreground: #e5e2e1;
-  --color-surface: #0d0d0d;
-  --color-surface-bright: #3a3939;
-
-  /* Dark Theme Colors (Reverting to Aureate Base) */
-  --color-bg-dark: #050505;
-  --color-text-dark: #e5e2e1;
-  --color-border-dark: rgba(255, 255, 255, 0.05);
-
+  /* Light Mode Defaults */
   --color-background: #ffffff;
   --color-foreground: #050505;
-  --color-border: rgba(0, 0, 0, 0.05);
+  --color-border: rgba(0, 0, 0, 0.07);
+  --color-surface: #f5f5f5;
+  --color-surface-bright: #e8e8e8;
 }
 
 .dark {
   --color-background: #050505;
   --color-foreground: #e5e2e1;
-  --color-border: rgba(255, 255, 255, 0.05);
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-surface: #111111;
+  --color-surface-bright: #1f1f1f;
 }
 
 
@@ -120,9 +114,29 @@
   .blueprint-grid-dashed {
     background-size: 120px 120px;
     background-image: 
-      repeating-linear-gradient(to right, rgba(0,0,0,0.1) 0, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 20px),
-      repeating-linear-gradient(to bottom, rgba(0,0,0,0.1) 0, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 20px);
+      repeating-linear-gradient(to right, rgba(0,0,0,0.06) 0, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 20px),
+      repeating-linear-gradient(to bottom, rgba(0,0,0,0.06) 0, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 20px);
     background-position: center center;
+  }
+
+  .dark .blueprint-grid-dashed {
+    background-image: 
+      repeating-linear-gradient(to right, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 20px),
+      repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 20px);
+  }
+
+  .blueprint-grid-dashed-small {
+    background-size: 48px 48px;
+    background-image: 
+      repeating-linear-gradient(to right, rgba(0,0,0,0.05) 0, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 12px),
+      repeating-linear-gradient(to bottom, rgba(0,0,0,0.05) 0, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 12px);
+    background-position: center center;
+  }
+
+  .dark .blueprint-grid-dashed-small {
+    background-image: 
+      repeating-linear-gradient(to right, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 12px),
+      repeating-linear-gradient(to bottom, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 12px);
   }
 
   .crosshair {
@@ -151,14 +165,16 @@
   }
 
   .scrypt-nav {
-    background: #525252;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    background: rgba(30, 30, 30, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 0 0 0 0.5px rgba(255,255,255,0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
 
   .scrypt-pill-active {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
   }
 
   .orange-glow {
@@ -181,16 +197,16 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #050505;
+    background: var(--color-background);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(197, 160, 89, 0.2);
+    background: rgba(255, 95, 5, 0.2);
     border-radius: 0px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #C5A059;
+    background: var(--color-accent-orange);
   }
 
   /* Remove Number Input Spinners */

@@ -1,19 +1,18 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { cn } from './Button';
 
-export const Loader = ({ className, size = 24, text }) => {
+export const Loader = ({ className, size = 32, text }) => {
   return (
-    <div className={cn("flex flex-col items-center justify-center space-y-4", className)}>
-      <div className="relative flex items-center justify-center">
-        <div className="absolute inset-0 animate-ping rounded-full bg-primary-400/20" />
-        <Loader2 
-          size={size} 
-          className="animate-spin text-primary-600 dark:text-primary-400 relative z-10" 
-        />
+    <div className={cn("flex flex-col items-center justify-center gap-6", className)}>
+      <div 
+        className="bg-accent-orange/10 rounded-full flex items-center justify-center animate-pulse border border-accent-orange/20"
+        style={{ width: size * 2, height: size * 2 }}
+      >
+        <Zap size={size} className="text-accent-orange" />
       </div>
       {text && (
-        <p className="text-sm font-medium text-secondary-500 animate-pulse">
+        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-foreground/40 animate-pulse font-heading text-center">
           {text}
         </p>
       )}
@@ -21,8 +20,8 @@ export const Loader = ({ className, size = 24, text }) => {
   );
 };
 
-export const FullScreenLoader = ({ text = "Loading..." }) => (
-  <div className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center bg-white/80 backdrop-blur-sm dark:bg-slate-950/80">
-    <Loader size={48} text={text} />
+export const FullScreenLoader = ({ text = "SYNCING TERMINAL NODE..." }) => (
+  <div className="fixed inset-0 z-[100] flex h-screen w-screen items-center justify-center bg-background/80 backdrop-blur-md">
+    <Loader size={32} text={text} />
   </div>
 );

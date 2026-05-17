@@ -38,14 +38,14 @@ const Login = () => {
       <nav className="h-20 px-6 md:px-12 flex items-center justify-between border-b border-border bg-background sticky top-0 z-50 transition-colors">
         <Link to="/" className="flex items-center gap-3 group">
            <div className="w-10 h-10 bg-accent-orange flex items-center justify-center rounded-full shadow-[0_0_20px_rgba(255,95,5,0.4)] transition-transform group-hover:scale-110">
-             <Zap className="text-white fill-white" size={20} />
+             <Zap className="text-foreground fill-white" size={20} />
            </div>
            <span className="text-xl font-heading font-black tracking-tighter uppercase">EstateX</span>
         </Link>
         <div className="flex items-center gap-6">
            <button 
              onClick={toggleTheme}
-             className="p-3 text-zinc-400 hover:text-foreground transition-colors"
+             className="p-3 text-foreground/50 hover:text-foreground transition-colors"
            >
              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
            </button>
@@ -82,7 +82,7 @@ const Login = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="your@company.com"
-                      className="w-full bg-transparent border-b border-border py-4 pl-10 text-base focus:outline-none focus:border-accent-orange transition-all placeholder:text-foreground/10 font-medium"
+                      className="w-full bg-transparent border-b border-border py-4 pl-10 text-base focus:outline-none focus:border-accent-orange transition-all placeholder:text-foreground/20 font-medium"
                     />
                   </div>
                 </div>
@@ -105,7 +105,7 @@ const Login = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="w-full bg-transparent border-b border-border py-4 pl-10 text-base focus:outline-none focus:border-accent-orange transition-all placeholder:text-foreground/10 font-medium"
+                      className="w-full bg-transparent border-b border-border py-4 pl-10 text-base focus:outline-none focus:border-accent-orange transition-all placeholder:text-foreground/20 font-medium"
                     />
                   </div>
                 </div>
@@ -141,10 +141,10 @@ const Login = () => {
 
               <button 
                 onClick={() => loginWithGoogle()}
-                className="w-full border border-border py-5 font-black uppercase tracking-[0.4em] text-[11px] rounded-full hover:bg-foreground/5 transition-all flex items-center justify-center gap-4 group"
+                className="w-full border border-border py-5 font-black uppercase tracking-[0.4em] text-[10px] rounded-full hover:bg-foreground/5 transition-all flex items-center justify-center gap-4 group"
               >
                 <Chrome size={18} className="group-hover:scale-110 transition-transform" />
-                Auth via Google Node
+                Google
               </button>
             </div>
           </div>

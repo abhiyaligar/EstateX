@@ -120,23 +120,23 @@ const BuilderVerification = () => {
     ];
 
     if (fetching) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+        <div className="min-h-screen flex items-center justify-center bg-background">
             <Loader size={48} text="Initializing Accreditation Protocols..." />
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="mb-12 text-center">
                     <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Builder Node Accreditation</h1>
-                    <p className="text-white/40 uppercase tracking-[0.2em] text-xs">Verify your identity to begin property tokenization</p>
+                    <p className="text-foreground/40 uppercase tracking-[0.2em] text-xs">Verify your identity to begin property tokenization</p>
                 </div>
 
                 {/* Progress Stepper */}
                 <div className="mb-12 flex justify-between relative">
-                    <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white/5 -z-10"></div>
+                    <div className="absolute top-1/2 left-0 w-full h-[1px] bg-foreground/5 -z-10"></div>
                     {steps.map((step) => {
                         const Icon = step.icon;
                         const isActive = activeStep === step.id;
@@ -145,13 +145,13 @@ const BuilderVerification = () => {
                         return (
                             <div key={step.id} className="flex flex-col items-center">
                                 <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 border ${
-                                    isActive ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 
-                                    isCompleted ? 'bg-green-500 text-white border-green-500' : 
-                                    'bg-[#111] text-white/20 border-white/5'
+                                    isActive ? 'bg-white text-foreground border-white shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 
+                                    isCompleted ? 'bg-green-500 text-foreground border-green-500' : 
+                                    'bg-background text-foreground/20 border-border'
                                 }`}>
                                     {isCompleted ? <CheckCircle2 size={20} /> : <Icon size={20} />}
                                 </div>
-                                <span className={`mt-3 text-[9px] uppercase tracking-widest font-bold hidden sm:block ${isActive ? 'text-white' : 'text-white/20'}`}>
+                                <span className={`mt-3 text-[9px] uppercase tracking-widest font-bold hidden sm:block ${isActive ? 'text-foreground' : 'text-foreground/20'}`}>
                                     {step.title}
                                 </span>
                             </div>
@@ -170,7 +170,7 @@ const BuilderVerification = () => {
                         {activeStep === 1 && (
                             <Card className="p-8 space-y-6">
                                 <div className="flex items-center gap-3 mb-4">
-                                    <Briefcase className="text-white/20" size={24} />
+                                    <Briefcase className="text-foreground/20" size={24} />
                                     <h2 className="text-xl font-bold uppercase tracking-tight">Organization Profile</h2>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -224,7 +224,7 @@ const BuilderVerification = () => {
                         {activeStep === 2 && (
                             <Card className="p-8 space-y-6">
                                 <div className="flex items-center gap-3 mb-4">
-                                    <MapPin className="text-white/20" size={24} />
+                                    <MapPin className="text-foreground/20" size={24} />
                                     <h2 className="text-xl font-bold uppercase tracking-tight">Regulatory Compliance</h2>
                                 </div>
                                 <div className="grid grid-cols-1 gap-6">
@@ -272,10 +272,10 @@ const BuilderVerification = () => {
                         {activeStep === 3 && (
                             <Card className="p-8 space-y-6">
                                 <div className="flex items-center gap-3 mb-4">
-                                    <FileText className="text-white/20" size={24} />
+                                    <FileText className="text-foreground/20" size={24} />
                                     <h2 className="text-xl font-bold uppercase tracking-tight">Document References</h2>
                                 </div>
-                                <p className="text-xs text-white/40 uppercase tracking-widest leading-relaxed mb-6">Provide the hosted links or reference numbers for your verification documents. These will be audited by the EstateX team.</p>
+                                <p className="text-xs text-foreground/40 uppercase tracking-widest leading-relaxed mb-6">Provide the hosted links or reference numbers for your verification documents. These will be audited by the EstateX team.</p>
                                 <div className="space-y-6">
                                     <Input 
                                         label="Registration Certificate URL/Reference" 
@@ -309,10 +309,10 @@ const BuilderVerification = () => {
                         {activeStep === 4 && (
                             <Card className="p-8 space-y-6">
                                 <div className="flex items-center gap-3 mb-4">
-                                    <CreditCard className="text-white/20" size={24} />
+                                    <CreditCard className="text-foreground/20" size={24} />
                                     <h2 className="text-xl font-bold uppercase tracking-tight">Node Financial Nexus</h2>
                                 </div>
-                                <p className="text-xs text-white/40 uppercase tracking-widest leading-relaxed mb-6">This bank account will be used as the primary settlement node for all construction fund releases.</p>
+                                <p className="text-xs text-foreground/40 uppercase tracking-widest leading-relaxed mb-6">This bank account will be used as the primary settlement node for all construction fund releases.</p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <Input 
                                         label="Official Beneficiary Name" 
@@ -353,17 +353,17 @@ const BuilderVerification = () => {
                                         <ShieldCheck size={40} />
                                     </div>
                                     <h2 className="text-2xl font-bold uppercase tracking-tighter mb-2">Final Affirmation</h2>
-                                    <p className="text-sm text-white/40 max-w-md mx-auto">Please confirm that all provided data is accurate to within 100% precision. Misrepresentation will result in immediate node suspension.</p>
+                                    <p className="text-sm text-foreground/40 max-w-md mx-auto">Please confirm that all provided data is accurate to within 100% precision. Misrepresentation will result in immediate node suspension.</p>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-y-4 text-xs border-t border-b border-white/5 py-8 uppercase tracking-widest">
-                                    <span className="text-white/20">Entity</span>
+                                <div className="grid grid-cols-2 gap-y-4 text-xs border-t border-b border-border py-8 uppercase tracking-widest">
+                                    <span className="text-foreground/20">Entity</span>
                                     <span className="text-right font-bold">{formData.company_name}</span>
-                                    <span className="text-white/20">RERA ID</span>
+                                    <span className="text-foreground/20">RERA ID</span>
                                     <span className="text-right font-bold font-mono">{formData.rera_registration_number}</span>
-                                    <span className="text-white/20">Tax Node</span>
+                                    <span className="text-foreground/20">Tax Node</span>
                                     <span className="text-right font-bold font-mono">{formData.pan_number}</span>
-                                    <span className="text-white/20">Settlement</span>
+                                    <span className="text-foreground/20">Settlement</span>
                                     <span className="text-right font-bold font-mono">{formData.bank_account_number.substring(0,4)}...</span>
                                 </div>
 

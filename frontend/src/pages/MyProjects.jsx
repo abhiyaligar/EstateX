@@ -31,8 +31,8 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
           <Icon className={`text-${color}-500`} size={20} />
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1 font-bold">{title}</p>
-          <p className="text-2xl font-bold text-white tracking-tighter">{value}</p>
+          <p className="text-[10px] uppercase tracking-widest text-foreground/40 mb-1 font-bold">{title}</p>
+          <p className="text-2xl font-bold text-foreground tracking-tighter">{value}</p>
         </div>
       </div>
     </CardContent>
@@ -109,21 +109,21 @@ const MyProjects = () => {
 
   if (loading) {
     return (
-      <div className="h-screen bg-black flex items-center justify-center">
-        <Loader size={48} text="Synchronizing Project Nodes..." />
+      <div className="h-screen bg-background flex items-center justify-center">
+        <Loader size={32} text="SYNCHRONIZING PROJECT NODES..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 md:p-10 lg:p-12 space-y-12">
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-10 lg:p-12 space-y-12">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/5 pb-12">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-border pb-12">
         <div>
-          <h1 className="text-5xl font-bold uppercase tracking-tighter leading-none mb-4">
-            Project <span className="text-white/20">Portfolio</span>
+          <h1 className="text-5xl md:text-7xl font-heading font-black uppercase tracking-[-0.05em] leading-none mb-4">
+            Project <span className="text-foreground/20">Portfolio</span>
           </h1>
-          <p className="text-sm text-white/40 max-w-xl leading-relaxed uppercase tracking-widest font-medium">
+          <p className="text-sm text-foreground/40 max-w-xl leading-relaxed uppercase tracking-widest font-medium">
             Manage your fractionalized real estate assets, monitor IPO performance, and track construction milestones.
           </p>
         </div>
@@ -148,18 +148,18 @@ const MyProjects = () => {
       {/* Projects List */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-4">
-           <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/30">Asset Inventory Control</h3>
-           <span className="text-[10px] uppercase tracking-widest text-white/20">{projects.length} Nodes Found</span>
+           <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-foreground/30">Asset Inventory Control</h3>
+           <span className="text-[10px] uppercase tracking-widest text-foreground/20">{projects.length} Nodes Found</span>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
           {projects.length === 0 ? (
-            <Card className="border-dashed py-20 flex flex-col items-center justify-center text-center bg-white/[0.01]">
-              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                <Building2 className="text-white/20" size={32} />
+            <Card className="border-dashed py-20 flex flex-col items-center justify-center text-center bg-foreground/[0.02]">
+              <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center mb-6">
+                <Building2 className="text-foreground/20" size={32} />
               </div>
-              <h4 className="text-xl font-bold uppercase tracking-tight mb-2 text-white/60">No properties listed yet</h4>
-              <p className="text-xs text-white/30 uppercase tracking-widest mb-8">Start your journey by tokenizing your first asset</p>
+              <h4 className="text-xl font-bold uppercase tracking-tight mb-2 text-foreground/60">No properties listed yet</h4>
+              <p className="text-xs text-foreground/30 uppercase tracking-widest mb-8">Start your journey by tokenizing your first asset</p>
               <Button variant="outline" size="sm" onClick={() => navigate('/dashboard/add-property')}>INITIALIZE FIRST ASSET</Button>
             </Card>
           ) : (
@@ -170,33 +170,33 @@ const MyProjects = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <Card className="hover:border-white/20 transition-colors bg-[#0a0a0a] group overflow-hidden">
+                <Card className="hover:border-foreground/20 transition-colors bg-background group overflow-hidden">
                   <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-white/5">
                     {/* Visual & Summary */}
                     <div className="lg:w-1/3 p-6 flex flex-col justify-between">
                        <div className="space-y-3">
                           <div className="flex justify-between items-start">
-                            <h4 className="text-xl font-bold uppercase tracking-tighter text-white group-hover:text-primary-400 transition-colors">{project.title}</h4>
+                            <h4 className="text-xl font-bold uppercase tracking-tighter text-foreground group-hover:text-primary-400 transition-colors">{project.title}</h4>
                             <span className={`px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest border ${
                               project.ipo_status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
                               project.ipo_status === 'upcoming' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
-                              'bg-white/10 text-white/40 border-white/10'
+                              'bg-foreground/10 text-foreground/40 border-foreground/10'
                             }`}>
                               {project.ipo_status}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-white/30">
+                          <div className="flex items-center gap-2 text-foreground/30">
                             <MapPin size={12} />
                             <span className="text-[10px] uppercase tracking-widest">{project.location?.city}, {project.location?.state}</span>
                           </div>
                        </div>
                        
                        <div className="mt-8">
-                          <div className="flex justify-between text-[10px] uppercase tracking-widest text-white/40 mb-2">
+                          <div className="flex justify-between text-[10px] uppercase tracking-widest text-foreground/40 mb-2">
                              <span>Funding Progress</span>
-                             <span className="font-bold text-white">{Math.round((project.financial?.funding_raised / project.financial?.total_budget) * 100)}%</span>
+                             <span className="font-bold text-foreground">{Math.round((project.financial?.funding_raised / project.financial?.total_budget) * 100)}%</span>
                           </div>
-                          <div className="h-1.5 w-full bg-white/5 rounded-none overflow-hidden">
+                          <div className="h-1.5 w-full bg-foreground/5 rounded-none overflow-hidden">
                              <motion.div 
                                initial={{ width: 0 }}
                                whileInView={{ width: `${(project.financial?.funding_raised / project.financial?.total_budget) * 100}%` }}
@@ -208,19 +208,19 @@ const MyProjects = () => {
                     </div>
 
                     {/* Financial Nodes */}
-                    <div className="lg:w-1/4 p-6 bg-white/[0.01]">
-                       <h5 className="text-[9px] uppercase tracking-[0.2em] text-white/20 mb-4 font-bold">Token Metrics</h5>
+                    <div className="lg:w-1/4 p-6 bg-foreground/[0.02]">
+                       <h5 className="text-[9px] uppercase tracking-[0.2em] text-foreground/20 mb-4 font-bold">Token Metrics</h5>
                        <div className="space-y-4">
                           <div className="flex justify-between items-baseline">
-                             <span className="text-[10px] uppercase text-white/30">Total Bricks</span>
+                             <span className="text-[10px] uppercase text-foreground/30">Total Bricks</span>
                              <span className="text-sm font-bold font-mono">{project.financial?.total_bricks?.toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between items-baseline">
-                             <span className="text-[10px] uppercase text-white/30">IPO Price</span>
+                             <span className="text-[10px] uppercase text-foreground/30">IPO Price</span>
                              <span className="text-sm font-bold font-mono text-green-500">₹{project.financial?.ipo_price}</span>
                           </div>
-                          <div className="flex justify-between items-baseline pt-4 border-t border-white/5">
-                             <span className="text-[10px] uppercase text-white/30 font-bold">Valuation</span>
+                          <div className="flex justify-between items-baseline pt-4 border-t border-border">
+                             <span className="text-[10px] uppercase text-foreground/30 font-bold">Valuation</span>
                              <span className="text-sm font-bold">₹{(project.financial?.total_budget / 10000000).toFixed(2)}Cr</span>
                           </div>
                        </div>
@@ -240,7 +240,7 @@ const MyProjects = () => {
                         <div className="flex flex-wrap gap-2 justify-end w-full">
                           <Button 
                             variant="outline" 
-                            className="text-[10px] h-10 px-4 tracking-widest rounded-none border-white/5 hover:bg-white/5"
+                            className="text-[10px] h-10 px-4 tracking-widest rounded-none border-border hover:bg-foreground/5"
                             onClick={() => navigate(`/properties/${project.id}`)}
                           >
                             VIEW LISTING
@@ -273,11 +273,11 @@ const MyProjects = () => {
 
       {/* Revenue Deposit Modal */}
       {isRevenueModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-           <Card className="max-w-md w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
-              <CardHeader className="border-b border-white/5">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+           <Card className="max-w-md w-full bg-background border-foreground/10 shadow-2xl">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="text-xl font-bold uppercase tracking-tighter">Deposit Rental Income</CardTitle>
-                <p className="text-[10px] uppercase tracking-widest text-white/40 mt-1">Project: {selectedProject?.title}</p>
+                <p className="text-[10px] uppercase tracking-widest text-foreground/40 mt-1">Project: {selectedProject?.title}</p>
               </CardHeader>
               <CardContent className="p-6">
                 <form onSubmit={handleDepositRevenue} className="space-y-6">
@@ -291,9 +291,9 @@ const MyProjects = () => {
                    />
                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                         <label className="text-[10px] uppercase tracking-widest text-white/40">Month</label>
+                         <label className="text-[10px] uppercase tracking-widest text-foreground/40">Month</label>
                          <select 
-                           className="w-full bg-white/5 border border-white/10 p-3 text-sm text-white focus:border-primary-500 outline-none"
+                           className="w-full bg-foreground/5 border border-foreground/10 p-3 text-sm text-foreground focus:border-primary-500 outline-none"
                            value={revenueForm.month}
                            onChange={(e) => setRevenueForm({...revenueForm, month: e.target.value})}
                          >
@@ -303,7 +303,7 @@ const MyProjects = () => {
                          </select>
                       </div>
                       <div className="space-y-2">
-                         <label className="text-[10px] uppercase tracking-widest text-white/40">Year</label>
+                         <label className="text-[10px] uppercase tracking-widest text-foreground/40">Year</label>
                          <Input 
                            type="number"
                            value={revenueForm.year}

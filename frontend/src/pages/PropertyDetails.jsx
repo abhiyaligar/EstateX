@@ -30,7 +30,7 @@ import governanceService from '../services/governanceService';
 import Toast from '../components/ui/Toast';
 
 const ComplianceBadge = ({ label, isApproved }) => (
-  <div className={`flex items-center gap-3 p-4 border ${isApproved ? 'border-green-500/20 bg-green-500/5 text-green-500' : 'border-zinc-800 bg-zinc-900/50 text-zinc-500'} transition-all duration-500`}>
+  <div className={`flex items-center gap-3 p-4 border ${isApproved ? 'border-green-500/20 bg-green-500/5 text-green-500' : 'border-foreground/20 bg-foreground/[0.05]/50 text-foreground/40'} transition-all duration-500`}>
     <ShieldCheck size={18} className={isApproved ? 'animate-pulse' : ''} />
     <span className="text-[10px] font-black uppercase tracking-[0.2em]">{label}</span>
     <CheckCircle2 size={14} className="ml-auto" />
@@ -40,11 +40,11 @@ const ComplianceBadge = ({ label, isApproved }) => (
 const MilestoneStepper = ({ milestones = [] }) => (
   <div className="space-y-8 py-10">
     <div className="flex items-center gap-4 mb-8">
-      <Clock size={20} className="text-[#D4AF37]" />
+      <Clock size={20} className="text-accent-gold" />
       <h3 className="text-xl font-bold uppercase tracking-tight">Construction Roadmap</h3>
     </div>
     <div className="relative space-y-12">
-      <div className="absolute left-[15px] top-2 bottom-2 w-[1px] bg-white/5" />
+      <div className="absolute left-[15px] top-2 bottom-2 w-[1px] bg-foreground/5" />
       {milestones.map((m, idx) => (
         <motion.div 
           key={m.id}
@@ -54,15 +54,15 @@ const MilestoneStepper = ({ milestones = [] }) => (
           transition={{ delay: idx * 0.1 }}
           className="relative pl-12 group"
         >
-          <div className={`absolute left-0 top-1 w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-500 z-10 ${m.status === 'completed' ? 'bg-[#D4AF37] border-[#D4AF37] text-black shadow-[0_0_20px_rgba(212,175,55,0.4)]' : 'bg-black border-white/10 text-zinc-600 group-hover:border-zinc-400'}`}>
+          <div className={`absolute left-0 top-1 w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-500 z-10 ${m.status === 'completed' ? 'bg-accent-orange border-accent-orange text-background shadow-[0_0_20px_rgba(212,175,55,0.4)]' : 'bg-background border-foreground/10 text-foreground/30 group-hover:border-zinc-400'}`}>
             <span className="text-[10px] font-black">{m.milestone_number}</span>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h4 className={`text-sm font-bold uppercase tracking-tight ${m.status === 'completed' ? 'text-[#D4AF37]' : 'text-white'}`}>{m.description}</h4>
-              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-600">{m.release_percentage}% Release</span>
+              <h4 className={`text-sm font-bold uppercase tracking-tight ${m.status === 'completed' ? 'text-accent-gold' : 'text-foreground'}`}>{m.description}</h4>
+              <span className="text-[8px] font-black uppercase tracking-widest text-foreground/30">{m.release_percentage}% Release</span>
             </div>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">
+            <p className="text-[10px] text-foreground/40 uppercase tracking-widest font-medium">
               Target: {new Date(m.target_date).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
             </p>
           </div>
@@ -77,22 +77,22 @@ const MacroAnalyticsCard = ({ analytics, pincode }) => {
   
   const metrics = [
     { label: 'Demand Index', value: analytics.demand_score, icon: Activity, suffix: '/100', color: 'text-blue-500' },
-    { label: 'YoY Appreciation', value: analytics.yoy_growth_percentage, icon: TrendingUp, suffix: '%', color: 'text-[#D4AF37]' },
+    { label: 'YoY Appreciation', value: analytics.yoy_growth_percentage, icon: TrendingUp, suffix: '%', color: 'text-accent-gold' },
     { label: 'Rental Yield', value: analytics.avg_rental_yield, icon: Percent, suffix: '%', color: 'text-green-500' }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-10 border-y border-white/5 my-10">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-10 border-y border-border my-10">
       {metrics.map((m, idx) => (
         <div key={idx} className="space-y-3 group">
           <div className="flex items-center gap-3">
             <m.icon size={16} className={m.color} />
-            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 group-hover:text-zinc-400 transition-colors">{m.label}</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/30 group-hover:text-foreground/50 transition-colors">{m.label}</span>
           </div>
           <p className="text-3xl font-bold tracking-tighter">
-            {m.value}<span className="text-sm text-zinc-700 ml-1">{m.suffix}</span>
+            {m.value}<span className="text-sm text-foreground/20 ml-1">{m.suffix}</span>
           </p>
-          <div className="h-[2px] bg-white/5 overflow-hidden">
+          <div className="h-[2px] bg-foreground/5 overflow-hidden">
             <motion.div 
               initial={{ width: 0 }}
               whileInView={{ width: `${m.value}%` }}
@@ -161,13 +161,13 @@ const PropertyDetails = () => {
 
   if (loading) {
     return (
-      <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <Loader size={48} text="Synchronizing Asset DNA..." />
+      <div className="h-screen bg-background flex items-center justify-center">
+        <Loader size={32} text="SYNCHRONIZING ASSET DNA..." />
       </div>
     );
   }
 
-  if (!property) return <div className="py-24 text-center text-zinc-600 uppercase font-black tracking-widest">Asset Node Not Found</div>;
+  if (!property) return <div className="py-24 text-center text-foreground/30 uppercase font-black tracking-widest">Asset Node Not Found</div>;
 
   const price = property.financial?.ipo_price || 0;
   const fundingRaised = property.financial?.funding_raised || 0;
@@ -175,36 +175,36 @@ const PropertyDetails = () => {
   const progress = Math.min((fundingRaised / totalBudget) * 100, 100);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-32">
+    <div className="min-h-screen bg-background text-foreground pt-10 pb-32">
       <div className="max-w-screen-2xl mx-auto px-6 md:px-12">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center gap-4 mb-12">
-          <Link to="/ipo" className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 hover:text-[#D4AF37] transition-colors">IPO Center</Link>
-          <span className="text-zinc-800">/</span>
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">{property.title}</span>
+          <Link to="/ipo" className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/30 hover:text-accent-orange transition-colors">IPO Center</Link>
+          <span className="text-foreground/10">/</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent-gold">{property.title}</span>
         </div>
 
         {/* Hero Section */}
         <header className="mb-16 space-y-10">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 border-b border-white/5 pb-16">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 border-b border-border pb-16">
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <span className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.3em] border ${property.ipo_status === 'completed' ? 'border-blue-500/30 text-blue-400 bg-blue-500/5' : 'border-[#D4AF37]/30 text-[#D4AF37] bg-[#D4AF37]/5'}`}>
+                <span className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.3em] border ${property.ipo_status === 'completed' ? 'border-blue-500/30 text-blue-400 bg-blue-500/5' : 'border-accent-gold/30 text-accent-gold bg-accent-gold/5 animate-pulse'}`}>
                   {property.ipo_status === 'active' ? 'Live Deployment' : property.ipo_status === 'completed' ? 'Secondary Market' : 'Phase: Upcoming'}
                 </span>
-                <span className="text-zinc-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-                  <MapPin size={12} className="text-[#D4AF37]" /> {property.location?.city}, {property.location?.state}
+                <span className="text-foreground/30 text-[9px] md:text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                  <MapPin size={12} className="text-accent-gold" /> {property.location?.city}, {property.location?.state}
                 </span>
               </div>
-              <h1 className="text-5xl md:text-8xl font-bold tracking-tighter uppercase leading-[0.9]">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-heading font-black tracking-[-0.05em] uppercase leading-[0.9]">
                 {property.title}
               </h1>
             </div>
             
             <div className="text-left md:text-right space-y-2">
-               <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-700">Initial Offering</p>
-               <p className="text-5xl md:text-6xl font-bold tracking-tighter text-[#D4AF37]">
-                 ₹{property.financial?.ipo_price?.toLocaleString()}<span className="text-lg text-zinc-800 ml-2">/BRICK</span>
+               <p className="text-[10px] font-black uppercase tracking-[0.5em] text-foreground/20">Initial Offering</p>
+               <p className="text-5xl md:text-6xl font-bold tracking-tighter text-accent-gold">
+                 ₹{property.financial?.ipo_price?.toLocaleString()}<span className="text-lg text-foreground/10 ml-2">/BRICK</span>
                </p>
             </div>
           </div>
@@ -218,20 +218,20 @@ const PropertyDetails = () => {
             <MacroAnalyticsCard analytics={property.macro_analytics} pincode={property.location?.pincode} />
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-               <div className="p-8 border border-white/5 bg-white/[0.01]">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-4">Total Supply</p>
-                  <p className="text-2xl font-bold tracking-tight">{property.financial?.total_bricks?.toLocaleString()}<span className="text-[10px] text-zinc-800 ml-1 uppercase">BK</span></p>
+               <div className="p-8 border border-border bg-foreground/[0.02]">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 mb-4">Total Supply</p>
+                  <p className="text-2xl font-bold tracking-tight">{property.financial?.total_bricks?.toLocaleString()}<span className="text-[10px] text-foreground/10 ml-1 uppercase">BK</span></p>
                </div>
-               <div className="p-8 border border-white/5 bg-white/[0.01]">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-4">Area Coverage</p>
-                  <p className="text-2xl font-bold tracking-tight">{property.location?.area_sqft?.toLocaleString()}<span className="text-[10px] text-zinc-800 ml-1 uppercase">SQFT</span></p>
+               <div className="p-8 border border-border bg-foreground/[0.02]">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 mb-4">Area Coverage</p>
+                  <p className="text-2xl font-bold tracking-tight">{property.location?.area_sqft?.toLocaleString()}<span className="text-[10px] text-foreground/10 ml-1 uppercase">SQFT</span></p>
                </div>
-               <div className="p-8 border border-white/5 bg-white/[0.01]">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-4">Investors</p>
+               <div className="p-8 border border-border bg-foreground/[0.02]">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 mb-4">Investors</p>
                   <p className="text-2xl font-bold tracking-tight">{property.investor_count || 0}</p>
                </div>
-               <div className="p-8 border border-white/5 bg-white/[0.01]">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-4">Completion</p>
+               <div className="p-8 border border-border bg-foreground/[0.02]">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30 mb-4">Completion</p>
                   <p className="text-2xl font-bold tracking-tight">
                     {property.timeline?.expected_completion ? new Date(property.timeline.expected_completion).getFullYear() : '2026'}
                   </p>
@@ -240,10 +240,10 @@ const PropertyDetails = () => {
 
             <div className="space-y-10">
               <div className="flex items-center gap-4">
-                <FileText size={20} className="text-[#D4AF37]" />
+                <FileText size={20} className="text-accent-gold" />
                 <h3 className="text-xl font-bold uppercase tracking-tight">Project Narrative</h3>
               </div>
-              <div className="text-zinc-500 leading-relaxed text-sm max-w-4xl space-y-6">
+              <div className="text-foreground/40 leading-relaxed text-sm max-w-4xl space-y-6">
                 {property.description?.split('\n').map((para, i) => (
                   <p key={i}>{para}</p>
                 ))}
@@ -254,7 +254,7 @@ const PropertyDetails = () => {
 
             <div className="space-y-10">
               <div className="flex items-center gap-4">
-                <Shield size={20} className="text-[#D4AF37]" />
+                <Shield size={20} className="text-accent-gold" />
                 <h3 className="text-xl font-bold uppercase tracking-tight">Compliance & Verification</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -269,12 +269,12 @@ const PropertyDetails = () => {
           {/* Sidebar Column */}
           <div className="lg:col-span-4">
             <div className="sticky top-10 space-y-10">
-              <Card className="bg-[#0f0f0f] border-white/10 p-6 md:p-10 space-y-8 md:space-y-10 shadow-[0_40px_100px_rgba(0,0,0,0.8)]">
+              <Card className="bg-background border-foreground/10 p-6 md:p-10 space-y-8 md:space-y-10 shadow-[0_40px_100px_rgba(0,0,0,0.8)]">
                 <div className="space-y-2">
                   <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tight">
                     {property.ipo_status === 'completed' ? 'Trade Portal' : 'Acquisition Node'}
                   </h3>
-                  <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-black">Strategic Capital Deployment</p>
+                  <p className="text-[10px] text-foreground/30 uppercase tracking-widest font-black">Strategic Capital Deployment</p>
                 </div>
 
                 {property.ipo_status === 'completed' ? (
@@ -285,7 +285,7 @@ const PropertyDetails = () => {
                       </p>
                     </div>
                     <Link to={`/trade?assetId=${property.id}`} className="block">
-                      <button className="w-full bg-[#D4AF37] text-black py-4 md:py-5 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white transition-all flex items-center justify-center gap-3">
+                      <button className="w-full bg-accent-orange text-background py-4 md:py-5 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white transition-all flex items-center justify-center gap-3">
                         Enter Trading Room <ArrowRight size={14} />
                       </button>
                     </Link>
@@ -294,24 +294,24 @@ const PropertyDetails = () => {
                   <div className="space-y-8 md:space-y-10">
                     <div className="space-y-6">
                       <div className="flex justify-between items-end">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Funding Progress</p>
-                        <p className="text-xs font-bold text-[#D4AF37]">{progress.toFixed(1)}%</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30">Funding Progress</p>
+                        <p className="text-xs font-bold text-accent-gold">{progress.toFixed(1)}%</p>
                       </div>
-                      <div className="h-1 bg-white/5 overflow-hidden">
+                      <div className="h-1 bg-foreground/5 overflow-hidden">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: `${progress}%` }}
-                          className="h-full bg-[#D4AF37]"
+                          className="h-full bg-accent-orange"
                         />
                       </div>
-                      <div className="flex justify-between text-[10px] font-bold text-zinc-800">
+                      <div className="flex justify-between text-[10px] font-bold text-foreground/10">
                         <span>₹{(fundingRaised / 10000000).toFixed(2)}Cr</span>
                         <span>Target: ₹{(totalBudget / 10000000).toFixed(2)}Cr</span>
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                       <label className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-700 block ml-1">Acquisition Volume</label>
+                       <label className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/20 block ml-1">Acquisition Volume</label>
                        <div className="relative group">
                           <input 
                             type="number" 
@@ -325,21 +325,21 @@ const PropertyDetails = () => {
                                 setBuyAmount(parseInt(val) || 0);
                               }
                             }}
-                            className="w-full bg-black border border-white/10 h-14 md:h-16 px-6 text-lg md:text-xl font-bold tracking-tighter focus:border-[#D4AF37] focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-background border border-foreground/10 h-14 md:h-16 px-6 text-lg md:text-xl font-bold tracking-tighter focus:border-accent-orange focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={property.ipo_status !== 'active'}
                           />
-                          <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-zinc-800">BRICKS</div>
+                          <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-foreground/10">BRICKS</div>
                        </div>
-                       <div className="flex justify-between p-4 bg-white/[0.02] border border-white/5">
-                          <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Commitment</span>
-                          <span className="text-sm font-bold text-[#D4AF37]">₹{(buyAmount * price).toLocaleString()}</span>
+                       <div className="flex justify-between p-4 bg-foreground/[0.04] border border-border">
+                          <span className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest">Commitment</span>
+                          <span className="text-sm font-bold text-accent-gold">₹{(buyAmount * price).toLocaleString()}</span>
                        </div>
                     </div>
 
                     <button 
                       onClick={handleInvest}
                       disabled={property.ipo_status !== 'active' || isInvesting || buyAmount <= 0}
-                      className={`w-full py-4 md:py-5 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all flex items-center justify-center gap-3 ${property.ipo_status === 'active' ? 'bg-white text-black hover:bg-[#D4AF37]' : 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5'}`}
+                      className={`w-full py-4 md:py-5 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all flex items-center justify-center gap-3 ${property.ipo_status === 'active' ? 'bg-white text-background hover:bg-accent-orange' : 'bg-foreground/[0.05] text-foreground/20 cursor-not-allowed border border-border'}`}
                     >
                       {isInvesting ? (
                         <Zap size={14} className="animate-spin" />
@@ -353,21 +353,21 @@ const PropertyDetails = () => {
                 )}
               </Card>
 
-              <div className="p-6 md:p-10 border border-white/5 space-y-8">
+              <div className="p-6 md:p-10 border border-border space-y-8">
                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 md:h-12 md:w-12 bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] font-black text-xs md:text-base">
+                    <div className="h-10 w-10 md:h-12 md:w-12 bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center text-accent-gold font-black text-xs md:text-base">
                        {property.builder?.company_name?.substring(0,2).toUpperCase()}
                     </div>
                     <div>
-                       <p className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-1">Architectural Node</p>
+                       <p className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-foreground/30 mb-1">Architectural Node</p>
                        <p className="text-sm md:text-base font-bold uppercase tracking-tight">{property.builder?.company_name}</p>
                     </div>
                  </div>
                  <div className="flex items-center gap-1 md:gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <Zap key={star} size={10} className={star <= (property.builder?.average_rating || 0) ? 'text-[#D4AF37] fill-[#D4AF37]' : 'text-zinc-800'} />
+                      <Zap key={star} size={10} className={star <= (property.builder?.average_rating || 0) ? 'text-accent-gold fill-[#D4AF37]' : 'text-foreground/10'} />
                     ))}
-                    <span className="text-[7px] md:text-[8px] font-black text-zinc-700 ml-1 md:ml-2 uppercase tracking-widest">Level {Math.ceil(property.builder?.average_rating || 0)}</span>
+                    <span className="text-[7px] md:text-[8px] font-black text-foreground/20 ml-1 md:ml-2 uppercase tracking-widest">Level {Math.ceil(property.builder?.average_rating || 0)}</span>
                  </div>
               </div>
             </div>
@@ -375,15 +375,15 @@ const PropertyDetails = () => {
         </div>
         
         {/* Governance Integration */}
-        <div className="mt-40 border-t border-white/5 pt-32">
+        <div className="mt-40 border-t border-border pt-32">
            <div className="max-w-4xl">
               <div className="flex items-center gap-6 mb-12">
-                 <div className="h-16 w-16 bg-[#D4AF37]/5 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
+                 <div className="h-16 w-16 bg-accent-gold/5 border border-accent-gold/20 flex items-center justify-center text-accent-gold">
                     <Shield size={32} />
                  </div>
                  <div className="space-y-2">
                     <h2 className="text-4xl font-bold tracking-tighter uppercase leading-none">Asset Governance</h2>
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-700">Decentralized Management Protocol</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/20">Decentralized Management Protocol</p>
                  </div>
               </div>
               <GovernanceSection projectId={id} isHolder={isHolder} />
@@ -435,19 +435,19 @@ const GovernanceSection = ({ projectId, isHolder }) => {
     }
   };
 
-  if (loading) return <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-800 animate-pulse">Scanning Governance Nodes...</div>;
-  if (proposals.length === 0) return <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-800">No Active Proposals Identified</div>;
+  if (loading) return <div className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/10 animate-pulse">Scanning Governance Nodes...</div>;
+  if (proposals.length === 0) return <div className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/10">No Active Proposals Identified</div>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
       {proposals.map(p => (
-        <Card key={p.id} className="bg-white/[0.01] border-white/5 hover:border-[#D4AF37]/20 transition-all duration-700">
+        <Card key={p.id} className="bg-foreground/[0.02] border-border hover:border-accent-gold/20 transition-all duration-700">
           <div className="space-y-6">
             <div className="flex justify-between items-start">
                <h4 className="text-xl font-bold tracking-tight uppercase">{p.title}</h4>
-               <span className="text-[8px] font-black px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 uppercase tracking-widest">{p.status}</span>
+               <span className="text-[8px] font-black px-2 py-1 bg-accent-gold/10 text-accent-gold border border-accent-gold/20 uppercase tracking-widest">{p.status}</span>
             </div>
-            <p className="text-xs text-zinc-500 leading-relaxed uppercase tracking-widest font-medium">{p.description}</p>
+            <p className="text-xs text-foreground/40 leading-relaxed uppercase tracking-widest font-medium">{p.description}</p>
             
             <div className="space-y-8 pt-6">
               {p.options.map((opt, idx) => {
@@ -459,18 +459,18 @@ const GovernanceSection = ({ projectId, isHolder }) => {
                   <div key={idx} className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-black uppercase tracking-widest">{opt}</span>
-                      <span className="text-[10px] font-mono font-bold text-[#D4AF37]">{percentage}%</span>
+                      <span className="text-[10px] font-mono font-bold text-accent-gold">{percentage}%</span>
                     </div>
-                    <div className="h-[2px] bg-white/5 overflow-hidden">
+                    <div className="h-[2px] bg-foreground/5 overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${percentage}%` }}
-                        className="h-full bg-[#D4AF37]"
+                        className="h-full bg-accent-orange"
                       />
                     </div>
                     {p.status === 'active' && isHolder && (
                       <button 
-                        className="text-[8px] font-black uppercase tracking-[0.3em] text-[#D4AF37] hover:text-white transition-colors"
+                        className="text-[8px] font-black uppercase tracking-[0.3em] text-accent-gold hover:text-foreground transition-colors"
                         onClick={() => handleVote(p.id, idx)}
                       >
                         [ Confirm Stake ]

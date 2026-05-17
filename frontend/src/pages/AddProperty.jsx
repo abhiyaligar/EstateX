@@ -175,17 +175,17 @@ const AddProperty = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-12">
             <h1 className="text-4xl font-bold uppercase tracking-tighter mb-2">Initialize Project Node</h1>
-            <p className="text-white/40 uppercase tracking-[0.2em] text-[10px]">Deploy a new fractionalized property asset to the EstateX exchange</p>
+            <p className="text-foreground/40 uppercase tracking-[0.2em] text-[10px]">Deploy a new fractionalized property asset to the EstateX exchange</p>
         </div>
 
         {/* Progress Stepper */}
         <div className="mb-12 flex justify-between relative">
-            <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white/5 -z-10"></div>
+            <div className="absolute top-1/2 left-0 w-full h-[1px] bg-foreground/5 -z-10"></div>
             {steps.map((step) => {
                 const Icon = step.icon;
                 const isActive = activeStep === step.id;
@@ -194,13 +194,13 @@ const AddProperty = () => {
                 return (
                     <div key={step.id} className="flex flex-col items-center">
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 border ${
-                            isActive ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 
-                            isCompleted ? 'bg-green-500 text-white border-green-500' : 
-                            'bg-[#111] text-white/20 border-white/5'
+                            isActive ? 'bg-white text-foreground border-white shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 
+                            isCompleted ? 'bg-green-500 text-foreground border-green-500' : 
+                            'bg-background text-foreground/20 border-border'
                         }`}>
                             {isCompleted ? <CheckCircle2 size={20} /> : <Icon size={20} />}
                         </div>
-                        <span className={`mt-3 text-[9px] uppercase tracking-widest font-bold hidden sm:block ${isActive ? 'text-white' : 'text-white/20'}`}>
+                        <span className={`mt-3 text-[9px] uppercase tracking-widest font-bold hidden sm:block ${isActive ? 'text-foreground' : 'text-foreground/20'}`}>
                             {step.title}
                         </span>
                     </div>
@@ -219,7 +219,7 @@ const AddProperty = () => {
                 {activeStep === 1 && (
                     <Card className="p-8 space-y-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <Info className="text-white/20" size={24} />
+                            <Info className="text-foreground/20" size={24} />
                             <h2 className="text-xl font-bold uppercase tracking-tight">Essential Identity</h2>
                         </div>
                         <div className="space-y-6">
@@ -232,25 +232,25 @@ const AddProperty = () => {
                                 required 
                             />
                             <div className="space-y-2">
-                                <label className="text-[10px] uppercase tracking-[0.2em] font-medium text-white/40">Technical Description</label>
+                                <label className="text-[10px] uppercase tracking-[0.2em] font-medium text-foreground/40">Technical Description</label>
                                 <textarea
                                     name="description"
                                     value={formData.description}
                                     onChange={handleChange}
                                     rows={4}
-                                    className="w-full rounded-none border border-white/5 bg-[#111] px-4 py-3 text-sm text-white transition-all placeholder:text-white/20 focus-visible:outline-none focus-visible:border-white/20"
+                                    className="w-full rounded-none border border-border bg-background px-4 py-3 text-sm text-foreground transition-all placeholder:text-foreground/20 focus-visible:outline-none focus-visible:border-border"
                                     placeholder="Detail the architectural uniqueness and investment value..."
                                     required
                                 />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] uppercase tracking-[0.2em] font-medium text-white/40">Asset Class</label>
+                                    <label className="text-[10px] uppercase tracking-[0.2em] font-medium text-foreground/40">Asset Class</label>
                                     <select
                                         name="type"
                                         value={formData.type}
                                         onChange={handleChange}
-                                        className="w-full h-12 rounded-none border border-white/5 bg-[#111] px-4 py-2 text-sm text-white focus:outline-none focus:border-white/20"
+                                        className="w-full h-12 rounded-none border border-border bg-background px-4 py-2 text-sm text-foreground focus:outline-none focus:border-border"
                                     >
                                         <option value="Apartment">Apartment</option>
                                         <option value="House">House</option>
@@ -267,7 +267,7 @@ const AddProperty = () => {
                 {activeStep === 2 && (
                     <Card className="p-8 space-y-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <MapPin className="text-white/20" size={24} />
+                            <MapPin className="text-foreground/20" size={24} />
                             <h2 className="text-xl font-bold uppercase tracking-tight">Geographical Placement</h2>
                         </div>
                         <div className="space-y-6">
@@ -292,7 +292,7 @@ const AddProperty = () => {
                 {activeStep === 3 && (
                     <Card className="p-8 space-y-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <DollarSign className="text-white/20" size={24} />
+                            <DollarSign className="text-foreground/20" size={24} />
                             <h2 className="text-xl font-bold uppercase tracking-tight">Financial Tokenomics</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -325,25 +325,25 @@ const AddProperty = () => {
                             />
                         </div>
 
-                        <div className="p-6 bg-white/[0.02] border border-white/5 flex items-center gap-6 mt-4">
-                            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-white/40">
+                        <div className="p-6 bg-foreground/[0.04] border border-border flex items-center gap-6 mt-4">
+                            <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center text-foreground/40">
                                 <Layers size={32} />
                             </div>
                             <div>
-                                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/20 mb-1">Calculated Supply</p>
+                                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-foreground/20 mb-1">Calculated Supply</p>
                                 <p className="text-3xl font-bold tracking-tighter">
-                                    {totalBricks.toLocaleString()} <span className="text-xs uppercase text-white/40 tracking-widest font-medium ml-2">Total Bricks</span>
+                                    {totalBricks.toLocaleString()} <span className="text-xs uppercase text-foreground/40 tracking-widest font-medium ml-2">Total Bricks</span>
                                 </p>
                             </div>
                         </div>
-                        <p className="text-[10px] uppercase tracking-widest text-white/20 italic">Note: Brick supply is automatically derived from Target Budget / Face Value.</p>
+                        <p className="text-[10px] uppercase tracking-widest text-foreground/20 italic">Note: Brick supply is automatically derived from Target Budget / Face Value.</p>
                     </Card>
                 )}
 
                 {activeStep === 4 && (
                     <Card className="p-8 space-y-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <ShieldCheck className="text-white/20" size={24} />
+                            <ShieldCheck className="text-foreground/20" size={24} />
                             <h2 className="text-xl font-bold uppercase tracking-tight">Compliance & Accreditation</h2>
                         </div>
                         
@@ -353,9 +353,9 @@ const AddProperty = () => {
                                 { name: 'environmental_clearance', label: 'Env Clearance', icon: CheckCircle2 },
                                 { name: 'insurance_coverage', label: 'Insured Asset', icon: ShieldCheck }
                             ].map(flag => (
-                                <div key={flag.name} className="flex items-center justify-between p-4 border border-white/5 bg-white/[0.02] transition-all hover:border-white/10">
+                                <div key={flag.name} className="flex items-center justify-between p-4 border border-border bg-foreground/[0.04] transition-all hover:border-border">
                                     <div className="flex items-center gap-3">
-                                        <flag.icon className={formData[flag.name] ? 'text-green-500' : 'text-white/20'} size={18} />
+                                        <flag.icon className={formData[flag.name] ? 'text-green-500' : 'text-foreground/20'} size={18} />
                                         <span className="text-[10px] uppercase tracking-widest font-bold">{flag.label}</span>
                                     </div>
                                     <input 
@@ -363,7 +363,7 @@ const AddProperty = () => {
                                         name={flag.name}
                                         checked={formData[flag.name]}
                                         onChange={handleChange}
-                                        className="w-5 h-5 accent-white rounded-none border-white/5"
+                                        className="w-5 h-5 accent-white rounded-none border-border"
                                     />
                                 </div>
                             ))}
@@ -382,7 +382,7 @@ const AddProperty = () => {
                 {activeStep === 5 && (
                     <Card className="p-8 space-y-8">
                         <div className="flex items-center gap-3 mb-4">
-                            <Calendar className="text-white/20" size={24} />
+                            <Calendar className="text-foreground/20" size={24} />
                             <h2 className="text-xl font-bold uppercase tracking-tight">Timeline & Release Phases</h2>
                         </div>
 
@@ -391,25 +391,25 @@ const AddProperty = () => {
                         </div>
 
                         <div className="space-y-6">
-                            <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/40 border-b border-white/5 pb-2">Automatic Escalation Phases</h4>
+                            <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-foreground/40 border-b border-border pb-2">Automatic Escalation Phases</h4>
                             {[
                                 { step: 1, label: 'Phase 1: Initialization', percent: 20 },
                                 { step: 2, label: 'Phase 2: Core Structure', percent: 40 },
                                 { step: 3, label: 'Phase 3: Final Accreditation', percent: 40 }
                             ].map(m => (
-                                <div key={m.step} className="flex items-center gap-6 p-4 border border-white/5 bg-white/[0.01]">
-                                    <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-xs font-bold text-white/40">
+                                <div key={m.step} className="flex items-center gap-6 p-4 border border-border bg-foreground/[0.02]">
+                                    <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-xs font-bold text-foreground/40">
                                         0{m.step}
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-xs font-bold uppercase tracking-widest">{m.label}</p>
-                                        <div className="h-[2px] w-full bg-white/5 mt-2 overflow-hidden">
+                                        <div className="h-[2px] w-full bg-foreground/5 mt-2 overflow-hidden">
                                             <div className="h-full bg-white/40" style={{ width: `${m.percent}%` }}></div>
                                         </div>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-lg font-bold tracking-tighter">{m.percent}%</p>
-                                        <p className="text-[9px] uppercase tracking-widest text-white/20">Release</p>
+                                        <p className="text-[9px] uppercase tracking-widest text-foreground/20">Release</p>
                                     </div>
                                 </div>
                             ))}
@@ -420,12 +420,12 @@ const AddProperty = () => {
                 {activeStep === 6 && (
                     <Card className="p-8 space-y-8">
                         <div className="flex items-center gap-3 mb-4">
-                            <UploadCloud className="text-white/20" size={24} />
+                            <UploadCloud className="text-foreground/20" size={24} />
                             <h2 className="text-xl font-bold uppercase tracking-tight">Node Assets & Affirmation</h2>
                         </div>
 
                         {/* Media Upload */}
-                        <div className="border-2 border-dashed border-white/5 bg-white/[0.01] p-12 text-center relative group hover:border-white/10 transition-all">
+                        <div className="border-2 border-dashed border-border bg-foreground/[0.02] p-12 text-center relative group hover:border-border transition-all">
                             <input 
                                 type="file" 
                                 multiple 
@@ -434,9 +434,9 @@ const AddProperty = () => {
                                 accept="image/*"
                             />
                             <div className="flex flex-col items-center">
-                                <UploadCloud size={48} className="text-white/20 mb-4 group-hover:scale-110 transition-transform" />
+                                <UploadCloud size={48} className="text-foreground/20 mb-4 group-hover:scale-110 transition-transform" />
                                 <p className="text-sm font-bold uppercase tracking-widest mb-1">Upload Project Visuals</p>
-                                <p className="text-[10px] text-white/20 uppercase tracking-[0.2em]">Select 1-10 high resolution renders</p>
+                                <p className="text-[10px] text-foreground/20 uppercase tracking-[0.2em]">Select 1-10 high resolution renders</p>
                             </div>
                         </div>
 
@@ -444,13 +444,13 @@ const AddProperty = () => {
                         {selectedFiles.length > 0 && (
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {selectedFiles.map((file, i) => (
-                                    <div key={i} className="relative aspect-square border border-white/10 group overflow-hidden">
-                                        <div className="absolute inset-0 bg-white/10 flex items-center justify-center text-[10px] font-mono break-all p-2 text-center">
+                                    <div key={i} className="relative aspect-square border border-border group overflow-hidden">
+                                        <div className="absolute inset-0 bg-foreground/10 flex items-center justify-center text-[10px] font-mono break-all p-2 text-center">
                                             {file.name}
                                         </div>
                                         <button 
                                             onClick={() => removeFile(i)}
-                                            className="absolute top-2 right-2 p-1.5 bg-black text-white hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="absolute top-2 right-2 p-1.5 bg-background text-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
                                             <Trash2 size={12} />
                                         </button>
@@ -466,9 +466,9 @@ const AddProperty = () => {
                             </div>
                         )}
 
-                        <div className="pt-8 border-t border-white/5 space-y-4">
-                            <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] leading-relaxed">
-                                I hereby affirm that the asset identified as <span className="text-white font-bold">{formData.title || "[TITLE]"}</span> meets all regional RERA requirements and the financial data provided is accurate. Tokenization will proceed upon admin validation.
+                        <div className="pt-8 border-t border-border space-y-4">
+                            <p className="text-[10px] text-foreground/40 uppercase tracking-[0.2em] leading-relaxed">
+                                I hereby affirm that the asset identified as <span className="text-foreground font-bold">{formData.title || "[TITLE]"}</span> meets all regional RERA requirements and the financial data provided is accurate. Tokenization will proceed upon admin validation.
                             </p>
                         </div>
                     </Card>
@@ -492,7 +492,7 @@ const AddProperty = () => {
                     variant="primary" 
                     onClick={handleSubmit} 
                     isLoading={isSubmitting}
-                    className="px-12 h-14 text-sm tracking-[0.3em] bg-white text-black hover:bg-white/90"
+                    className="px-12 h-14 text-sm tracking-[0.3em] bg-white text-foreground hover:bg-white/90"
                 >
                     LAUNCH PROJECT NODE
                 </Button>

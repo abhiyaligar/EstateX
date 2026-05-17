@@ -21,10 +21,10 @@ const KYCTab = ({ kycApps, onClaim, onReview, onRefresh, onImageClick, currentUs
        className="space-y-6"
     >
       <Card noPadding className="overflow-hidden">
-        <div className="p-8 border-b border-white/5 flex items-center justify-between">
+        <div className="p-8 border-b border-border flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold uppercase tracking-tight">KYC Verification Queue</h3>
-            <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Documents requiring manual review</p>
+            <p className="text-xs text-foreground/40 mt-1 uppercase tracking-widest">Documents requiring manual review</p>
           </div>
           <Button variant="ghost" size="sm" onClick={onRefresh} className="text-[10px] tracking-widest">REFRESH FEED</Button>
         </div>
@@ -45,24 +45,24 @@ const KYCTab = ({ kycApps, onClaim, onReview, onRefresh, onImageClick, currentUs
               <AdminTableRow key={app.id}>
                 <AdminTableCell>
                   <div className="flex flex-col">
-                    <span className="font-bold text-white uppercase text-[11px] tracking-wider mb-1">
+                    <span className="font-bold text-foreground uppercase text-[11px] tracking-wider mb-1">
                       {app.user_id.substring(0, 12)}
                     </span>
-                    <span className="text-[9px] text-white/30 font-mono">NODE_UID: {app.id.substring(0,8)}</span>
+                    <span className="text-[9px] text-foreground/30 font-mono">NODE_UID: {app.id.substring(0,8)}</span>
                   </div>
                 </AdminTableCell>
                 <AdminTableCell>
-                  <span className="font-bold text-white uppercase text-xs tracking-tight">{app.full_name || 'Anonymous Node'}</span>
+                  <span className="font-bold text-foreground uppercase text-xs tracking-tight">{app.full_name || 'Anonymous Node'}</span>
                 </AdminTableCell>
                 <AdminTableCell>
                    <div className="flex flex-col gap-1.5">
                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] text-white/20 uppercase font-bold w-12">PAN</span>
-                        <span className="text-[10px] text-white/60 font-mono tracking-widest">{app.pan_number || '---'}</span>
+                        <span className="text-[9px] text-foreground/20 uppercase font-bold w-12">PAN</span>
+                        <span className="text-[10px] text-foreground/60 font-mono tracking-widest">{app.pan_number || '---'}</span>
                      </div>
                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] text-white/20 uppercase font-bold w-12">UIDAI</span>
-                        <span className="text-[10px] text-white/60 font-mono tracking-widest">**** **** {app.aadhaar_last_4_digits || '----'}</span>
+                        <span className="text-[9px] text-foreground/20 uppercase font-bold w-12">UIDAI</span>
+                        <span className="text-[10px] text-foreground/60 font-mono tracking-widest">**** **** {app.aadhaar_last_4_digits || '----'}</span>
                      </div>
                    </div>
                 </AdminTableCell>
@@ -71,19 +71,19 @@ const KYCTab = ({ kycApps, onClaim, onReview, onRefresh, onImageClick, currentUs
                      {app.pan_image_url && (
                        <button 
                         onClick={() => onImageClick(app.pan_image_url, 'PAN CARD')} 
-                        className="w-9 h-9 bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary-500/20 hover:border-primary-500/50 transition-all rounded-lg group"
+                        className="w-9 h-9 bg-foreground/5 border border-border flex items-center justify-center hover:bg-primary-500/20 hover:border-primary-500/50 transition-all rounded-lg group"
                         title="View PAN"
                        >
-                         <FileCheck size={16} className="text-white/20 group-hover:text-primary-500" />
+                         <FileCheck size={16} className="text-foreground/20 group-hover:text-primary-500" />
                        </button>
                      )}
                      {app.aadhaar_front_url && (
                        <button 
                         onClick={() => onImageClick(app.aadhaar_front_url, 'AADHAAR FRONT')} 
-                        className="w-9 h-9 bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary-500/20 hover:border-primary-500/50 transition-all rounded-lg group"
+                        className="w-9 h-9 bg-foreground/5 border border-border flex items-center justify-center hover:bg-primary-500/20 hover:border-primary-500/50 transition-all rounded-lg group"
                         title="View Aadhaar"
                        >
-                         <FileCheck size={16} className="text-white/20 group-hover:text-primary-500" />
+                         <FileCheck size={16} className="text-foreground/20 group-hover:text-primary-500" />
                        </button>
                      )}
                    </div>
@@ -107,7 +107,7 @@ const KYCTab = ({ kycApps, onClaim, onReview, onRefresh, onImageClick, currentUs
                        <Button variant="primary" className="text-[9px] h-9 px-4 font-bold tracking-widest" onClick={() => onReview(app.id, 'approved')}>APPROVE</Button>
                      </div>
                    ) : (
-                     <span className="text-[9px] text-white/20 italic uppercase tracking-[0.2em] font-bold">LOCKED BY OTHER</span>
+                     <span className="text-[9px] text-foreground/20 italic uppercase tracking-[0.2em] font-bold">LOCKED BY OTHER</span>
                    )}
                 </AdminTableCell>
               </AdminTableRow>

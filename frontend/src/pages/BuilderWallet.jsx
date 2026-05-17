@@ -107,7 +107,7 @@ const BuilderWallet = () => {
                         </div>
                         <span className="text-xs font-bold uppercase tracking-widest text-indigo-500">Business Account</span>
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white font-heading">
+                    <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-foreground font-heading">
                         Builder Wallet
                     </h1>
                     <p className="mt-2 text-secondary-600 dark:text-secondary-400">
@@ -125,24 +125,24 @@ const BuilderWallet = () => {
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 {/* Balance Card */}
                 <div className="lg:col-span-2 space-y-8">
-                    <Card className="bg-slate-900 text-white border-none shadow-xl relative overflow-hidden group">
+                    <Card className="bg-slate-900 text-foreground border-none shadow-xl relative overflow-hidden group">
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent opacity-50 group-hover:opacity-70 transition-opacity"></div>
                         <CardContent className="p-10 relative z-10">
                             <div className="flex justify-between items-start mb-12">
                                 <div>
                                     <p className="text-slate-400 text-sm font-medium mb-1 uppercase tracking-wider">Withdrawable Revenue</p>
-                                    <h2 className="text-6xl font-bold font-heading text-white tracking-tight">
+                                    <h2 className="text-6xl font-bold font-heading text-foreground tracking-tight">
                                         ₹{(walletData?.balance || 0).toLocaleString()}
                                     </h2>
                                 </div>
-                                <div className="bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/10">
+                                <div className="bg-foreground/10 p-4 rounded-2xl backdrop-blur-md border border-border">
                                     <Building size={32} className="text-indigo-400" />
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-4 pt-4 border-t border-white/10">
+                            <div className="flex flex-wrap gap-4 pt-4 border-t border-border">
                                 <Button
-                                    className="bg-indigo-600 hover:bg-indigo-500 text-white border-none px-10 h-14 rounded-2xl text-lg font-bold shadow-lg shadow-indigo-600/20"
+                                    className="bg-indigo-600 hover:bg-indigo-500 text-foreground border-none px-10 h-14 rounded-2xl text-lg font-bold shadow-lg shadow-indigo-600/20"
                                     onClick={() => setShowWithdrawModal(true)}
                                 >
                                     <Minus size={20} className="mr-2" /> Release to Bank
@@ -176,7 +176,7 @@ const BuilderWallet = () => {
                                                     {tx.transaction_type === 'milestone_payout' ? <Award size={24} /> : <ArrowUpRight size={24} />}
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-secondary-900 dark:text-white text-lg leading-tight capitalize">
+                                                    <p className="font-bold text-secondary-900 dark:text-foreground text-lg leading-tight capitalize">
                                                         {tx.transaction_type === 'milestone_payout' ? 'Phase Payout' : tx.transaction_type.replace('_', ' ')}
                                                     </p>
                                                     <p className="text-sm text-secondary-500 dark:text-secondary-400 mt-1">
@@ -185,7 +185,7 @@ const BuilderWallet = () => {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className={`text-xl font-bold font-heading ${tx.transaction_type === 'milestone_payout' ? 'text-indigo-600 dark:text-indigo-400' : 'text-secondary-900 dark:text-white'}`}>
+                                                <p className={`text-xl font-bold font-heading ${tx.transaction_type === 'milestone_payout' ? 'text-indigo-600 dark:text-indigo-400' : 'text-secondary-900 dark:text-foreground'}`}>
                                                     {tx.transaction_type === 'milestone_payout' ? '+' : '-'}₹{Math.abs(tx.amount).toLocaleString()}
                                                 </p>
                                                 <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-secondary-100 dark:bg-slate-800 text-secondary-500">
@@ -208,7 +208,7 @@ const BuilderWallet = () => {
 
                 {/* Sidebar - Support & Guides */}
                 <div className="space-y-6">
-                    <Card className="bg-indigo-600 text-white overflow-hidden relative">
+                    <Card className="bg-indigo-600 text-foreground overflow-hidden relative">
                         <CardContent className="p-8 relative z-10">
                             <h3 className="text-xl font-bold mb-3 tracking-tight">Withdrawal Process</h3>
                             <p className="text-indigo-100 text-sm mb-6 leading-relaxed opacity-90">
@@ -216,15 +216,15 @@ const BuilderWallet = () => {
                             </p>
                             <ul className="space-y-3 mb-8">
                                 <li className="flex items-center gap-3 text-sm text-indigo-50">
-                                    <div className="h-5 w-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold">1</div>
+                                    <div className="h-5 w-5 rounded-full bg-foreground/20 flex items-center justify-center text-[10px] font-bold">1</div>
                                     Verify project milestone
                                 </li>
                                 <li className="flex items-center gap-3 text-sm text-indigo-50">
-                                    <div className="h-5 w-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold">2</div>
+                                    <div className="h-5 w-5 rounded-full bg-foreground/20 flex items-center justify-center text-[10px] font-bold">2</div>
                                     Funds land in Business Wallet
                                 </li>
                                 <li className="flex items-center gap-3 text-sm text-indigo-50">
-                                    <div className="h-5 w-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold">3</div>
+                                    <div className="h-5 w-5 rounded-full bg-foreground/20 flex items-center justify-center text-[10px] font-bold">3</div>
                                     Transfer to Bank via OTP
                                 </li>
                             </ul>
@@ -303,7 +303,7 @@ const BuilderWallet = () => {
 
                     <div className="py-2">
                         <p className="text-[10px] text-secondary-500 text-center uppercase font-bold tracking-widest">Payout Destination</p>
-                        <p className="text-sm text-secondary-900 dark:text-white text-center font-medium mt-1">
+                        <p className="text-sm text-secondary-900 dark:text-foreground text-center font-medium mt-1">
                             {bankDetails.bank_account_number ? `${bankDetails.bank_name} - ${bankDetails.bank_account_number}` : 'No verified account registered'}
                         </p>
                     </div>

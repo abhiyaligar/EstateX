@@ -43,7 +43,7 @@ const LoginForm = () => {
   return (
     <div className="w-full max-w-md space-y-8 rounded-3xl bg-white p-8 shadow-2xl shadow-primary-500/10 dark:bg-slate-900 border border-secondary-100 dark:border-secondary-800">
       <div className="text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white">
+        <h2 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-foreground">
           Welcome back
         </h2>
         <p className="mt-2 text-sm text-secondary-500 dark:text-secondary-400">

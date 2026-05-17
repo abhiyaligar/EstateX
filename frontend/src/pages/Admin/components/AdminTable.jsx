@@ -10,11 +10,11 @@ export const AdminTable = ({ children }) => (
 
 export const AdminTableHeader = ({ columns }) => (
   <thead>
-    <tr className="border-b border-white/5 bg-white/[0.02]">
+    <tr className="border-b border-border bg-foreground/[0.04]">
       {columns.map((col, idx) => (
         <th 
           key={idx} 
-          className={`px-4 py-6 md:px-6 md:py-8 text-[10px] uppercase tracking-[0.2em] font-bold text-white/30 ${col.align === 'right' ? 'text-right' : ''}`}
+          className={`px-4 py-6 md:px-6 md:py-8 text-[10px] uppercase tracking-[0.2em] font-bold text-foreground/30 ${col.align === 'right' ? 'text-right' : ''}`}
         >
           {col.label}
         </th>
@@ -26,7 +26,7 @@ export const AdminTableHeader = ({ columns }) => (
 export const AdminTableRow = ({ children, onClick }) => (
   <tr 
     onClick={onClick}
-    className={`border-b border-white/5 hover:bg-white/[0.01] transition-colors ${onClick ? 'cursor-pointer' : ''}`}
+    className={`border-b border-border hover:bg-foreground/[0.02] transition-colors ${onClick ? 'cursor-pointer' : ''}`}
   >
     {children}
   </tr>
@@ -40,7 +40,7 @@ export const AdminTableCell = ({ children, align = 'left', className = '' }) => 
 
 export const AdminStatusBadge = ({ children, type = 'default' }) => {
   const styles = {
-    default: 'bg-white/5 text-white/40 border-white/10',
+    default: 'bg-foreground/5 text-foreground/40 border-border',
     success: 'bg-green-500/10 text-green-500 border-green-500/20',
     warning: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
     danger: 'bg-red-500/10 text-red-500 border-red-500/20',

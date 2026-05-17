@@ -72,19 +72,19 @@ const DashboardTab = ({ stats }) => {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold uppercase tracking-tight">Growth Intelligence</h3>
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest">Protocol Adoption & Volume Matrix</p>
+                  <p className="text-[10px] text-foreground/40 uppercase tracking-widest">Protocol Adoption & Volume Matrix</p>
                 </div>
               </div>
-              <div className="flex bg-white/5 p-1 rounded-lg">
+              <div className="flex bg-foreground/5 p-1 rounded-lg">
                 <button 
                   onClick={() => setChartMetric('volume')}
-                  className={`px-3 py-1 text-[8px] font-bold uppercase tracking-widest rounded transition-colors ${chartMetric === 'volume' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
+                  className={`px-3 py-1 text-[8px] font-bold uppercase tracking-widest rounded transition-colors ${chartMetric === 'volume' ? 'bg-foreground/10 text-foreground' : 'text-foreground/40 hover:text-foreground'}`}
                 >
                   Volume
                 </button>
                 <button 
                   onClick={() => setChartMetric('users')}
-                  className={`px-3 py-1 text-[8px] font-bold uppercase tracking-widest rounded transition-colors ${chartMetric === 'users' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
+                  className={`px-3 py-1 text-[8px] font-bold uppercase tracking-widest rounded transition-colors ${chartMetric === 'users' ? 'bg-foreground/10 text-foreground' : 'text-foreground/40 hover:text-foreground'}`}
                 >
                   Users
                 </button>
@@ -118,7 +118,7 @@ const DashboardTab = ({ stats }) => {
                     />
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', fontSize: '10px', borderRadius: '8px' }}
-                      itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                      itemStyle={{ color: 'var(--color-foreground)', fontWeight: 'bold' }}
                     />
                     <Area type="monotone" dataKey={chartMetric} stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorMetric)" />
                   </AreaChart>
@@ -128,7 +128,7 @@ const DashboardTab = ({ stats }) => {
 
          {/* Distribution Chart */}
          <Card className="lg:col-span-4 p-8 flex flex-col items-center justify-center text-center">
-            <h4 className="text-xs font-bold uppercase tracking-[0.2em] mb-8 text-white/40">Capital Distribution</h4>
+            <h4 className="text-xs font-bold uppercase tracking-[0.2em] mb-8 text-foreground/40">Capital Distribution</h4>
             <div className="h-[240px] w-full relative">
                <ResponsiveContainer width="99%" height="99%" minWidth={1} minHeight={1}>
                   <PieChart>
@@ -151,7 +151,7 @@ const DashboardTab = ({ stats }) => {
                   </PieChart>
                </ResponsiveContainer>
                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[10px] uppercase tracking-widest text-white/30">Total</span>
+                  <span className="text-[10px] uppercase tracking-widest text-foreground/30">Total</span>
                   <span className="text-lg font-bold">₹{(stats?.total_platform_escrow + stats?.total_investments_locked_inr || 0).toLocaleString()}</span>
                </div>
             </div>
@@ -159,7 +159,7 @@ const DashboardTab = ({ stats }) => {
                {pieData.map(item => (
                  <div key={item.name} className="flex flex-col items-center">
                     <div className="w-1.5 h-1.5 rounded-full mb-2" style={{ backgroundColor: item.color }} />
-                    <span className="text-[8px] uppercase tracking-widest text-white/40">{item.name}</span>
+                    <span className="text-[8px] uppercase tracking-widest text-foreground/40">{item.name}</span>
                  </div>
                ))}
             </div>
@@ -174,10 +174,10 @@ const DashboardTab = ({ stats }) => {
                 <h4 className="text-sm font-bold uppercase tracking-widest">Protocol Shortcuts</h4>
              </div>
              <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="text-[9px] h-12 uppercase tracking-widest border-white/5 hover:bg-white/5">Export Audit</Button>
-                <Button variant="outline" className="text-[9px] h-12 uppercase tracking-widest border-white/5 hover:bg-white/5">Flush Cache</Button>
-                <Button variant="outline" className="text-[9px] h-12 uppercase tracking-widest border-white/5 hover:bg-white/5">Sync Chain</Button>
-                <Button variant="outline" className="text-[9px] h-12 uppercase tracking-widest border-white/5 hover:bg-white/5">Force Refresh</Button>
+                <Button variant="outline" className="text-[9px] h-12 uppercase tracking-widest border-border hover:bg-foreground/5">Export Audit</Button>
+                <Button variant="outline" className="text-[9px] h-12 uppercase tracking-widest border-border hover:bg-foreground/5">Flush Cache</Button>
+                <Button variant="outline" className="text-[9px] h-12 uppercase tracking-widest border-border hover:bg-foreground/5">Sync Chain</Button>
+                <Button variant="outline" className="text-[9px] h-12 uppercase tracking-widest border-border hover:bg-foreground/5">Force Refresh</Button>
              </div>
           </Card>
 
@@ -190,7 +190,7 @@ const DashboardTab = ({ stats }) => {
                    </div>
                    <h4 className="text-lg font-bold uppercase tracking-tighter">Emergency Global Freeze</h4>
                  </div>
-                 <p className="text-xs text-white/40 leading-relaxed uppercase tracking-widest">
+                 <p className="text-xs text-foreground/40 leading-relaxed uppercase tracking-widest">
                    Authorized protocol override to halt all exchange operations, cancel pending orders, and lock user withdrawals in case of critical node failure or attack.
                  </p>
               </div>

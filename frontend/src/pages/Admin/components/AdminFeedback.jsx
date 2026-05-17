@@ -34,11 +34,11 @@ export const AdminConfirmModal = ({ isOpen, onClose, onConfirm, title, message, 
   const theme = themes[type] || themes.danger;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/80 backdrop-blur-md p-4">
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className={`max-w-md w-full bg-[#0a0a0a] border ${theme.border} p-8 space-y-6 shadow-2xl`}
+        className={`max-w-md w-full bg-background border ${theme.border} p-8 space-y-6 shadow-2xl`}
       >
         <div className="flex items-center gap-4">
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme.bg}`}>
@@ -46,15 +46,15 @@ export const AdminConfirmModal = ({ isOpen, onClose, onConfirm, title, message, 
           </div>
           <div>
             <h3 className="text-xl font-bold uppercase tracking-tighter">{title}</h3>
-            <p className="text-[10px] uppercase tracking-widest text-white/40">Critical Protocol Execution</p>
+            <p className="text-[10px] uppercase tracking-widest text-foreground/40">Critical Protocol Execution</p>
           </div>
         </div>
 
-        <p className="text-sm text-white/60 leading-relaxed">{message}</p>
+        <p className="text-sm text-foreground/60 leading-relaxed">{message}</p>
 
         <div className="flex gap-3 pt-4">
           <Button variant="ghost" className="flex-1 uppercase tracking-widest text-[10px]" onClick={onClose}>Cancel</Button>
-          <Button className={`flex-1 uppercase tracking-widest text-[10px] font-bold text-white ${theme.button}`} onClick={onConfirm}>{confirmText}</Button>
+          <Button className={`flex-1 uppercase tracking-widest text-[10px] font-bold text-foreground ${theme.button}`} onClick={onConfirm}>{confirmText}</Button>
         </div>
       </motion.div>
     </div>
@@ -74,11 +74,11 @@ export const AdminToast = ({ message, type = 'success', onClose }) => {
       initial={{ x: 300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 300, opacity: 0 }}
-      className="fixed bottom-10 right-10 z-[300] bg-[#0a0a0a] border border-white/10 p-4 pl-6 pr-10 flex items-center gap-4 shadow-2xl min-w-[300px]"
+      className="fixed bottom-10 right-10 z-[300] bg-background border border-border p-4 pl-6 pr-10 flex items-center gap-4 shadow-2xl min-w-[300px]"
     >
       {icons[type]}
       <span className="text-xs font-bold uppercase tracking-widest">{message}</span>
-      <button onClick={onClose} className="absolute top-2 right-2 text-white/20 hover:text-white"><X size={14}/></button>
+      <button onClick={onClose} className="absolute top-2 right-2 text-foreground/20 hover:text-foreground"><X size={14}/></button>
     </motion.div>
   );
 };

@@ -66,7 +66,7 @@ const Profile = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-12">
             {/* Avatar Section */}
             <div className="relative group">
-              <div className="w-32 h-32 md:w-40 md:h-40 bg-accent-orange rounded-3xl flex items-center justify-center text-white text-5xl md:text-6xl font-heading font-black shadow-[0_20px_60px_-10px_rgba(255,95,5,0.4)] group-hover:scale-105 transition-transform duration-500">
+              <div className="w-32 h-32 md:w-40 md:h-40 bg-accent-orange rounded-3xl flex items-center justify-center text-foreground text-5xl md:text-6xl font-heading font-black shadow-[0_20px_60px_-10px_rgba(255,95,5,0.4)] group-hover:scale-105 transition-transform duration-500">
                 {authUser?.first_name?.[0] || authUser?.email?.[0]?.toUpperCase()}
               </div>
               <div className="absolute -bottom-4 -right-4 h-12 w-12 bg-background border border-border rounded-2xl flex items-center justify-center shadow-xl group-hover:rotate-12 transition-transform">
@@ -121,7 +121,7 @@ const Profile = () => {
                    <TrendingUp size={14} className="text-accent-orange" />
                    <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-foreground/30">Allocation Parameters</h3>
                 </div>
-                <div className="bg-foreground/[0.01] border border-border p-10 md:p-16 rounded-[40px] space-y-12 blueprint-grid-dashed-small relative overflow-hidden group">
+                <div className="bg-foreground/[0.03] border border-border p-10 md:p-16 rounded-[40px] space-y-12 blueprint-grid-dashed-small relative overflow-hidden group">
                    <div className="absolute top-0 right-0 p-12 opacity-5">
                      <TrendingUp size={160} className="text-accent-orange" />
                    </div>
@@ -157,7 +157,7 @@ const Profile = () => {
                 </div>
                 <div className="space-y-6">
                    {verificationStatus.map((item, i) => (
-                     <div key={i} className="flex items-center justify-between p-6 bg-foreground/[0.01] border border-border rounded-2xl group hover:border-accent-orange/20 transition-all">
+                     <div key={i} className="flex items-center justify-between p-6 bg-foreground/[0.03] border border-border rounded-2xl group hover:border-accent-orange/20 transition-all">
                         <div className="flex items-center gap-4">
                            <div className="h-10 w-10 bg-background border border-border rounded-xl flex items-center justify-center text-foreground/20 group-hover:text-accent-orange transition-colors">
                               <item.icon size={18} />
@@ -184,7 +184,7 @@ const Profile = () => {
                    <p className="text-[13px] text-foreground/40 leading-relaxed font-medium relative z-10">Your sovereign identity node is secured via enterprise-grade MPC and audited daily by global compliance nodes.</p>
                 </div>
                 
-                <button className="w-full bg-foreground text-background py-6 rounded-full text-[11px] font-black uppercase tracking-[0.4em] transition-all hover:bg-accent-orange hover:text-white hover:-rotate-1 hover:scale-105 active:scale-[0.98] group flex items-center justify-center gap-4">
+                <button className="w-full bg-foreground text-background py-6 rounded-full text-[11px] font-black uppercase tracking-[0.4em] transition-all hover:bg-accent-orange hover:text-foreground hover:-rotate-1 hover:scale-105 active:scale-[0.98] group flex items-center justify-center gap-4">
                    Export Identity Audit
                    <div className="transition-transform group-hover:rotate-12 group-hover:translate-x-1">
                      <Download size={18} />

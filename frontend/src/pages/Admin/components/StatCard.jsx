@@ -20,7 +20,7 @@ const StatCard = ({ title, value, icon: Icon, color = "blue" }) => {
           <Icon size={24} />
         </div>
         <CardDescription className="uppercase tracking-widest text-[9px] mb-1 truncate">{title}</CardDescription>
-        <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-white tracking-tighter truncate">{value}</h3>
+        <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground tracking-tighter truncate">{value}</h3>
       </div>
     </Card>
   );

@@ -21,12 +21,12 @@ export const Button = React.forwardRef(({
   const baseStyles = "inline-flex items-center justify-center rounded-none font-heading font-black uppercase text-[10px] tracking-[0.2em] transition-all duration-500 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-30";
   
   const variants = {
-    primary: "bg-[#C5A059] text-black hover:bg-[#D4AF37] hover:shadow-[0_0_30px_rgba(212,175,55,0.15)]",
-    secondary: "bg-white text-black hover:bg-zinc-200",
-    outline: "border border-[#C5A059]/30 text-[#C5A059] hover:bg-[#C5A059]/5 hover:border-[#C5A059]",
-    ghost: "text-zinc-500 hover:text-white hover:bg-white/5",
+    primary: "bg-accent-orange text-foreground hover:bg-accent-orange/90 hover:shadow-[0_0_30px_rgba(var(--color-accent-orange),0.15)]",
+    secondary: "bg-foreground text-background hover:bg-foreground/80",
+    outline: "border border-accent-orange/30 text-accent-orange hover:bg-accent-orange/5 hover:border-accent-orange",
+    ghost: "text-foreground/40 hover:text-foreground hover:bg-foreground/5",
     danger: "border border-red-500/30 text-red-500 hover:bg-red-500/5 hover:border-red-500",
-    success: "bg-green-500 text-black hover:bg-green-400",
+    success: "bg-green-500 text-foreground hover:bg-green-400",
   };
 
   const sizes = {

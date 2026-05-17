@@ -469,31 +469,31 @@ const AdminPortal = () => {
   };
 
   if (loading && !stats) return (
-    <div className="flex items-center justify-center h-screen bg-black">
+    <div className="flex items-center justify-center h-screen bg-background">
       <Loader size={48} text="Initializing Admin Protocols..." />
     </div>
   );
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-[#050505] text-white overflow-hidden font-sans">
+    <div className="flex flex-col md:flex-row h-screen bg-background text-foreground overflow-hidden font-sans">
       {/* Desktop Sidebar */}
       <motion.aside 
         initial={false}
         animate={{ width: isSidebarCollapsed ? 80 : 280 }}
-        className="hidden md:flex flex-col border-r border-white/5 bg-[#0a0a0a] relative z-50"
+        className="hidden md:flex flex-col border-r border-border bg-background relative z-50"
       >
         <div className={`p-6 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isSidebarCollapsed && (
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-primary-600 flex items-center justify-center rounded-lg shadow-[0_0_15px_rgba(37,99,235,0.4)]">
-                <Shield size={20} className="text-white" />
+                <Shield size={20} className="text-foreground" />
               </div>
               <span className="font-bold tracking-tighter text-xl uppercase italic">Estate<span className="text-primary-500">X</span></span>
             </div>
           )}
           <button 
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className={`p-2 hover:bg-white/5 rounded-lg text-white/40 hover:text-white transition-colors ${isSidebarCollapsed ? 'mx-auto' : ''}`}
+            className={`p-2 hover:bg-foreground/5 rounded-lg text-foreground/40 hover:text-foreground transition-colors ${isSidebarCollapsed ? 'mx-auto' : ''}`}
           >
             {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
@@ -506,8 +506,8 @@ const AdminPortal = () => {
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-4 px-4'} py-3 rounded-xl transition-all duration-300 group relative ${
                 activeTab === item.id 
-                ? 'bg-primary-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.2)]' 
-                : 'text-white/40 hover:bg-white/5 hover:text-white'
+                ? 'bg-primary-600 text-foreground shadow-[0_0_20px_rgba(37,99,235,0.2)]' 
+                : 'text-foreground/40 hover:bg-foreground/5 hover:text-foreground'
               }`}
             >
               <item.icon size={20} className={isSidebarCollapsed ? '' : 'shrink-0'} />
@@ -528,15 +528,15 @@ const AdminPortal = () => {
           ))}
         </nav>
 
-        <div className={`p-4 border-t border-white/5 space-y-4 ${isSidebarCollapsed ? 'flex flex-col items-center' : ''}`}>
+        <div className={`p-4 border-t border-border space-y-4 ${isSidebarCollapsed ? 'flex flex-col items-center' : ''}`}>
            {!isSidebarCollapsed && (
-             <div className="p-4 bg-white/5 rounded-2xl flex items-center gap-3">
-               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center font-bold text-white shadow-lg">
+             <div className="p-4 bg-foreground/5 rounded-2xl flex items-center gap-3">
+               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center font-bold text-foreground shadow-lg">
                  {user?.name?.charAt(0) || 'A'}
                </div>
                <div className="flex-1 min-w-0">
                  <p className="text-xs font-bold truncate uppercase">{user?.name || 'Admin'}</p>
-                 <p className="text-[10px] text-white/30 truncate">Super Protocol Level 4</p>
+                 <p className="text-[10px] text-foreground/30 truncate">Super Protocol Level 4</p>
                </div>
              </div>
            )}
@@ -562,12 +562,12 @@ const AdminPortal = () => {
       </motion.aside>
 
       {/* Mobile Header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 z-[60] flex items-center justify-between px-4">
+      <header className="md:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-xl border-b border-border z-[60] flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
            <Shield size={20} className="text-primary-500" />
            <span className="font-bold tracking-tighter uppercase italic">Estate<span className="text-primary-500">X</span></span>
         </div>
-        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-white/60 hover:text-white">
+        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-foreground/60 hover:text-foreground">
           <Menu size={24} />
         </button>
       </header>
@@ -577,11 +577,11 @@ const AdminPortal = () => {
         {isMobileMenuOpen && (
           <motion.div 
             initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }}
-            className="fixed inset-0 bg-[#050505] z-[100] md:hidden flex flex-col"
+            className="fixed inset-0 bg-background z-[100] md:hidden flex flex-col"
           >
-            <div className="p-6 flex items-center justify-between border-b border-white/5">
+            <div className="p-6 flex items-center justify-between border-b border-border">
               <span className="font-bold tracking-tighter uppercase italic">Menu</span>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-white/60"><X size={24}/></button>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-foreground/60"><X size={24}/></button>
             </div>
             <div className="flex-1 p-6 space-y-4 overflow-y-auto scrollbar-hide">
               {sidebarItems.map(item => (
@@ -589,7 +589,7 @@ const AdminPortal = () => {
                   key={item.id}
                   onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl ${
-                    activeTab === item.id ? 'bg-primary-600 text-white' : 'text-white/40'
+                    activeTab === item.id ? 'bg-primary-600 text-foreground' : 'text-foreground/40'
                   }`}
                 >
                   <item.icon size={24} />
@@ -597,7 +597,7 @@ const AdminPortal = () => {
                 </button>
               ))}
               
-              <div className="pt-6 border-t border-white/5 space-y-4">
+              <div className="pt-6 border-t border-border space-y-4">
                 <button 
                   onClick={() => navigate('/dashboard')}
                   className="w-full flex items-center gap-4 p-4 rounded-xl text-primary-500 bg-primary-500/5"
@@ -622,33 +622,33 @@ const AdminPortal = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 min-h-0 relative overflow-hidden">
         {/* Top bar */}
-        <header className="hidden md:flex h-20 items-center justify-between px-6 lg:px-10 border-b border-white/5 bg-[#050505]/50 backdrop-blur-md sticky top-0 z-40">
+        <header className="hidden md:flex h-20 items-center justify-between px-6 lg:px-10 border-b border-border bg-background/50 backdrop-blur-md sticky top-0 z-40">
            <div>
-              <h2 className="text-xs uppercase tracking-[0.4em] font-bold text-white/30 flex items-center gap-2">
+              <h2 className="text-xs uppercase tracking-[0.4em] font-bold text-foreground/30 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
                 Network Status: Operational
               </h2>
               <div className="flex items-center gap-2 mt-1">
-                 <span className="text-white/20 text-[10px] uppercase tracking-widest">Protocol</span>
-                 <span className="text-white/40 text-[10px] uppercase tracking-widest">/</span>
-                 <span className="text-white font-bold text-[10px] uppercase tracking-widest">{activeTab}</span>
+                 <span className="text-foreground/20 text-[10px] uppercase tracking-widest">Protocol</span>
+                 <span className="text-foreground/40 text-[10px] uppercase tracking-widest">/</span>
+                 <span className="text-foreground font-bold text-[10px] uppercase tracking-widest">{activeTab}</span>
               </div>
            </div>
 
            <div className="flex items-center gap-6">
               <div className="relative group">
-                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary-500 transition-colors" size={16} />
+                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/20 group-focus-within:text-primary-500 transition-colors" size={16} />
                  <input 
                   type="text" 
                   placeholder="Universal Protocol Search..." 
-                  className="bg-white/5 border border-white/10 rounded-full py-2 pl-10 pr-4 text-xs w-64 outline-none focus:border-primary-500/50 focus:bg-white/[0.07] transition-all"
+                  className="bg-foreground/5 border border-border rounded-full py-2 pl-10 pr-4 text-xs w-64 outline-none focus:border-primary-500/50 focus:bg-white/[0.07] transition-all"
                  />
               </div>
-              <button className="relative p-2 text-white/40 hover:text-white transition-colors">
+              <button className="relative p-2 text-foreground/40 hover:text-foreground transition-colors">
                 <Bell size={20} />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#050505]" />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background" />
               </button>
-              <button className="p-2 text-white/40 hover:text-white transition-colors">
+              <button className="p-2 text-foreground/40 hover:text-foreground transition-colors">
                 <Settings size={20} />
               </button>
            </div>

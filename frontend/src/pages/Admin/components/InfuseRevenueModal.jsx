@@ -7,18 +7,18 @@ const InfuseRevenueModal = ({ isOpen, onClose, projects, infuseForm, setInfuseFo
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
-       <Card className="max-w-md w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
-          <CardHeader className="border-b border-white/5">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-background/95 backdrop-blur-md p-4">
+       <Card className="max-w-md w-full bg-background border-border shadow-2xl">
+          <CardHeader className="border-b border-border">
             <CardTitle className="text-xl font-bold uppercase tracking-tighter">Admin: Infuse Rental Yield</CardTitle>
-            <p className="text-[10px] uppercase tracking-widest text-white/40 mt-1">Directly inject rental income into the settlement queue</p>
+            <p className="text-[10px] uppercase tracking-widest text-foreground/40 mt-1">Directly inject rental income into the settlement queue</p>
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={onSubmit} className="space-y-6">
                <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Target Project</label>
+                  <label className="text-[10px] uppercase tracking-widest text-foreground/40 font-bold">Target Project</label>
                   <select 
-                    className="w-full bg-white/5 border border-white/10 p-3 text-sm text-white focus:border-primary-500 outline-none"
+                    className="w-full bg-foreground/5 border border-border p-3 text-sm text-foreground focus:border-primary-500 outline-none"
                     value={infuseForm.project_id}
                     onChange={(e) => setInfuseForm({...infuseForm, project_id: e.target.value})}
                     required
@@ -37,9 +37,9 @@ const InfuseRevenueModal = ({ isOpen, onClose, projects, infuseForm, setInfuseFo
                />
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                     <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Month</label>
+                     <label className="text-[10px] uppercase tracking-widest text-foreground/40 font-bold">Month</label>
                      <select 
-                       className="w-full bg-white/5 border border-white/10 p-3 text-sm text-white focus:border-primary-500 outline-none"
+                       className="w-full bg-foreground/5 border border-border p-3 text-sm text-foreground focus:border-primary-500 outline-none"
                        value={infuseForm.month}
                        onChange={(e) => setInfuseForm({...infuseForm, month: e.target.value})}
                      >
@@ -49,7 +49,7 @@ const InfuseRevenueModal = ({ isOpen, onClose, projects, infuseForm, setInfuseFo
                      </select>
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Year</label>
+                     <label className="text-[10px] uppercase tracking-widest text-foreground/40 font-bold">Year</label>
                      <Input 
                        type="number"
                        value={infuseForm.year}

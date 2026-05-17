@@ -36,12 +36,12 @@ const BuilderWallet = lazy(() => import('../pages/BuilderWallet'));
 const BuilderVerification = lazy(() => import('../pages/BuilderVerification'));
 const MyProjects = lazy(() => import('../pages/MyProjects'));
 
-// Protected Route Component
+// ─── Protected Route ────────────────────────────────────────────────────────
 const ProtectedRoute = ({ children, roles = [] }) => {
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
-    return <div className="h-screen flex items-center justify-center">Loading...</div>;
+    return <div className="h-screen flex items-center justify-center bg-background text-foreground/30 text-[10px] font-black uppercase tracking-widest">Loading...</div>;
   }
 
   if (!isAuthenticated) {
@@ -55,6 +55,24 @@ const ProtectedRoute = ({ children, roles = [] }) => {
   return children;
 };
 
+// ─── Smart Layout Selector ───────────────────────────────────────────────────
+// For pages like /ipo, /explore, /help, /properties/:id that exist in BOTH
+// public and authenticated contexts — use DashboardLayout when logged in,
+// MainLayout when not.
+const SmartLayout = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div className="h-screen flex items-center justify-center bg-background" />;
+  }
+
+  if (isAuthenticated) {
+    return <DashboardLayout />;
+  }
+
+  return <MainLayout />;
+};
+
 const AppRoutes = () => {
   return (
     <ThemeProvider>
@@ -62,41 +80,74 @@ const AppRoutes = () => {
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* ... routes ... */}
+
+              {/* ─── PUBLIC LANDING PAGES — MainLayout (pill nav, no sidebar) ─── */}
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/trading" element={<Trading />} />
                 <Route path="/solutions" element={<Solutions />} />
                 <Route path="/who-we-serve" element={<WhoWeServe />} />
                 <Route path="/company" element={<Company />} />
-                <Route path="/ipo" element={<Properties />} />
-                <Route path="/explore" element={<MarketExplore />} />
-                <Route path="/properties" element={<Navigate to="/ipo" replace />} />
-                <Route path="/properties/:id" element={<PropertyDetails />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route path="/help" element={<Help />} />
-                <Route path="/unauthorized" element={<div className="p-20 text-center">Unauthorized Access</div>} />
+                <Route path="/unauthorized" element={<div className="p-20 text-center text-foreground">Unauthorized Access</div>} />
               </Route>
 
-              {/* Standalone Auth Routes (They have their own headers) */}
+              {/* ─── STANDALONE AUTH PAGES (their own layouts) ─── */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
 
-              {/* Full Screen Protected Routes (No shared layout) */}
+              {/* ─── TRADING ROOM — Full screen, its own layout (no shared nav/sidebar) ─── */}
               <Route path="/trade" element={
                 <ProtectedRoute>
                   <TradingRoom />
                 </ProtectedRoute>
               } />
 
-              <Route path="/market-explore" element={
-                <ProtectedRoute>
-                  <MarketExplore />
+              {/* ─── ADMIN PORTAL — Full screen ─── */}
+              <Route path="/admin" element={
+                <ProtectedRoute roles={['admin']}>
+                  <AdminPortal />
                 </ProtectedRoute>
               } />
 
-              {/* Protected Routes with Dashboard Layout */}
+              {/* ─── APP PAGES — DashboardLayout (top nav + sidebar) ─── */}
+              {/* These are pages that require login AND show the sidebar */}
+              <Route path="/ipo" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<Properties />} />
+              </Route>
+
+              <Route path="/explore" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<MarketExplore />} />
+              </Route>
+
+              <Route path="/help" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<Help />} />
+              </Route>
+
+              <Route path="/properties" element={<Navigate to="/ipo" replace />} />
+
+              <Route path="/properties/:id" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<PropertyDetails />} />
+              </Route>
+
+              {/* ─── DASHBOARD — DashboardLayout ─── */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <DashboardLayout />
@@ -107,49 +158,31 @@ const AppRoutes = () => {
                 <Route path="wallet" element={<Wallet />} />
                 <Route path="portfolio" element={<Portfolio />} />
                 <Route path="kyc" element={<KYC />} />
-                <Route 
-                  path="add-property" 
-                  element={
-                    <ProtectedRoute roles={['builder', 'admin']}>
-                      <AddProperty />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="builder-wallet" 
-                  element={
-                    <ProtectedRoute roles={['builder']}>
-                      <BuilderWallet />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="verification" 
-                  element={
-                    <ProtectedRoute roles={['builder']}>
-                      <BuilderVerification />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="my-projects" 
-                  element={
-                    <ProtectedRoute roles={['builder']}>
-                      <MyProjects />
-                    </ProtectedRoute>
-                  } 
-                />
+                <Route path="add-property" element={
+                  <ProtectedRoute roles={['builder', 'admin']}>
+                    <AddProperty />
+                  </ProtectedRoute>
+                } />
+                <Route path="builder-wallet" element={
+                  <ProtectedRoute roles={['builder']}>
+                    <BuilderWallet />
+                  </ProtectedRoute>
+                } />
+                <Route path="verification" element={
+                  <ProtectedRoute roles={['builder']}>
+                    <BuilderVerification />
+                  </ProtectedRoute>
+                } />
+                <Route path="my-projects" element={
+                  <ProtectedRoute roles={['builder']}>
+                    <MyProjects />
+                  </ProtectedRoute>
+                } />
               </Route>
 
-              {/* Admin Portal (Full Screen) */}
-              <Route path="/admin" element={
-                <ProtectedRoute roles={['admin']}>
-                  <AdminPortal />
-                </ProtectedRoute>
-              } />
-
-              {/* Fallback Route */}
+              {/* ─── FALLBACK ─── */}
               <Route path="*" element={<Navigate to="/" replace />} />
+
             </Routes>
           </Suspense>
         </BrowserRouter>

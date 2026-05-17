@@ -61,10 +61,10 @@ const OrderBookRow = ({ price, quantity, type, isHeader = false, total = 0, maxT
       />
     )}
     <div className="flex justify-between items-center h-7 px-3 md:px-5 relative z-10">
-      <span className={`text-[10px] md:text-[11px] font-mono font-bold ${isHeader ? 'text-zinc-600' : type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>
+      <span className={`text-[10px] md:text-[11px] font-mono font-bold ${isHeader ? 'text-foreground/30' : type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>
         {isHeader ? 'PRICE' : price === null ? 'MARKET' : `₹${price.toLocaleString()}`}
       </span>
-      <span className={`text-[10px] md:text-[11px] font-mono font-bold ${isHeader ? 'text-zinc-600' : 'text-zinc-300'}`}>
+      <span className={`text-[10px] md:text-[11px] font-mono font-bold ${isHeader ? 'text-foreground/30' : 'text-foreground/70'}`}>
         {isHeader ? 'QUANTITY' : quantity.toLocaleString()}
       </span>
     </div>
@@ -72,13 +72,13 @@ const OrderBookRow = ({ price, quantity, type, isHeader = false, total = 0, maxT
 );
 
 const TradeHistoryRow = ({ price, quantity, time, type }) => (
-  <div className="flex items-center justify-between text-[10px] py-2 px-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+  <div className="flex items-center justify-between text-[10px] py-2 px-4 border-b border-border hover:bg-foreground/[0.04] transition-colors">
      <div className="flex items-center gap-2">
         <div className={`w-1 h-1 rounded-full ${type === 'buy' ? 'bg-green-500' : 'bg-red-500'}`} />
         <span className={`font-mono font-medium ${type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>{price ? `₹${price.toLocaleString()}` : 'MARKET'}</span>
      </div>
-     <span className="text-zinc-500 font-mono">{quantity} BK</span>
-     <span className="text-zinc-700 text-[8px] font-medium">{time}</span>
+     <span className="text-foreground/40 font-mono">{quantity} BK</span>
+     <span className="text-foreground/20 text-[8px] font-medium">{time}</span>
   </div>
 );
 
@@ -98,11 +98,11 @@ const TradeForm = ({
 }) => (
     <form onSubmit={handlePlaceOrder} className="space-y-6">
         {/* Buy/Sell Segmented Switcher */}
-        <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/5">
+        <div className="flex bg-foreground/[0.02] p-1 rounded-xl border border-border">
             <button 
                 type="button"
                 onClick={() => setOrderType('buy')} 
-                className={`flex-1 py-2.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-lg relative ${orderType === 'buy' ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+                className={`flex-1 py-2.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-lg relative ${orderType === 'buy' ? 'text-foreground' : 'text-foreground/30 hover:text-foreground/50'}`}
             >
                 {orderType === 'buy' && (
                     <motion.div layoutId="orderTypeBg" className="absolute inset-0 bg-green-500/10 border border-green-500/20 rounded-lg shadow-[0_0_20px_rgba(34,197,94,0.1)]" />
@@ -112,7 +112,7 @@ const TradeForm = ({
             <button 
                 type="button"
                 onClick={() => setOrderType('sell')} 
-                className={`flex-1 py-2.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-lg relative ${orderType === 'sell' ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+                className={`flex-1 py-2.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-lg relative ${orderType === 'sell' ? 'text-foreground' : 'text-foreground/30 hover:text-foreground/50'}`}
             >
                  {orderType === 'sell' && (
                     <motion.div layoutId="orderTypeBg" className="absolute inset-0 bg-red-500/10 border border-red-500/20 rounded-lg shadow-[0_0_20px_rgba(239,68,68,0.1)]" />
@@ -126,25 +126,25 @@ const TradeForm = ({
             <div className="space-y-1.5">
                  <div className="flex justify-between items-end px-1">
                     <div className="flex items-center gap-3">
-                        <label className="text-[8px] uppercase font-black text-zinc-600 tracking-[0.3em]">Execution</label>
-                        <div className="flex bg-zinc-900 rounded-md p-0.5 border border-white/5">
+                        <label className="text-[8px] uppercase font-black text-foreground/30 tracking-[0.3em]">Execution</label>
+                        <div className="flex bg-foreground/[0.05] rounded-md p-0.5 border border-border">
                             <button 
                                 type="button"
                                 onClick={() => setExecutionMode('limit')}
-                                className={`px-2 py-0.5 text-[7px] font-black uppercase rounded-[4px] transition-all ${executionMode === 'limit' ? 'bg-zinc-800 text-white' : 'text-zinc-600'}`}
+                                className={`px-2 py-0.5 text-[7px] font-black uppercase rounded-[4px] transition-all ${executionMode === 'limit' ? 'bg-foreground/10 text-foreground' : 'text-foreground/30'}`}
                             >
                                 Limit
                             </button>
                             <button 
                                 type="button"
                                 onClick={() => setExecutionMode('market')}
-                                className={`px-2 py-0.5 text-[7px] font-black uppercase rounded-[4px] transition-all ${executionMode === 'market' ? 'bg-zinc-800 text-white' : 'text-zinc-600'}`}
+                                className={`px-2 py-0.5 text-[7px] font-black uppercase rounded-[4px] transition-all ${executionMode === 'market' ? 'bg-foreground/10 text-foreground' : 'text-foreground/30'}`}
                             >
                                 Market
                             </button>
                         </div>
                     </div>
-                    <span className="text-[9px] font-mono font-bold text-zinc-800">INR</span>
+                    <span className="text-[9px] font-mono font-bold text-foreground/10">INR</span>
                  </div>
                  <div className="relative group">
                     <input 
@@ -153,11 +153,11 @@ const TradeForm = ({
                         value={executionMode === 'market' ? '' : price} 
                         onChange={(e) => setPrice(e.target.value)}
                         disabled={executionMode === 'market'}
-                        className={`w-full bg-zinc-950/50 border border-white/5 h-12 px-5 text-sm font-mono focus:border-white/20 focus:bg-zinc-950 transition-all focus:outline-none rounded-xl text-white placeholder:text-zinc-800 ${executionMode === 'market' ? 'opacity-50 cursor-not-allowed italic' : ''}`}
+                        className={`w-full bg-foreground/[0.02]/50 border border-border h-12 px-5 text-sm font-mono focus:border-foreground/20 focus:bg-foreground/[0.02] transition-all focus:outline-none rounded-xl text-foreground placeholder:text-foreground/20 ${executionMode === 'market' ? 'opacity-50 cursor-not-allowed italic' : ''}`}
                         placeholder={executionMode === 'market' ? "BEST AVAILABLE PRICE" : "0.00"}
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <TrendingUp size={14} className={`${executionMode === 'market' ? 'text-zinc-900' : 'text-zinc-800'} group-focus-within:text-zinc-600 transition-colors`} />
+                        <TrendingUp size={14} className={`${executionMode === 'market' ? 'text-zinc-900' : 'text-foreground/10'} group-focus-within:text-foreground/30 transition-colors`} />
                     </div>
                  </div>
             </div>
@@ -165,19 +165,19 @@ const TradeForm = ({
             {/* Quantity Input */}
             <div className="space-y-1.5">
                  <div className="flex justify-between items-end px-1">
-                    <label className="text-[8px] uppercase font-black text-zinc-600 tracking-[0.3em]">Quantity</label>
-                    <span className="text-[9px] font-mono font-bold text-zinc-800">BRICKS</span>
+                    <label className="text-[8px] uppercase font-black text-foreground/30 tracking-[0.3em]">Quantity</label>
+                    <span className="text-[9px] font-mono font-bold text-foreground/10">BRICKS</span>
                  </div>
                  <div className="relative group">
                     <input 
                         type="number" 
                         value={quantity} 
                         onChange={(e) => setQuantity(e.target.value)}
-                        className="w-full bg-zinc-950/50 border border-white/5 h-12 px-5 text-sm font-mono focus:border-white/20 focus:bg-zinc-950 transition-all focus:outline-none rounded-xl text-white placeholder:text-zinc-800"
+                        className="w-full bg-foreground/[0.02]/50 border border-border h-12 px-5 text-sm font-mono focus:border-foreground/20 focus:bg-foreground/[0.02] transition-all focus:outline-none rounded-xl text-foreground placeholder:text-foreground/20"
                         placeholder="0"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <Layers size={14} className="text-zinc-800 group-focus-within:text-zinc-600 transition-colors" />
+                        <Layers size={14} className="text-foreground/10 group-focus-within:text-foreground/30 transition-colors" />
                     </div>
                  </div>
                  
@@ -188,7 +188,7 @@ const TradeForm = ({
                             key={p}
                             type="button"
                             onClick={() => handleQuickFillQuantity(p)}
-                            className="py-2 text-[9px] font-black border border-white/5 bg-zinc-950/50 hover:bg-white/5 hover:border-white/10 text-zinc-600 hover:text-zinc-300 transition-all uppercase tracking-widest rounded-lg"
+                            className="py-2 text-[9px] font-black border border-border bg-foreground/[0.02]/50 hover:bg-foreground/5 hover:border-foreground/10 text-foreground/30 hover:text-foreground/70 transition-all uppercase tracking-widest rounded-lg"
                         >
                             {p === 100 ? 'MAX' : `${p}%`}
                         </button>
@@ -198,15 +198,15 @@ const TradeForm = ({
         </div>
 
         {/* Trade Summary Card */}
-        <div className="p-4 bg-zinc-950/80 rounded-xl border border-white/5 border-dashed relative overflow-hidden group">
+        <div className="p-4 bg-foreground/[0.02]/80 rounded-xl border border-border border-dashed relative overflow-hidden group">
              <div className="flex items-center justify-between relative z-10">
                  <div className="space-y-0.5">
-                    <p className="text-[8px] uppercase font-black text-zinc-700 tracking-[0.2em]">Total Commitment</p>
-                    <p className="text-sm font-mono font-black text-white">
+                    <p className="text-[8px] uppercase font-black text-foreground/20 tracking-[0.2em]">Total Commitment</p>
+                    <p className="text-sm font-mono font-black text-foreground">
                         {executionMode === 'market' ? 'ESTIMATED' : `₹${((parseFloat(price) || 0) * (parseInt(quantity) || 0)).toLocaleString()}`}
                     </p>
                  </div>
-                 <Zap size={16} className="text-zinc-800 group-hover:text-primary-500/20 transition-colors" />
+                 <Zap size={16} className="text-foreground/10 group-hover:text-primary-500/20 transition-colors" />
              </div>
              {/* Subtle animated background glow */}
              <div className="absolute inset-0 bg-gradient-to-br from-primary-500/0 to-primary-500/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -248,17 +248,17 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
         onClick={() => setIsOpen(true)}
         className="flex items-center gap-5 px-2 py-1 group transition-all relative"
       >
-        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/5 group-hover:border-white/20 group-hover:bg-white/5 transition-all relative">
-          <Search size={16} className="text-zinc-500 group-hover:text-white transition-colors relative z-10" />
+        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-foreground/[0.05] border border-border group-hover:border-foreground/20 group-hover:bg-foreground/5 transition-all relative">
+          <Search size={16} className="text-foreground/40 group-hover:text-foreground transition-colors relative z-10" />
           <div className="absolute inset-0 bg-primary-500/0 group-hover:bg-primary-500/10 blur-xl transition-all rounded-full" />
         </div>
         <div className="text-left">
-          <p className="text-[7px] uppercase tracking-[0.4em] text-zinc-600 font-black leading-none mb-1.5 group-hover:text-zinc-400 transition-colors hidden md:block">Asset Protocol // Live</p>
+          <p className="text-[7px] uppercase tracking-[0.4em] text-foreground/30 font-black leading-none mb-1.5 group-hover:text-foreground/50 transition-colors hidden md:block">Asset Protocol // Live</p>
           <div className="flex items-center gap-1.5">
-            <h2 className="text-base md:text-lg font-black uppercase tracking-tighter text-white group-hover:text-primary-400 transition-colors truncate max-w-[120px] md:max-w-none">
+            <h2 className="text-base md:text-lg font-black uppercase tracking-tighter text-foreground group-hover:text-primary-400 transition-colors truncate max-w-[120px] md:max-w-none">
               {selectedProject?.title || 'Select Asset'}
             </h2>
-            <ChevronDown size={10} className="text-zinc-700 group-hover:text-white transition-all group-hover:translate-y-0.5" />
+            <ChevronDown size={10} className="text-foreground/20 group-hover:text-foreground transition-all group-hover:translate-y-0.5" />
           </div>
         </div>
       </button>
@@ -270,17 +270,17 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
               <motion.div 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={() => setIsOpen(false)}
-                className="absolute inset-0 bg-black/90 md:bg-black/80 backdrop-blur-xl md:backdrop-blur-md pointer-events-auto"
+                className="absolute inset-0 bg-background/90 md:bg-background/80 backdrop-blur-xl md:backdrop-blur-md pointer-events-auto"
               />
 
               <motion.div 
                 initial={{ opacity: 0, scale: 0.98, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98, y: 20 }}
-                className="relative w-full md:max-w-2xl h-full md:h-auto md:max-h-[85vh] bg-[#080808] md:bg-zinc-950 md:border md:border-white/10 shadow-[0_0_100px_rgba(0,0,0,1)] md:rounded-2xl overflow-hidden flex flex-col pointer-events-auto"
+                className="relative w-full md:max-w-2xl h-full md:h-auto md:max-h-[85vh] bg-background md:bg-foreground/[0.02] md:border md:border-foreground/10 shadow-[0_0_100px_rgba(0,0,0,1)] md:rounded-2xl overflow-hidden flex flex-col pointer-events-auto"
               >
-                <div className="p-5 md:p-8 border-b border-white/5 flex items-center gap-3 md:gap-5 bg-[#0a0a0a] md:bg-white/[0.01] shrink-0">
-                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center shrink-0">
+                <div className="p-5 md:p-8 border-b border-border flex items-center gap-3 md:gap-5 bg-background md:bg-foreground/[0.02] shrink-0">
+                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-foreground/[0.05] border border-foreground/10 flex items-center justify-center shrink-0">
                     <Search size={18} className="text-primary-500 animate-pulse" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -289,69 +289,69 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
                       placeholder="Search name..." 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-transparent text-lg md:text-2xl font-black tracking-tight focus:outline-none text-white placeholder:text-zinc-600 uppercase"
+                      className="w-full bg-transparent text-lg md:text-2xl font-black tracking-tight focus:outline-none text-foreground placeholder:text-foreground/30 uppercase"
                       autoFocus
                     />
-                    <p className="text-[7px] md:text-[8px] uppercase tracking-[0.2em] md:tracking-[0.3em] text-zinc-500 font-bold mt-0.5 truncate">Asset Discovery Protocol</p>
+                    <p className="text-[7px] md:text-[8px] uppercase tracking-[0.2em] md:tracking-[0.3em] text-foreground/40 font-bold mt-0.5 truncate">Asset Discovery Protocol</p>
                   </div>
                   <button 
                       onClick={() => setIsOpen(false)} 
-                      className="h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full bg-white/5 text-zinc-500 hover:text-white hover:bg-white/10 transition-all shrink-0"
+                      className="h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full bg-foreground/5 text-foreground/40 hover:text-foreground hover:bg-foreground/10 transition-all shrink-0"
                   >
                     <X size={18} />
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#080808] md:bg-transparent">
+                <div className="flex-1 overflow-y-auto custom-scrollbar bg-background md:bg-transparent">
                   {filteredProjects.length > 0 ? (
                     <div className="p-2 md:p-4 grid grid-cols-1 gap-2">
                       {filteredProjects.map(p => (
                         <button
                           key={p.id}
                           onClick={() => { onSelect(p); setIsOpen(false); setSearchQuery(''); }}
-                          className={`w-full text-left p-3 md:p-4 rounded-xl flex items-center justify-between group transition-all ${selectedProject?.id === p.id ? 'bg-white/10 border border-white/10' : 'hover:bg-white/5 border border-transparent'}`}
+                          className={`w-full text-left p-3 md:p-4 rounded-xl flex items-center justify-between group transition-all ${selectedProject?.id === p.id ? 'bg-foreground/10 border border-foreground/10' : 'hover:bg-foreground/5 border border-transparent'}`}
                         >
                           <div className="flex items-center gap-3 md:gap-5 min-w-0">
-                            <div className="h-12 w-12 md:h-16 md:w-16 bg-zinc-900/50 rounded-xl md:rounded-2xl flex items-center justify-center border border-white/5 group-hover:border-primary-500/30 transition-all relative overflow-hidden shrink-0">
+                            <div className="h-12 w-12 md:h-16 md:w-16 bg-foreground/[0.05]/50 rounded-xl md:rounded-2xl flex items-center justify-center border border-border group-hover:border-primary-500/30 transition-all relative overflow-hidden shrink-0">
                                 <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <Layers size={20} className={selectedProject?.id === p.id ? 'text-primary-500' : 'text-zinc-700 group-hover:text-primary-400'} />
+                                <Layers size={20} className={selectedProject?.id === p.id ? 'text-primary-500' : 'text-foreground/20 group-hover:text-primary-400'} />
                             </div>
                             <div className="flex flex-col gap-0.5 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <h3 className={`text-sm md:text-lg font-black uppercase tracking-tight truncate ${selectedProject?.id === p.id ? 'text-primary-400' : 'text-white'}`}>{p.title}</h3>
+                                  <h3 className={`text-sm md:text-lg font-black uppercase tracking-tight truncate ${selectedProject?.id === p.id ? 'text-primary-400' : 'text-foreground'}`}>{p.title}</h3>
                                   {selectedProject?.id === p.id && (
                                       <div className="px-1 py-0.5 bg-primary-500/10 border border-primary-500/20 rounded text-[6px] md:text-[7px] font-black text-primary-500 tracking-widest uppercase">Active</div>
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2 md:gap-3 flex-wrap">
                                   <div className="flex items-center gap-1">
-                                      <MapPin size={8} className="text-zinc-700" />
-                                      <span className="text-[8px] md:text-[10px] uppercase font-black tracking-widest text-zinc-500 truncate max-w-[80px] md:max-w-none">
+                                      <MapPin size={8} className="text-foreground/20" />
+                                      <span className="text-[8px] md:text-[10px] uppercase font-black tracking-widest text-foreground/40 truncate max-w-[80px] md:max-w-none">
                                           {typeof p.location === 'object' && p.location !== null 
                                               ? `${p.location.city || ''}, ${p.location.state || ''}`.trim().replace(/^, |, $/g, '') || 'Prime Cluster'
                                               : p.location || 'Prime Cluster'}
                                       </span>
                                   </div>
-                                  <div className="h-1 w-1 bg-zinc-800 rounded-full hidden md:block" />
+                                  <div className="h-1 w-1 bg-foreground/10 rounded-full hidden md:block" />
                                   <div className="flex items-center gap-1">
-                                      <span className="text-[8px] md:text-[10px] font-mono font-bold text-zinc-400">₹{p.ipo_price?.toLocaleString()}</span>
-                                      <span className="text-[7px] md:text-[8px] uppercase font-black text-zinc-700 tracking-widest">Base</span>
+                                      <span className="text-[8px] md:text-[10px] font-mono font-bold text-foreground/50">₹{p.ipo_price?.toLocaleString()}</span>
+                                      <span className="text-[7px] md:text-[8px] uppercase font-black text-foreground/20 tracking-widest">Base</span>
                                   </div>
                                 </div>
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
-                              <div className="text-[9px] md:text-[11px] font-mono font-black text-white bg-white/5 px-1.5 md:px-2 py-0.5 md:py-1 rounded-lg">
+                              <div className="text-[9px] md:text-[11px] font-mono font-black text-foreground bg-foreground/5 px-1.5 md:px-2 py-0.5 md:py-1 rounded-lg">
                                   EX-{String(p.id).slice(0, 4).toUpperCase()}
                               </div>
-                              <ChevronRight size={12} className="text-zinc-800 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" />
+                              <ChevronRight size={12} className="text-foreground/10 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" />
                           </div>
                         </button>
                       ))}
                     </div>
                   ) : (
-                    <div className="py-24 flex flex-col items-center justify-center text-zinc-700 gap-4">
-                      <div className="h-16 w-16 rounded-full border-2 border-dashed border-zinc-900 flex items-center justify-center">
+                    <div className="py-24 flex flex-col items-center justify-center text-foreground/20 gap-4">
+                      <div className="h-16 w-16 rounded-full border-2 border-dashed border-foreground/10 flex items-center justify-center">
                           <Activity size={24} className="animate-pulse" />
                       </div>
                       <p className="text-[10px] uppercase font-black tracking-[0.4em]">No matching neural assets found</p>
@@ -359,18 +359,18 @@ const PropertySearchModal = ({ projects, selectedProject, onSelect }) => {
                   )}
                 </div>
 
-                <div className="p-4 bg-zinc-900/50 border-t border-white/5 flex items-center justify-between shrink-0">
+                <div className="p-4 bg-foreground/[0.05]/50 border-t border-border flex items-center justify-between shrink-0">
                   <div className="flex gap-2 md:gap-4 overflow-x-auto no-scrollbar">
                       <div className="flex items-center gap-1 md:gap-2 whitespace-nowrap">
-                          <kbd className="px-1 md:px-1.5 py-0.5 rounded bg-zinc-800 text-[6px] md:text-[8px] font-black text-zinc-400 border border-white/5">↵</kbd>
-                          <span className="text-[6px] md:text-[8px] uppercase tracking-widest text-zinc-600 font-bold">Select</span>
+                          <kbd className="px-1 md:px-1.5 py-0.5 rounded bg-foreground/10 text-[6px] md:text-[8px] font-black text-foreground/50 border border-border">↵</kbd>
+                          <span className="text-[6px] md:text-[8px] uppercase tracking-widest text-foreground/30 font-bold">Select</span>
                       </div>
                       <div className="flex items-center gap-1 md:gap-2 whitespace-nowrap">
-                          <kbd className="px-1 md:px-1.5 py-0.5 rounded bg-zinc-800 text-[6px] md:text-[8px] font-black text-zinc-400 border border-white/5">ESC</kbd>
-                          <span className="text-[6px] md:text-[8px] uppercase tracking-widest text-zinc-600 font-bold">Dismiss</span>
+                          <kbd className="px-1 md:px-1.5 py-0.5 rounded bg-foreground/10 text-[6px] md:text-[8px] font-black text-foreground/50 border border-border">ESC</kbd>
+                          <span className="text-[6px] md:text-[8px] uppercase tracking-widest text-foreground/30 font-bold">Dismiss</span>
                       </div>
                   </div>
-                  <div className="text-[6px] md:text-[8px] uppercase tracking-[0.2em] text-zinc-600 font-black whitespace-nowrap ml-2">
+                  <div className="text-[6px] md:text-[8px] uppercase tracking-[0.2em] text-foreground/30 font-black whitespace-nowrap ml-2">
                       {filteredProjects.length} Assets
                   </div>
                 </div>
@@ -398,17 +398,17 @@ const ModifyOrderModal = ({ isOpen, onClose, order, onModify }) => {
   if (!isOpen || !order) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-        className="bg-[#0a0a0a] border border-white/10 w-full max-w-md p-8 shadow-2xl"
+        className="bg-background border border-border w-full max-w-md p-8 shadow-2xl"
       >
         <div className="flex items-center justify-between mb-8">
            <div>
-             <h3 className="text-xl font-bold uppercase tracking-tight text-white">Modify Intent</h3>
-             <p className="text-[10px] uppercase tracking-widest text-white/30">ID: {order.id.substring(0,8)}... ({order.order_type})</p>
+             <h3 className="text-xl font-bold uppercase tracking-tight text-foreground">Modify Intent</h3>
+             <p className="text-[10px] uppercase tracking-widest text-foreground/30">ID: {order.id.substring(0,8)}... ({order.order_type})</p>
            </div>
-           <button onClick={onClose} className="p-2 text-white hover:bg-white/5 rounded-full transition-colors"><X size={20}/></button>
+           <button onClick={onClose} className="p-2 text-foreground hover:bg-foreground/5 rounded-full transition-colors"><X size={20}/></button>
         </div>
 
         <div className="space-y-6">
@@ -426,13 +426,13 @@ const ModifyOrderModal = ({ isOpen, onClose, order, onModify }) => {
              onChange={(e) => setNewQuantity(e.target.value)} 
            />
 
-           <div className="pt-6 border-t border-white/5">
-              <p className="text-[9px] text-white/20 uppercase tracking-widest mb-4 leading-relaxed">
+           <div className="pt-6 border-t border-border">
+              <p className="text-[9px] text-foreground/20 uppercase tracking-widest mb-4 leading-relaxed">
                 Modification involves an atomic Cancel + Re-place operation. This will move your order to the back of the queue (FIFO reset).
               </p>
               <div className="flex gap-4">
                  <Button variant="outline" className="flex-1 h-12 text-[10px]" onClick={onClose}>CLOSE</Button>
-                 <Button className="flex-1 h-12 text-[10px] bg-primary-600 hover:bg-primary-700 text-white font-bold" onClick={() => onModify(order.id, newPrice, newQuantity)}>SUBMIT MODS</Button>
+                 <Button className="flex-1 h-12 text-[10px] bg-accent-orange hover:bg-accent-gold/80 text-background font-bold" onClick={() => onModify(order.id, newPrice, newQuantity)}>SUBMIT MODS</Button>
               </div>
            </div>
         </div>
@@ -735,7 +735,7 @@ const TradingRoom = () => {
                 priceLineVisible: true, priceLineWidth: 1, priceLineColor: '#22c55e', priceLineStyle: 2,
             });
         } else if (chartType === 'line') {
-            mainSeriesRef.current = chart.addSeries(LineSeries, { color: '#fff', lineWidth: 1.5 });
+            mainSeriesRef.current = chart.addSeries(LineSeries, { color: 'var(--color-foreground)', lineWidth: 1.5 });
         } else {
             mainSeriesRef.current = chart.addSeries(AreaSeries, {
                 lineColor: '#fff', topColor: 'rgba(255, 255, 255, 0.05)', bottomColor: 'rgba(255, 255, 255, 0)',
@@ -910,20 +910,20 @@ const TradingRoom = () => {
 
   if (loading && projects.length === 0) {
     return (
-        <div className="flex-1 flex flex-col items-center justify-center h-full bg-[#080808]">
-          <Loader size={48} text="Synchronizing Order Book Nodes..." />
+        <div className="flex-1 flex flex-col items-center justify-center h-full bg-background">
+          <Loader size={32} text="SYNCHRONIZING ORDER BOOK NODES..." />
         </div>
     );
   }
 
   return (
-    <div className="h-screen bg-[#050505] text-white flex flex-col font-sans overflow-hidden relative">
+    <div className="h-screen bg-background text-foreground flex flex-col font-sans overflow-hidden relative transition-colors duration-500">
         {/* Mobile-Optimized Header (Groww Style) */}
-        <header className="h-16 md:h-20 border-b border-white/10 px-4 md:px-8 flex items-center justify-between bg-[#080808]/95 backdrop-blur-3xl sticky top-0 z-[110] shadow-2xl">
+        <header className="h-16 md:h-20 border-b border-border px-4 md:px-8 flex items-center justify-between bg-background/95 backdrop-blur-3xl sticky top-0 z-[110] shadow-2xl">
             <div className="flex items-center gap-3">
                 <button 
                     onClick={() => navigate(-1)} 
-                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/10 text-zinc-400 md:hidden"
+                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-foreground/[0.03] border border-border text-foreground/40 md:hidden"
                 >
                     <ArrowLeft size={18} />
                 </button>
@@ -931,14 +931,14 @@ const TradingRoom = () => {
                 <div className="hidden md:block">
                         <button 
                         onClick={() => navigate(-1)} 
-                        className="group flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-zinc-400 hover:text-white"
+                        className="group flex items-center justify-center h-10 w-10 rounded-xl bg-foreground/5 border border-border hover:bg-foreground/10 hover:border-foreground/20 transition-all text-foreground/40 hover:text-foreground"
                         title="Return to Dashboard"
                     >
                         <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
                     </button>
                 </div>
 
-                <div className="h-8 w-px bg-white/5 hidden lg:block" />
+                <div className="h-8 w-px bg-border hidden lg:block" />
                 
                 <PropertySearchModal 
                     projects={projects} 
@@ -949,38 +949,38 @@ const TradingRoom = () => {
 
             {/* Price Metrics - Mobile Right Side */}
             <div className="flex md:hidden flex-col items-end">
-                <span className="text-base font-mono font-black tracking-tighter text-white leading-none">₹{latestPrice.toLocaleString()}</span>
+                <span className="text-base font-mono font-black tracking-tighter text-foreground leading-none">₹{latestPrice.toLocaleString()}</span>
                 <div className={`flex items-center gap-1 mt-1 text-[9px] font-black ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {parseFloat(priceChange) >= 0 ? '▲' : '▼'} {Math.abs(parseFloat(priceChange))}%
                 </div>
             </div>
 
                 {/* Desktop Metrics HUD */}
-                <div className="hidden md:flex items-center gap-10 overflow-x-auto no-scrollbar ml-6 border-l border-white/5 pl-10">
+                <div className="hidden md:flex items-center gap-10 overflow-x-auto no-scrollbar ml-6 border-l border-border pl-10">
                     <div className="space-y-1">
-                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-black">24h Change</p>
+                        <p className="text-[8px] uppercase tracking-[0.25em] text-foreground/30 font-black">24h Change</p>
                         <div className={`flex items-center gap-1.5 text-[11px] font-mono font-bold ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                             {parseFloat(priceChange) >= 0 ? '+' : ''}{priceChange}%
                         </div>
                     </div>
 
                     <div className="space-y-1">
-                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-black">24h High</p>
-                        <span className="text-[11px] font-mono font-bold text-zinc-400">
+                        <p className="text-[8px] uppercase tracking-[0.25em] text-foreground/30 font-black">24h High</p>
+                        <span className="text-[11px] font-mono font-bold text-foreground/50">
                             ₹{(ohlcvData.length > 0 ? Math.max(...ohlcvData.slice(-24).map(d => d.high)) : latestPrice * 1.02).toLocaleString(undefined, {minimumFractionDigits: 2})}
                         </span>
                     </div>
 
                     <div className="space-y-1">
-                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-black">24h Low</p>
-                        <span className="text-[11px] font-mono font-bold text-zinc-400">
+                        <p className="text-[8px] uppercase tracking-[0.25em] text-foreground/30 font-black">24h Low</p>
+                        <span className="text-[11px] font-mono font-bold text-foreground/50">
                             ₹{(ohlcvData.length > 0 ? Math.min(...ohlcvData.slice(-24).map(d => d.low)) : latestPrice * 0.98).toLocaleString(undefined, {minimumFractionDigits: 2})}
                         </span>
                     </div>
 
                     <div className="space-y-1">
-                        <p className="text-[8px] uppercase tracking-[0.25em] text-zinc-600 font-black">24h Volume</p>
-                        <span className="text-[11px] font-mono font-bold text-zinc-400">{volume24h.toLocaleString()} <span className="text-[9px] text-zinc-700">BK</span></span>
+                        <p className="text-[8px] uppercase tracking-[0.25em] text-foreground/30 font-black">24h Volume</p>
+                        <span className="text-[11px] font-mono font-bold text-foreground/50">{volume24h.toLocaleString()} <span className="text-[9px] text-foreground/20">BK</span></span>
                     </div>
                 </div>
 
@@ -988,16 +988,16 @@ const TradingRoom = () => {
         </header>
 
         {/* Mobile Tab Switcher */}
-        <div className="md:hidden flex bg-[#080808] border-b border-white/5 p-1 shrink-0">
+        <div className="md:hidden flex bg-background border-b border-border p-1 shrink-0">
             <button 
                 onClick={() => setMobileTab('chart')}
-                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${mobileTab === 'chart' ? 'bg-white/5 text-white' : 'text-zinc-600'}`}
+                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${mobileTab === 'chart' ? 'bg-foreground/5 text-foreground' : 'text-foreground/30'}`}
             >
                 Chart
             </button>
             <button 
                 onClick={() => setMobileTab('terminal')}
-                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${mobileTab === 'terminal' ? 'bg-white/5 text-white' : 'text-zinc-600'}`}
+                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${mobileTab === 'terminal' ? 'bg-foreground/5 text-foreground' : 'text-foreground/30'}`}
             >
                 Terminal
             </button>
@@ -1014,21 +1014,21 @@ const TradingRoom = () => {
                         {/* Left Column: Charts */}
                         {/* Left Column: Unified Technical Chart */}
                         {/* Left Column: Unified Technical Chart */}
-                        <div className={`flex-[0_0_100%] md:flex-1 flex flex-col border-r border-white/5 shrink-0 md:shrink-1 ${mobileTab === 'chart' ? 'flex' : 'hidden md:flex'}`}>
-                            <div className="flex-1 flex flex-col h-full bg-black/20 relative">
+                        <div className={`flex-[0_0_100%] md:flex-1 flex flex-col border-r border-border shrink-0 md:shrink-1 ${mobileTab === 'chart' ? 'flex' : 'hidden md:flex'}`}>
+                            <div className="flex-1 flex flex-col h-full bg-background/20 relative">
                                 {/* Chart Header / Timeframes */}
-                                <div className="h-8 border-b border-white/5 px-4 flex items-center justify-between shrink-0 bg-zinc-950/20">
-                                    <div className="flex bg-zinc-900/50 rounded-md border border-white/5 relative">
+                                <div className="h-8 border-b border-border px-4 flex items-center justify-between shrink-0 bg-foreground/[0.02]/20">
+                                    <div className="flex bg-foreground/[0.05]/50 rounded-md border border-border relative">
                                         {['1m', '5m', '1h', '1D', '1W', '1M'].map((tf) => (
                                             <button 
                                                 key={tf}
                                                 onClick={() => setChartTimeframe(tf)}
-                                                className={`relative px-3 py-1 text-[9px] font-black tracking-tighter transition-all z-10 ${chartTimeframe === tf ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                                className={`relative px-3 py-1 text-[9px] font-black tracking-tighter transition-all z-10 ${chartTimeframe === tf ? 'text-foreground' : 'text-foreground/30 hover:text-foreground/50'}`}
                                             >
                                                 {chartTimeframe === tf && (
                                                     <motion.div 
                                                         layoutId="activeTimeframe"
-                                                        className="absolute inset-0 bg-white/10 rounded-md border border-white/5"
+                                                        className="absolute inset-0 bg-foreground/10 rounded-md border border-border"
                                                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                                     />
                                                 )}
@@ -1036,43 +1036,43 @@ const TradingRoom = () => {
                                             </button>
                                         ))}
                                     </div>
-                                    <div className="flex items-center gap-2 border-l border-white/5 pl-4 ml-2">
+                                    <div className="flex items-center gap-2 border-l border-border pl-4 ml-2">
                                          <button 
                                             onClick={() => setChartType('candlestick')}
-                                            className={`p-1.5 rounded-md transition-all ${chartType === 'candlestick' ? 'bg-white/10 text-white shadow-lg' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                            className={`p-1.5 rounded-md transition-all ${chartType === 'candlestick' ? 'bg-foreground/10 text-foreground shadow-lg' : 'text-foreground/30 hover:text-foreground/50'}`}
                                             title="Candlestick Chart"
                                          >
                                             <TrendingUp size={12} />
                                          </button>
                                          <button 
                                             onClick={() => setChartType('line')}
-                                            className={`p-1.5 rounded-md transition-all ${chartType === 'line' ? 'bg-white/10 text-white shadow-lg' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                            className={`p-1.5 rounded-md transition-all ${chartType === 'line' ? 'bg-foreground/10 text-foreground shadow-lg' : 'text-foreground/30 hover:text-foreground/50'}`}
                                             title="Line Chart"
                                          >
                                             <LineChart size={12} />
                                          </button>
-                                         <div className="w-px h-4 bg-white/5 mx-1" />
-                                         <button className="text-zinc-600 hover:text-white transition-colors p-1.5"><Maximize2 size={12} /></button>
+                                         <div className="w-px h-4 bg-foreground/5 mx-1" />
+                                         <button className="text-foreground/30 hover:text-foreground transition-colors p-1.5"><Maximize2 size={12} /></button>
                                     </div>
                                 </div>
 
                                 {/* Unified Chart Area */}
-                                <div className="flex-1 relative overflow-hidden bg-[#050505]">
+                                <div className="flex-1 relative overflow-hidden bg-background">
                                     <div ref={priceChartContainerRef} className="h-full w-full [&_a]:hidden" />
                                     
                                     {/* Real-time Status Overlay */}
                                     <div className="absolute top-3 left-4 flex flex-col gap-1 pointer-events-none z-10">
                                         <div className="flex items-center gap-2">
                                             <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
-                                            <p className="text-[8px] uppercase tracking-[0.2em] text-white font-black">{selectedProject?.title}</p>
+                                            <p className="text-[8px] uppercase tracking-[0.2em] text-foreground font-black">{selectedProject?.title}</p>
                                         </div>
-                                        <p className="text-[7px] text-zinc-600 font-mono">VOL 24H: {volume24h.toLocaleString()}</p>
+                                        <p className="text-[7px] text-foreground/30 font-mono">VOL 24H: {volume24h.toLocaleString()}</p>
                                     </div>
 
                                     {formattedChartData.price.length === 0 && (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-20">
-                                            <Activity size={24} className="text-zinc-800 mb-2 animate-pulse" />
-                                            <p className="text-[8px] uppercase tracking-[0.3em] text-zinc-600 font-black">Syncing Market Data...</p>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 backdrop-blur-sm z-20">
+                                            <Activity size={24} className="text-foreground/10 mb-2 animate-pulse" />
+                                            <p className="text-[8px] uppercase tracking-[0.3em] text-foreground/30 font-black">Syncing Market Data...</p>
                                         </div>
                                     )}
                                 </div>
@@ -1080,9 +1080,9 @@ const TradingRoom = () => {
                         </div>
 
                         {/* Middle Column: Multi-Mode Terminal Section */}
-                        <div className={`w-full md:w-80 lg:w-96 md:flex-1 md:h-full flex flex-col border-r border-white/5 bg-black/20 shrink-0 ${mobileTab === 'terminal' ? 'flex' : 'hidden md:flex'}`}>
+                        <div className={`w-full md:w-80 lg:w-96 md:flex-1 md:h-full flex flex-col border-r border-border bg-background/20 shrink-0 ${mobileTab === 'terminal' ? 'flex' : 'hidden md:flex'}`}>
                             {/* Horizontal Mode Slider */}
-                            <div className="flex items-center justify-around md:justify-around py-2 border-b border-white/5 bg-zinc-950/40 relative overflow-x-auto no-scrollbar">
+                            <div className="flex items-center justify-around md:justify-around py-2 border-b border-border bg-foreground/[0.02]/40 relative overflow-x-auto no-scrollbar">
                                 {[
                                     { id: 'book', icon: <BarChart3 size={14} />, label: 'Depth' },
                                     { id: 'history', icon: <Clock size={14} />, label: 'History' },
@@ -1093,12 +1093,12 @@ const TradingRoom = () => {
                                     <button
                                         key={mode.id}
                                         onClick={() => setBookMode(mode.id)}
-                                        className={`relative px-4 py-1.5 flex flex-col items-center gap-1 transition-all z-10 ${bookMode === mode.id ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                        className={`relative px-4 py-1.5 flex flex-col items-center gap-1 transition-all z-10 ${bookMode === mode.id ? 'text-foreground' : 'text-foreground/30 hover:text-foreground/50'}`}
                                     >
                                         {bookMode === mode.id && (
                                             <motion.div 
                                                 layoutId="activeBookMode"
-                                                className="absolute inset-0 bg-white/5 border border-white/10 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+                                                className="absolute inset-0 bg-foreground/5 border border-foreground/10 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                                                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                             />
                                         )}
@@ -1109,8 +1109,8 @@ const TradingRoom = () => {
                             </div>
 
                             <div className="flex-1 flex flex-col min-w-0">
-                                <div className="h-8 border-b border-white/5 px-4 flex items-center justify-between shrink-0 bg-zinc-950/20">
-                                    <h3 className="text-[8px] uppercase font-black tracking-[0.2em] flex items-center gap-2 text-zinc-500">
+                                <div className="h-8 border-b border-border px-4 flex items-center justify-between shrink-0 bg-foreground/[0.02]/20">
+                                    <h3 className="text-[8px] uppercase font-black tracking-[0.2em] flex items-center gap-2 text-foreground/40">
                                         {bookMode === 'book' && 'Market Depth (Top 5)'}
                                         {bookMode === 'history' && 'Market Settlement Ledger'}
                                         {bookMode === 'orders' && 'Active Market Intents'}
@@ -1146,14 +1146,14 @@ const TradingRoom = () => {
                                                 </div>
 
                                                 {/* Spread Section */}
-                                                <div className="py-2 border-y border-white/5 bg-zinc-950/40 flex flex-col items-center justify-center relative">
+                                                <div className="py-2 border-y border-border bg-foreground/[0.02]/40 flex flex-col items-center justify-center relative">
                                                     <div className="flex items-center gap-4">
                                                         <span className={`text-xl font-mono font-black tracking-tighter ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                                                             ₹{latestPrice.toLocaleString()}
                                                         </span>
                                                         <div className="flex flex-col items-start leading-none">
-                                                            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Spread</span>
-                                                            <span className="text-[10px] font-mono font-bold text-zinc-400">
+                                                            <span className="text-[8px] font-black text-foreground/30 uppercase tracking-widest">Spread</span>
+                                                            <span className="text-[10px] font-mono font-bold text-foreground/50">
                                                                 {marketSpread.spread > 0 ? `₹${marketSpread.spread.toFixed(2)} (${marketSpread.percent.toFixed(2)}%)` : '0.00 (0%)'}
                                                             </span>
                                                         </div>
@@ -1192,10 +1192,10 @@ const TradingRoom = () => {
                                                     ].map((item, i) => (
                                                         <div key={i} className="group cursor-pointer">
                                                             <div className="flex items-center gap-2 mb-1">
-                                                                <span className={`h-1 w-1 rounded-full ${item.priority === 'high' ? 'bg-red-500' : 'bg-zinc-700'}`} />
-                                                                <span className="text-[7px] uppercase font-black tracking-widest text-zinc-500">{item.date}</span>
+                                                                <span className={`h-1 w-1 rounded-full ${item.priority === 'high' ? 'bg-red-500' : 'bg-foreground/20'}`} />
+                                                                <span className="text-[7px] uppercase font-black tracking-widest text-foreground/40">{item.date}</span>
                                                             </div>
-                                                            <p className="text-[11px] font-bold text-zinc-300 group-hover:text-white transition-colors leading-relaxed">{item.title}</p>
+                                                            <p className="text-[11px] font-bold text-foreground/70 group-hover:text-foreground transition-colors leading-relaxed">{item.title}</p>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -1210,7 +1210,7 @@ const TradingRoom = () => {
                                             >
                                                 <div className="flex-1 overflow-y-auto">
                                                     {tradeHistory.length === 0 ? (
-                                                        <div className="p-12 text-center text-zinc-600 uppercase tracking-widest text-[10px]">No recent settlements found</div>
+                                                        <div className="p-12 text-center text-foreground/30 uppercase tracking-widest text-[10px]">No recent settlements found</div>
                                                     ) : tradeHistory.slice(0, 50).map((t, i) => (
                                                         <TradeHistoryRow 
                                                             key={i} 
@@ -1232,37 +1232,37 @@ const TradingRoom = () => {
                                             >
                                                 <div className="p-4 space-y-3">
                                                     {openOrders.length === 0 ? (
-                                                        <div className="py-20 text-center text-zinc-700 uppercase tracking-[0.2em] text-[10px] font-bold">No Active Intents Found</div>
+                                                        <div className="py-20 text-center text-foreground/20 uppercase tracking-[0.2em] text-[10px] font-bold">No Active Intents Found</div>
                                                     ) : openOrders.map(order => (
-                                                        <div key={order.id} className="p-4 bg-zinc-950 border border-white/5 rounded-xl group hover:border-white/10 transition-all">
+                                                        <div key={order.id} className="p-4 bg-foreground/[0.02] border border-border rounded-xl group hover:border-foreground/10 transition-all">
                                                             <div className="flex justify-between items-start mb-3">
                                                                 <div>
                                                                     <div className="flex items-center gap-2 mb-1">
                                                                         <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest ${order.order_type === 'buy' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
                                                                             {order.order_type}
                                                                         </span>
-                                                                        <span className="text-[10px] font-mono font-bold text-white">₹{order.price_per_brick?.toLocaleString() || 'MARKET'}</span>
+                                                                        <span className="text-[10px] font-mono font-bold text-foreground">₹{order.price_per_brick?.toLocaleString() || 'MARKET'}</span>
                                                                     </div>
-                                                                    <p className="text-[9px] text-zinc-500 font-mono">QTY: {order.unfilled_quantity} / {order.quantity} BK</p>
+                                                                    <p className="text-[9px] text-foreground/40 font-mono">QTY: {order.unfilled_quantity} / {order.quantity} BK</p>
                                                                 </div>
                                                                 <div className="flex items-center gap-1">
                                                                     <button 
                                                                         onClick={() => setModifyingOrder(order)}
-                                                                        className="p-2 text-zinc-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                                                                        className="p-2 text-foreground/40 hover:text-foreground hover:bg-foreground/5 rounded-lg transition-all"
                                                                         title="Modify"
                                                                     >
                                                                         <Edit2 size={14} />
                                                                     </button>
                                                                     <button 
                                                                         onClick={() => handleCancelOrder(order.id)}
-                                                                        className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-all"
+                                                                        className="p-2 text-foreground/40 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-all"
                                                                         title="Cancel"
                                                                     >
                                                                         <Trash2 size={14} />
                                                                     </button>
                                                                 </div>
                                                             </div>
-                                                            <div className="h-1 w-full bg-zinc-900 rounded-full overflow-hidden">
+                                                            <div className="h-1 w-full bg-foreground/[0.05] rounded-full overflow-hidden">
                                                                 <div 
                                                                     className={`h-full transition-all duration-1000 ${order.order_type === 'buy' ? 'bg-green-500/40' : 'bg-red-500/40'}`} 
                                                                     style={{ width: `${((order.quantity - order.unfilled_quantity) / order.quantity) * 100}%` }}
@@ -1281,34 +1281,34 @@ const TradingRoom = () => {
                                             >
                                                 {/* Global Portfolio Stats */}
                                                 <div className="grid grid-cols-2 gap-4">
-                                                    <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl">
-                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">Portfolio Total</p>
-                                                        <p className="text-sm font-mono font-black text-white">
-                                                            {holdings.reduce((sum, h) => sum + h.quantity, 0).toLocaleString()} <span className="text-[10px] text-zinc-700">BK</span>
+                                                    <div className="p-4 bg-foreground/[0.02] border border-border rounded-xl">
+                                                        <p className="text-[8px] uppercase tracking-widest text-foreground/30 mb-1">Portfolio Total</p>
+                                                        <p className="text-sm font-mono font-black text-foreground">
+                                                            {holdings.reduce((sum, h) => sum + h.quantity, 0).toLocaleString()} <span className="text-[10px] text-foreground/20">BK</span>
                                                         </p>
                                                     </div>
-                                                    <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl">
-                                                        <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-1">Unique Assets</p>
-                                                        <p className="text-sm font-mono font-black text-white">
-                                                            {holdings.length} <span className="text-[10px] text-zinc-700">PROJECTS</span>
+                                                    <div className="p-4 bg-foreground/[0.02] border border-border rounded-xl">
+                                                        <p className="text-[8px] uppercase tracking-widest text-foreground/30 mb-1">Unique Assets</p>
+                                                        <p className="text-sm font-mono font-black text-foreground">
+                                                            {holdings.length} <span className="text-[10px] text-foreground/20">PROJECTS</span>
                                                         </p>
                                                     </div>
                                                 </div>
                                                 
                                                 {/* Active Project Specifics (The one the user is looking at) */}
-                                                <div className="p-4 bg-zinc-900/50 border border-primary-500/20 rounded-xl relative overflow-hidden">
+                                                <div className="p-4 bg-foreground/[0.05]/50 border border-primary-500/20 rounded-xl relative overflow-hidden">
                                                     <div className="absolute top-0 right-0 p-2">
                                                         <span className="text-[7px] bg-primary-500/10 text-primary-400 px-1.5 py-0.5 border border-primary-500/20 rounded font-bold uppercase tracking-tighter">Current Node</span>
                                                     </div>
-                                                    <p className="text-[9px] font-bold text-white mb-3 uppercase tracking-tight truncate w-3/4">{selectedProject?.title}</p>
+                                                    <p className="text-[9px] font-bold text-foreground mb-3 uppercase tracking-tight truncate w-3/4">{selectedProject?.title}</p>
                                                     
                                                     <div className="grid grid-cols-2 gap-6">
                                                         <div>
-                                                            <p className="text-[7px] uppercase tracking-widest text-zinc-500 mb-1">Quantity</p>
-                                                            <p className="text-xs font-mono font-black text-white">{activeHoldingStats.quantity} BK</p>
+                                                            <p className="text-[7px] uppercase tracking-widest text-foreground/40 mb-1">Quantity</p>
+                                                            <p className="text-xs font-mono font-black text-foreground">{activeHoldingStats.quantity} BK</p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-[7px] uppercase tracking-widest text-zinc-500 mb-1">Unrealized P&L</p>
+                                                            <p className="text-[7px] uppercase tracking-widest text-foreground/40 mb-1">Unrealized P&L</p>
                                                             <p className={`text-xs font-mono font-black ${activeHoldingStats.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                                                                 {activeHoldingStats.pnl >= 0 ? '+' : ''}₹{Math.abs(activeHoldingStats.pnl).toLocaleString()}
                                                             </p>
@@ -1316,26 +1316,26 @@ const TradingRoom = () => {
                                                     </div>
                                                 </div>
 
-                                                <div className="space-y-4 pt-4 border-t border-white/5">
-                                                    <p className="text-[8px] uppercase tracking-widest text-zinc-600">Asset Allocation Registry</p>
+                                                <div className="space-y-4 pt-4 border-t border-border">
+                                                    <p className="text-[8px] uppercase tracking-widest text-foreground/30">Asset Allocation Registry</p>
                                                     
                                                     {holdings.length === 0 ? (
                                                         <div className="text-center py-8">
-                                                            <p className="text-[10px] text-zinc-600 uppercase italic">No digital deeds found in this wallet.</p>
+                                                            <p className="text-[10px] text-foreground/30 uppercase italic">No digital deeds found in this wallet.</p>
                                                         </div>
                                                     ) : (
                                                         <div className="space-y-2">
                                                             {holdings.map((h, idx) => {
                                                                 const proj = projects.find(p => p.id === h.project_id);
                                                                 return (
-                                                                    <div key={idx} className="p-3 bg-zinc-950 border border-white/5 rounded-lg flex items-center justify-between group hover:border-white/10 transition-colors">
+                                                                    <div key={idx} className="p-3 bg-foreground/[0.02] border border-border rounded-lg flex items-center justify-between group hover:border-foreground/10 transition-colors">
                                                                         <div className="min-w-0">
-                                                                            <p className="text-[10px] font-bold text-white truncate">{proj?.title || 'Unknown Project'}</p>
-                                                                            <p className="text-[8px] text-zinc-500 font-mono uppercase tracking-tighter">NODE: {h.project_id.substring(0,8)}...</p>
+                                                                            <p className="text-[10px] font-bold text-foreground truncate">{proj?.title || 'Unknown Project'}</p>
+                                                                            <p className="text-[8px] text-foreground/40 font-mono uppercase tracking-tighter">NODE: {h.project_id.substring(0,8)}...</p>
                                                                         </div>
                                                                         <div className="text-right">
                                                                             <p className="text-[10px] font-mono font-black text-primary-400">{h.quantity.toLocaleString()} BK</p>
-                                                                            <p className="text-[7px] text-zinc-600 uppercase">Equity Stake</p>
+                                                                            <p className="text-[7px] text-foreground/30 uppercase">Equity Stake</p>
                                                                         </div>
                                                                     </div>
                                                                 );
@@ -1345,15 +1345,15 @@ const TradingRoom = () => {
                                                 </div>
 
                                                 {/* Vault Performance Metrics */}
-                                                <div className="p-4 bg-zinc-950 border border-white/5 rounded-xl space-y-4">
-                                                    <p className="text-[8px] uppercase tracking-widest text-zinc-600 mb-2">Vault Performance</p>
+                                                <div className="p-4 bg-foreground/[0.02] border border-border rounded-xl space-y-4">
+                                                    <p className="text-[8px] uppercase tracking-widest text-foreground/30 mb-2">Vault Performance</p>
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-[10px] font-bold text-zinc-400">Total</span>
+                                                        <span className="text-[10px] font-bold text-foreground/50">Total</span>
                                                         <span className={`text-[10px] font-mono font-black ${activeHoldingStats.percent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                                                             {activeHoldingStats.percent >= 0 ? '+' : ''}{activeHoldingStats.percent.toFixed(2)}%
                                                         </span>
                                                     </div>
-                                                    <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                                                    <div className="h-1.5 w-full bg-foreground/[0.05] rounded-full overflow-hidden">
                                                         <motion.div 
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${Math.min(Math.max(activeHoldingStats.percent + 50, 0), 100)}%` }}
@@ -1363,12 +1363,12 @@ const TradingRoom = () => {
 
                                                     <div className="flex items-center justify-between px-1 pt-2">
                                                         <div className="flex flex-col">
-                                                            <span className="text-[7px] uppercase font-black text-zinc-600 tracking-widest">Avg Buy Price</span>
-                                                            <span className="text-[11px] font-mono font-bold text-zinc-300">₹{activeHoldingStats.avgPrice.toLocaleString()}</span>
+                                                            <span className="text-[7px] uppercase font-black text-foreground/30 tracking-widest">Avg Buy Price</span>
+                                                            <span className="text-[11px] font-mono font-bold text-foreground/70">₹{activeHoldingStats.avgPrice.toLocaleString()}</span>
                                                         </div>
                                                         <div className="flex flex-col text-right">
-                                                            <span className="text-[7px] uppercase font-black text-zinc-600 tracking-widest">Current Value</span>
-                                                            <span className="text-[11px] font-mono font-bold text-white">₹{(activeHoldingStats.quantity * latestPrice).toLocaleString()}</span>
+                                                            <span className="text-[7px] uppercase font-black text-foreground/30 tracking-widest">Current Value</span>
+                                                            <span className="text-[11px] font-mono font-bold text-foreground">₹{(activeHoldingStats.quantity * latestPrice).toLocaleString()}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1384,16 +1384,16 @@ const TradingRoom = () => {
                                                 <div className="p-5 bg-primary-500/5 border border-primary-500/10 rounded-xl space-y-3">
                                                     <div className="flex items-center gap-2">
                                                         <Shield size={14} className="text-primary-500" />
-                                                        <span className="text-[9px] font-black uppercase tracking-widest text-white">Active Voting Session</span>
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-foreground">Active Voting Session</span>
                                                     </div>
-                                                    <p className="text-[10px] text-zinc-400 leading-relaxed">Proposal #EX-240: Implement automated market-making for secondary pools.</p>
+                                                    <p className="text-[10px] text-foreground/50 leading-relaxed">Proposal #EX-240: Implement automated market-making for secondary pools.</p>
                                                     <Button size="sm" variant="outline" className="w-full text-[8px] h-8">Review Governance</Button>
                                                 </div>
                                                 <div className="space-y-4">
-                                                     <p className="text-[8px] uppercase tracking-[0.3em] text-zinc-700 font-black px-1">Your Influence</p>
+                                                     <p className="text-[8px] uppercase tracking-[0.3em] text-foreground/20 font-black px-1">Your Influence</p>
                                                      <div className="flex items-center justify-between px-1">
-                                                         <span className="text-[10px] text-zinc-500">Voting Power</span>
-                                                         <span className="text-[10px] font-mono text-white">4,500 VP</span>
+                                                         <span className="text-[10px] text-foreground/40">Voting Power</span>
+                                                         <span className="text-[10px] font-mono text-foreground">4,500 VP</span>
                                                      </div>
                                                 </div>
                                             </motion.div>
@@ -1404,9 +1404,9 @@ const TradingRoom = () => {
                         </div>
 
                                 {/* Right Column: Trade Input & Recent Trades */}
-                                <div className="hidden md:flex w-full md:w-80 lg:w-96 flex flex-col bg-black/20 shrink-0">
+                                <div className="hidden md:flex w-full md:w-80 lg:w-96 flex flex-col bg-background/20 shrink-0">
                                     {/* Trade Form */}
-                                    <div className="p-5 md:p-6 border-b border-white/5 bg-zinc-950/20">
+                                    <div className="p-5 md:p-6 border-b border-border bg-foreground/[0.02]/20">
                                         <TradeForm 
                                             orderType={orderType}
                                             setOrderType={setOrderType}
@@ -1429,16 +1429,16 @@ const TradingRoom = () => {
             </div>
 
         {/* Sticky Mobile Action Buttons (Groww Style) */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#050505]/80 backdrop-blur-xl border-t border-white/5 flex gap-3 z-[70]">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border flex gap-3 z-[70]">
             <button 
                 onClick={() => { setOrderType('buy'); setIsTradeModalOpen(true); }}
-                className="flex-1 py-4 bg-green-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.2)]"
+                className="flex-1 py-4 bg-green-500 text-background text-[10px] font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.2)]"
             >
                 BUY ASSET
             </button>
             <button 
                 onClick={() => { setOrderType('sell'); setIsTradeModalOpen(true); }}
-                className="flex-1 py-4 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                className="flex-1 py-4 bg-red-500 text-foreground text-[10px] font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.2)]"
             >
                 SELL ASSET
             </button>

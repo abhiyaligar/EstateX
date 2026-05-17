@@ -135,7 +135,7 @@ export const TradingViewChart = ({
 
   if (data.length === 0) {
       return (
-          <div className="w-full h-[350px] flex items-center justify-center text-white/20 text-xs uppercase tracking-widest">
+          <div className="w-full h-[350px] flex items-center justify-center text-foreground/20 text-xs uppercase tracking-widest">
               Insufficient Data for Charting
           </div>
       );
@@ -145,7 +145,7 @@ export const TradingViewChart = ({
     <div className="relative w-full h-[350px]">
         {/* Simple Legend Overlay */}
         <div className="absolute top-2 left-4 z-10 flex gap-4 text-[10px] uppercase font-bold tracking-widest">
-            <span className="text-white">Price</span>
+            <span className="text-foreground">Price</span>
             <span className="text-violet-500">SMA(20)</span>
             <span className="text-sky-400">Vol</span>
         </div>

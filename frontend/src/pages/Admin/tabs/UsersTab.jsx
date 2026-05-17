@@ -19,7 +19,7 @@ const UsersTab = ({ targetUserId, setTargetUserId, walletAmount, setWalletAmount
             </div>
             <div>
               <h3 className="text-xl font-bold uppercase tracking-tight">Wallet Adjustment</h3>
-              <p className="text-[10px] uppercase tracking-widest text-white/40">Direct balance manipulation</p>
+              <p className="text-[10px] uppercase tracking-widest text-foreground/40">Direct balance manipulation</p>
             </div>
           </div>
 
@@ -43,10 +43,10 @@ const UsersTab = ({ targetUserId, setTargetUserId, walletAmount, setWalletAmount
                 }}
               />
               <div className="flex flex-col">
-                <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] font-medium text-white/40">Direction</label>
-                <div className="flex h-12 bg-[#111] border border-white/5 p-1">
-                  <button type="button" onClick={() => setWalletAmount(Math.abs(walletAmount))} className={`flex-1 text-[10px] font-bold ${walletAmount >= 0 ? 'bg-white text-black' : 'text-white/40'}`}>CREDIT</button>
-                  <button type="button" onClick={() => setWalletAmount(-Math.abs(walletAmount))} className={`flex-1 text-[10px] font-bold ${walletAmount < 0 ? 'bg-red-500 text-white' : 'text-white/40'}`}>DEBIT</button>
+                <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] font-medium text-foreground/40">Direction</label>
+                <div className="flex h-12 bg-background border border-border p-1">
+                  <button type="button" onClick={() => setWalletAmount(Math.abs(walletAmount))} className={`flex-1 text-[10px] font-bold ${walletAmount >= 0 ? 'bg-white text-foreground' : 'text-foreground/40'}`}>CREDIT</button>
+                  <button type="button" onClick={() => setWalletAmount(-Math.abs(walletAmount))} className={`flex-1 text-[10px] font-bold ${walletAmount < 0 ? 'bg-red-500 text-foreground' : 'text-foreground/40'}`}>DEBIT</button>
                 </div>
               </div>
             </div>
@@ -56,9 +56,9 @@ const UsersTab = ({ targetUserId, setTargetUserId, walletAmount, setWalletAmount
               value={walletReason}
               onChange={(e) => setWalletReason(e.target.value)}
             />
-            <div className="pt-4 border-t border-white/5">
+            <div className="pt-4 border-t border-border">
               <Button type="submit" variant="danger" className="w-full h-14 text-[10px] tracking-[0.2em]">EXECUTE ADJUSTMENT</Button>
-              <p className="mt-4 text-[9px] text-white/20 uppercase text-center leading-relaxed">Warning: This action is recorded in the immutable audit log and cannot be reversed by standard logic.</p>
+              <p className="mt-4 text-[9px] text-foreground/20 uppercase text-center leading-relaxed">Warning: This action is recorded in the immutable audit log and cannot be reversed by standard logic.</p>
             </div>
           </form>
       </Card>

@@ -47,7 +47,7 @@ const AuthCallback = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] flex flex-col items-center justify-center text-white p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center text-foreground p-4">
       <Loader size={48} text={status} className="mb-2" />
       <p className="text-sm text-gray-500 mt-4">Please do not close this window.</p>
     </div>

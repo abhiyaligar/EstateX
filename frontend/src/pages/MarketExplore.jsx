@@ -97,28 +97,28 @@ const MarketExplore = () => {
 
   if (loading) {
     return (
-      <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
-         <Loader size={48} text="Synchronizing Market Nodes..." />
+      <div className="h-screen bg-background flex items-center justify-center">
+         <Loader size={32} text="SYNCHRONIZING MARKET NODES..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37]/30 pb-20 px-6 md:px-12 pt-10">
+    <div className="min-h-screen bg-background text-foreground selection:bg-accent-gold/30 pb-20 px-6 md:px-12 pt-10 transition-colors duration-500">
       <div className="max-w-[1600px] mx-auto">
         
         {/* Institutional Header Section */}
-        <header className="mb-16 space-y-10 border-b border-white/5 pb-12">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
-             <div className="space-y-4">
+        <header className="mb-16 space-y-10 border-b border-border pb-12">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 md:gap-12">
+             <div className="space-y-3 md:space-y-4">
                 <div className="flex items-center gap-3">
-                   <TrendingUp size={14} className="text-[#D4AF37]" />
-                   <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Secondary Market</p>
+                   <TrendingUp size={14} className="text-accent-orange animate-pulse" />
+                   <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-foreground/30">Secondary Market</p>
                 </div>
-                <h1 className="text-4xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
-                  Global <span className="text-[#D4AF37]">Explore</span>
+                <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-heading font-black tracking-[-0.05em] uppercase leading-[0.9]">
+                  Global <br className="hidden md:block" /> <span className="text-foreground/10">Explore</span>
                 </h1>
-                <p className="text-sm md:text-lg text-zinc-500 max-w-2xl leading-relaxed">
+                <p className="text-sm md:text-lg text-foreground/40 max-w-2xl leading-relaxed mt-4">
                   Real-time auditing of verified real estate assets across global nodes. Transparent ledger tracking for secondary market liquidity.
                 </p>
              </div>
@@ -126,13 +126,13 @@ const MarketExplore = () => {
              <div className="flex flex-col sm:flex-row items-center gap-8">
                 {/* Search Node */}
                 <div className="relative group w-full sm:w-[300px]">
-                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-[#D4AF37] transition-colors" size={16} />
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40 group-focus-within:text-accent-orange transition-colors" size={16} />
                    <input 
                      type="text"
                      placeholder="SEARCH NODES..."
                      value={searchQuery}
                      onChange={(e) => setSearchQuery(e.target.value)}
-                     className="w-full bg-white/[0.02] border border-white/5 py-3.5 pl-12 pr-4 text-[10px] font-black tracking-widest uppercase focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-zinc-800"
+                     className="w-full bg-foreground/[0.04] border border-border py-3.5 pl-12 pr-4 text-[10px] font-black tracking-widest uppercase focus:outline-none focus:border-accent-gold/50 transition-all placeholder:text-foreground/20 text-foreground"
                    />
                 </div>
              </div>
@@ -145,8 +145,8 @@ const MarketExplore = () => {
                 onClick={() => setActiveTab(tab)}
                 className={`text-[9px] font-black uppercase tracking-[0.3em] transition-all pb-2 border-b-2 whitespace-nowrap ${
                   activeTab === tab 
-                  ? 'text-[#D4AF37] border-[#D4AF37]' 
-                  : 'text-zinc-700 border-transparent hover:text-zinc-400'
+                  ? 'text-accent-orange border-accent-orange' 
+                  : 'text-foreground/40 border-transparent hover:text-foreground'
                 }`}
               >
                 {tab}
@@ -156,7 +156,7 @@ const MarketExplore = () => {
         </header>
 
         {/* Asset List Header */}
-        <div className="hidden lg:grid grid-cols-12 px-6 py-4 text-[9px] uppercase tracking-[0.3em] font-black text-zinc-700 mb-4 border-y border-white/5 bg-white/[0.01]">
+        <div className="hidden lg:grid grid-cols-12 px-6 py-4 text-[9px] uppercase tracking-[0.3em] font-black text-foreground/30 mb-4 border-y border-border bg-foreground/[0.04]">
           <div className="col-span-5">Sovereign Asset Node</div>
           <div className="col-span-2 text-right">Market Value</div>
           <div className="col-span-1 text-right">Delta</div>
@@ -182,11 +182,11 @@ const MarketExplore = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                     onClick={() => navigate(`/trade?assetId=${asset.id}`)}
-                    className="flex flex-col lg:grid lg:grid-cols-12 items-center px-6 py-6 bg-white/[0.01] border border-white/5 hover:border-[#D4AF37]/30 transition-all cursor-pointer group gap-6 lg:gap-0"
+                    className="flex flex-col lg:grid lg:grid-cols-12 items-center px-6 py-6 bg-foreground/[0.04] border border-border hover:border-accent-gold/30 transition-all cursor-pointer group gap-6 lg:gap-0"
                   >
                     {/* Asset Identity */}
                     <div className="lg:col-span-5 flex items-center gap-6 w-full min-w-0">
-                      <div className="w-14 h-14 rounded-none overflow-hidden border border-white/10 shrink-0 bg-[#0c0c0c]">
+                      <div className="w-14 h-14 rounded-none overflow-hidden border border-border shrink-0 bg-background">
                         <img 
                           src={asset.images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=100'} 
                           alt={asset.title} 
@@ -194,26 +194,26 @@ const MarketExplore = () => {
                         />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-lg font-bold text-white group-hover:text-[#D4AF37] transition-colors truncate uppercase tracking-tight">{asset.title}</h4>
-                        <div className="text-[10px] text-zinc-600 truncate uppercase tracking-widest font-black mt-1 flex items-center gap-2">
-                           <MapPin size={10} className="text-zinc-800" />
+                        <h4 className="text-lg font-heading font-black text-foreground group-hover:text-accent-orange transition-colors truncate uppercase tracking-tight">{asset.title}</h4>
+                        <div className="text-[10px] text-foreground/40 truncate uppercase tracking-widest font-black mt-1 flex items-center gap-2">
+                           <MapPin size={10} className="text-foreground/20" />
                            {asset.location?.city || 'Prime Cluster'}, {asset.location?.state}
                         </div>
                       </div>
                     </div>
                     
                     {/* Price Node */}
-                    <div className="lg:col-span-2 w-full lg:text-right border-t lg:border-0 border-white/5 pt-4 lg:pt-0">
-                       <p className="lg:hidden text-[8px] font-black text-zinc-700 uppercase tracking-widest mb-1">Market Value</p>
-                       <p className="text-xl font-bold text-white font-mono tracking-tighter">
+                    <div className="lg:col-span-2 w-full lg:text-right border-t lg:border-0 border-border pt-4 lg:pt-0">
+                       <p className="lg:hidden text-[8px] font-black text-foreground/30 uppercase tracking-widest mb-1">Market Value</p>
+                       <p className="text-xl font-black font-heading text-foreground tracking-tighter">
                          ₹{(asset.financial?.market_value || asset.financial?.ipo_price || 0).toLocaleString()}
                        </p>
                     </div>
 
                     {/* Delta Node */}
                     <div className="lg:col-span-1 w-full lg:text-right">
-                       <p className="lg:hidden text-[8px] font-black text-zinc-700 uppercase tracking-widest mb-1">24H Delta</p>
-                       <div className="flex items-center lg:justify-end gap-1 text-[10px] font-black text-green-500">
+                       <p className="lg:hidden text-[8px] font-black text-foreground/30 uppercase tracking-widest mb-1">24H Delta</p>
+                       <div className="flex items-center lg:justify-end gap-1 text-[10px] font-black text-emerald-500">
                           <ArrowUpRight size={12} />
                           <span>+1.24%</span>
                        </div>
@@ -225,8 +225,8 @@ const MarketExplore = () => {
                     </div>
 
                     {/* Action Node */}
-                    <div className="lg:col-span-2 w-full lg:text-right border-t lg:border-0 border-white/5 pt-4 lg:pt-0">
-                       <button className="w-full lg:w-auto px-6 py-2 bg-white text-black text-[9px] font-black uppercase tracking-[0.2em] hover:bg-[#D4AF37] transition-all">
+                    <div className="lg:col-span-2 w-full lg:text-right border-t lg:border-0 border-border pt-4 lg:pt-0">
+                       <button className="w-full lg:w-auto px-6 py-2 bg-foreground text-background text-[9px] font-black uppercase tracking-[0.2em] hover:bg-accent-orange transition-all">
                           Audit Node
                        </button>
                     </div>
@@ -234,8 +234,8 @@ const MarketExplore = () => {
                 ))}
               </motion.div>
             ) : (
-              <div className="text-center py-40 border border-white/5 bg-white/[0.01]">
-                <p className="text-zinc-800 text-[10px] uppercase font-black tracking-[0.4em]">Sovereign Node empty // No relational data</p>
+              <div className="text-center py-40 border border-border bg-foreground/[0.04]">
+                <p className="text-foreground/20 text-[10px] uppercase font-black tracking-[0.4em]">Sovereign Node empty // No relational data</p>
               </div>
             )}
           </AnimatePresence>
@@ -243,22 +243,22 @@ const MarketExplore = () => {
 
         {/* Pagination Controls */}
         {!loading && filteredProjects.length > itemsPerPage && (
-          <div className="mt-12 flex items-center justify-between border-t border-white/5 pt-10">
-            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700">
+          <div className="mt-12 flex items-center justify-between border-t border-border pt-10">
+            <p className="text-[9px] font-black uppercase tracking-widest text-foreground/30">
               SEQUENCE {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, filteredProjects.length)} OF {filteredProjects.length}
             </p>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => paginate(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="w-10 h-10 flex items-center justify-center border border-white/5 text-zinc-700 hover:text-white disabled:opacity-10 transition-all hover:border-white/20"
+                className="w-10 h-10 flex items-center justify-center border border-border text-foreground/30 hover:text-foreground disabled:opacity-10 transition-all hover:border-foreground/20"
               >
                 <ChevronLeft size={18} />
               </button>
               <button 
                 onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="w-10 h-10 flex items-center justify-center border border-white/5 text-zinc-700 hover:text-white disabled:opacity-10 transition-all hover:border-white/20"
+                className="w-10 h-10 flex items-center justify-center border border-border text-foreground/30 hover:text-foreground disabled:opacity-10 transition-all hover:border-foreground/20"
               >
                 <ChevronRight size={18} />
               </button>

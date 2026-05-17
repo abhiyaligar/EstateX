@@ -62,17 +62,11 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-16 md:w-24 flex-shrink-0 hidden md:flex flex-col border-r border-border bg-background z-50 transition-all duration-500 blueprint-grid-dashed-small relative overflow-hidden">
+    <aside className="w-16 md:w-24 flex-shrink-0 hidden md:flex flex-col border-r border-border bg-background z-50 transition-all duration-500 relative overflow-hidden">
       {/* Background Glow */}
       <div className="absolute top-0 left-0 w-full h-full bg-accent-orange/[0.02] pointer-events-none" />
 
-      {/* Branding Section */}
-      <div className="h-20 md:h-24 flex items-center justify-center border-b border-border relative group">
-        <div className="w-10 h-10 bg-accent-orange flex items-center justify-center rounded-full transition-transform group-hover:scale-110 shadow-[0_0_20px_rgba(255,95,5,0.4)]">
-          <Zap className="text-white fill-white" size={20} />
-        </div>
-        <div className="absolute -bottom-[1px] left-0 w-full h-[1px] bg-accent-orange/50 scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
-      </div>
+
 
       {/* Primary Navigation */}
       <nav className="flex-1 py-10 flex flex-col items-center gap-4 md:gap-8 overflow-y-auto scrollbar-hide relative z-10">
@@ -117,7 +111,7 @@ const Sidebar = () => {
       </nav>
 
       {/* Bottom Status & Actions */}
-      <div className="py-8 flex flex-col items-center gap-6 border-t border-border bg-foreground/[0.01]">
+      <div className="py-8 flex flex-col items-center gap-6 border-t border-border bg-foreground/[0.03]">
         {/* Terminal Status Indicator */}
         <div className="flex flex-col items-center gap-1 opacity-40 group hover:opacity-100 transition-opacity">
            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />

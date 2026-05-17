@@ -22,10 +22,10 @@ const GovernanceTab = ({ proposalsList, projects, onNew, onStatusUpdate }) => {
       className="space-y-6"
     >
       <Card noPadding className="overflow-hidden">
-        <div className="p-8 border-b border-white/5 flex items-center justify-between">
+        <div className="p-8 border-b border-border flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold uppercase tracking-tight">Governance Control</h3>
-            <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Execute Decentralized Consensus Decisions</p>
+            <p className="text-xs text-foreground/40 mt-1 uppercase tracking-widest">Execute Decentralized Consensus Decisions</p>
           </div>
           <Button 
             variant="primary" 
@@ -55,17 +55,17 @@ const GovernanceTab = ({ proposalsList, projects, onNew, onStatusUpdate }) => {
                   <AdminTableRow key={p.id}>
                     <AdminTableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-white/20">
+                        <div className="w-9 h-9 bg-foreground/5 border border-border rounded-lg flex items-center justify-center text-foreground/20">
                            <Building2 size={16} />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[11px] font-bold text-white uppercase tracking-wider">{proj?.title || 'Unknown Protocol'}</span>
-                          <span className="text-[9px] text-white/30 font-mono">ID: {p.project_id.substring(0,8)}</span>
+                          <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">{proj?.title || 'Unknown Protocol'}</span>
+                          <span className="text-[9px] text-foreground/30 font-mono">ID: {p.project_id.substring(0,8)}</span>
                         </div>
                       </div>
                     </AdminTableCell>
                     <AdminTableCell>
-                      <span className="text-xs font-bold text-white uppercase tracking-tight line-clamp-1 max-w-[240px]">{p.title}</span>
+                      <span className="text-xs font-bold text-foreground uppercase tracking-tight line-clamp-1 max-w-[240px]">{p.title}</span>
                     </AdminTableCell>
                     <AdminTableCell>
                       <AdminStatusBadge type={
@@ -78,12 +78,12 @@ const GovernanceTab = ({ proposalsList, projects, onNew, onStatusUpdate }) => {
                     </AdminTableCell>
                     <AdminTableCell>
                        <div className="flex flex-col">
-                         <span className="font-mono text-xs font-bold text-white tracking-tighter">{p.total_votes.toLocaleString()}</span>
-                         <span className="text-[9px] text-white/30 uppercase font-bold tracking-widest">BRICKS VOTE</span>
+                         <span className="font-mono text-xs font-bold text-foreground tracking-tighter">{p.total_votes.toLocaleString()}</span>
+                         <span className="text-[9px] text-foreground/30 uppercase font-bold tracking-widest">BRICKS VOTE</span>
                        </div>
                     </AdminTableCell>
                     <AdminTableCell>
-                       <span className="text-[10px] text-white/50 font-medium">
+                       <span className="text-[10px] text-foreground/50 font-medium">
                           {new Date(p.end_date).toLocaleDateString()}
                           <span className="block text-[8px] opacity-50 mt-0.5">{new Date(p.end_date).toLocaleTimeString()}</span>
                        </span>

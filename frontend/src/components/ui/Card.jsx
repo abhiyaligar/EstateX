@@ -5,9 +5,9 @@ export const Card = ({ className, children, noPadding = false, hover = false, ..
   return (
     <div 
       className={cn(
-        "bg-transparent border-t border-[#C5A059]/20 overflow-hidden transition-all duration-700 rounded-none",
+        "bg-transparent border-t border-accent-orange/15 overflow-hidden transition-all duration-700 rounded-none",
         !noPadding && "p-6 md:p-10 lg:p-16",
-        hover && "hover:border-[#C5A059]/50",
+        hover && "hover:border-accent-orange/40",
         className
       )}
       {...props}
@@ -30,7 +30,7 @@ export const CardTitle = ({ className, children, ...props }) => (
 );
 
 export const CardDescription = ({ className, children, ...props }) => (
-  <p className={cn("text-sm text-zinc-500 font-medium leading-relaxed", className)} {...props}>
+  <p className={cn("text-sm text-foreground/40 font-medium leading-relaxed", className)} {...props}>
     {children}
   </p>
 );

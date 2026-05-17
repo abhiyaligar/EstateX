@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const PageLoader = () => {
   return (
-    <div className="h-screen w-full flex flex-col items-center justify-center bg-[#030712]">
+    <div className="h-screen w-full flex flex-col items-center justify-center bg-background">
       <div className="relative">
         {/* Outer Ring */}
         <motion.div

@@ -1,30 +1,26 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import Navbar from '../components/layout/Navbar';
-import Sidebar from '../components/layout/Sidebar';
+import { LandingNav } from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 
+// MainLayout = Landing page routes ONLY.
+// No sidebar ever. Navbar handles its own state (pill vs top bar).
+// Sidebar only appears inside DashboardLayout (protected /dashboard/* routes).
 const MainLayout = () => {
-  const { isAuthenticated } = useAuth();
   const location = useLocation();
 
+  // Show footer only on true public pages, not on app pages within MainLayout
+  const publicPages = ['/', '/trading', '/solutions', '/who-we-serve', '/company'];
+  const showFooter = publicPages.includes(location.pathname);
+
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-accent-orange/10 overflow-hidden">
-      {/* Sidebar - Only visible for authenticated users */}
-      {isAuthenticated && <Sidebar />}
-      
-      <div className="flex flex-col flex-1 min-w-0 h-screen overflow-hidden relative">
-        <Navbar />
-        
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto w-full scrollbar-hide">
-          <div className="mx-auto w-full min-h-full">
-            <Outlet />
-          </div>
-          {!isAuthenticated && <Footer />}
-        </main>
-      </div>
+    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans selection:bg-accent-orange/10">
+      <LandingNav />
+      {/* pt-24 to clear the fixed pill nav height */}
+      <main className="flex-1 w-full pt-24">
+        <Outlet />
+      </main>
+      {showFooter && <Footer />}
     </div>
   );
 };

@@ -63,7 +63,7 @@ const Help = () => {
       case 'open': return 'text-amber-500';
       case 'in_progress': return 'text-blue-500';
       case 'resolved': return 'text-emerald-500';
-      default: return 'text-zinc-500';
+      default: return 'text-foreground/40';
     }
   };
 
@@ -71,14 +71,14 @@ const Help = () => {
     <div className="p-6 md:p-12 space-y-16 max-w-7xl mx-auto">
       {/* Header Node */}
       <div className="space-y-4">
-        <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-[#C5A059]">
-          <span className="h-px w-10 bg-[#C5A059]/30"></span>
+        <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-accent-orange">
+          <span className="h-px w-10 bg-accent-orange/30"></span>
           Institutional Support // Node 04
         </div>
         <h1 className="text-4xl md:text-6xl font-heading font-light tracking-tighter uppercase">
           Sovereign <span className="italic opacity-30">Sanctuary.</span>
         </h1>
-        <p className="text-zinc-500 max-w-2xl text-sm md:text-base leading-relaxed">
+        <p className="text-foreground/40 max-w-2xl text-sm md:text-base leading-relaxed">
           Access our high-fidelity knowledge nodes or raise an institutional inquiry directly with our global support architecture.
         </p>
       </div>
@@ -87,18 +87,18 @@ const Help = () => {
         {/* FAQ Section */}
         <div className="space-y-12">
           <div className="space-y-2">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700">Knowledge Nodes</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/20">Knowledge Nodes</h2>
             <h3 className="text-2xl font-heading uppercase">Protocol FAQ</h3>
           </div>
           
           <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <div key={index} className="border-t border-white/5 py-6">
+              <div key={index} className="border-t border-border py-6">
                 <button 
                   onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
                   className="w-full flex justify-between items-center text-left group"
                 >
-                  <span className="text-sm font-bold uppercase tracking-widest group-hover:text-[#C5A059] transition-colors">
+                  <span className="text-sm font-bold uppercase tracking-widest group-hover:text-accent-orange transition-colors">
                     {faq.question}
                   </span>
                   {expandedFaq === index ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -111,7 +111,7 @@ const Help = () => {
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      <p className="pt-4 text-sm text-zinc-500 leading-relaxed max-w-xl">
+                      <p className="pt-4 text-sm text-foreground/40 leading-relaxed max-w-xl">
                         {faq.answer}
                       </p>
                     </motion.div>
@@ -126,7 +126,7 @@ const Help = () => {
         <div className="space-y-12">
           <div className="flex justify-between items-end">
             <div className="space-y-2">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700">Support Node</h2>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/20">Support Node</h2>
               <h3 className="text-2xl font-heading uppercase">Inquiry Ledger</h3>
             </div>
             <Button 
@@ -145,41 +145,41 @@ const Help = () => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="p-8 border border-[#C5A059]/20 bg-[#0d0d0d] space-y-8"
+                className="p-8 border border-accent-orange/20 bg-foreground/[0.03] space-y-8"
               >
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <label className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Subject</label>
+                      <label className="text-[9px] font-black uppercase tracking-widest text-foreground/30">Subject</label>
                       <input 
                         type="text" 
                         value={newTicket.subject}
                         onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})}
-                        className="w-full bg-transparent border-b border-white/10 p-2 text-sm focus:border-[#C5A059] outline-none transition-colors"
+                        className="w-full bg-transparent border-b border-border p-2 text-sm focus:border-accent-orange outline-none transition-colors"
                         placeholder="Security Audit"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Category</label>
+                      <label className="text-[9px] font-black uppercase tracking-widest text-foreground/30">Category</label>
                       <select 
                         value={newTicket.category}
                         onChange={(e) => setNewTicket({...newTicket, category: e.target.value})}
-                        className="w-full bg-transparent border-b border-white/10 p-2 text-sm focus:border-[#C5A059] outline-none transition-colors appearance-none"
+                        className="w-full bg-transparent border-b border-border p-2 text-sm focus:border-accent-orange outline-none transition-colors appearance-none"
                       >
-                        <option value="technical" className="bg-[#0d0d0d]">Technical Node</option>
-                        <option value="financial" className="bg-[#0d0d0d]">Financial Settlement</option>
-                        <option value="account" className="bg-[#0d0d0d]">Identity/Auth</option>
-                        <option value="property" className="bg-[#0d0d0d]">Asset Tranche</option>
+                        <option value="technical" className="bg-background">Technical Node</option>
+                        <option value="financial" className="bg-background">Financial Settlement</option>
+                        <option value="account" className="bg-background">Identity/Auth</option>
+                        <option value="property" className="bg-background">Asset Tranche</option>
                       </select>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Detailed Description</label>
+                    <label className="text-[9px] font-black uppercase tracking-widest text-foreground/30">Detailed Description</label>
                     <textarea 
                       rows={4}
                       value={newTicket.description}
                       onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
-                      className="w-full bg-transparent border-b border-white/10 p-2 text-sm focus:border-[#C5A059] outline-none transition-colors resize-none"
+                      className="w-full bg-transparent border-b border-border p-2 text-sm focus:border-accent-orange outline-none transition-colors resize-none"
                       placeholder="Describe the institutional anomaly..."
                     />
                   </div>
@@ -194,35 +194,35 @@ const Help = () => {
 
           <div className="space-y-4">
             {loading ? (
-              <div className="text-center py-12 text-zinc-600 text-[10px] font-black uppercase tracking-[0.4em]">Synchronizing Ledger...</div>
+              <div className="text-center py-12 text-foreground/30 text-[10px] font-black uppercase tracking-[0.4em]">Synchronizing Ledger...</div>
             ) : tickets.length === 0 ? (
-              <div className="text-center py-20 border border-white/5 bg-white/[0.01]">
-                <ShieldCheck size={32} className="mx-auto text-zinc-800 mb-4" strokeWidth={1} />
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">No active inquiries found</p>
+              <div className="text-center py-20 border border-border bg-foreground/[0.03]">
+                <ShieldCheck size={32} className="mx-auto text-foreground/10 mb-4" strokeWidth={1} />
+                <p className="text-[10px] font-black uppercase tracking-widest text-foreground/30">No active inquiries found</p>
               </div>
             ) : (
               tickets.map((ticket) => (
-                <div key={ticket.id} className="p-6 border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] transition-all group">
+                <div key={ticket.id} className="p-6 border border-border bg-foreground/[0.03] hover:bg-foreground/[0.05] transition-all group">
                   <div className="flex justify-between items-start mb-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
                         <span className={`text-[8px] font-black uppercase tracking-widest ${getStatusColor(ticket.status)}`}>
                           {ticket.status.replace('_', ' ')}
                         </span>
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-700">|</span>
-                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-600">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/20">|</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-foreground/30">
                           {ticket.category}
                         </span>
                       </div>
-                      <h4 className="text-sm font-bold uppercase tracking-widest group-hover:text-white transition-colors">{ticket.subject}</h4>
+                      <h4 className="text-sm font-bold uppercase tracking-widest group-hover:text-foreground transition-colors">{ticket.subject}</h4>
                     </div>
-                    <span className="text-[9px] font-bold text-zinc-700">{new Date(ticket.created_at).toLocaleDateString()}</span>
+                    <span className="text-[9px] font-bold text-foreground/20">{new Date(ticket.created_at).toLocaleDateString()}</span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 line-clamp-2 leading-relaxed mb-4">{ticket.description}</p>
+                  <p className="text-[11px] text-foreground/40 line-clamp-2 leading-relaxed mb-4">{ticket.description}</p>
                   {ticket.admin_notes && (
-                    <div className="mt-4 pt-4 border-t border-white/5 flex gap-3 items-start">
-                      <MessageCircle size={14} className="text-[#C5A059] mt-0.5" />
-                      <p className="text-[11px] italic text-[#C5A059]/80">{ticket.admin_notes}</p>
+                    <div className="mt-4 pt-4 border-t border-border flex gap-3 items-start">
+                      <MessageCircle size={14} className="text-accent-orange mt-0.5" />
+                      <p className="text-[11px] italic text-accent-orange/80">{ticket.admin_notes}</p>
                     </div>
                   )}
                 </div>

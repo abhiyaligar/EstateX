@@ -46,7 +46,7 @@ const FormInput = ({ label, placeholder, name, value, onChange, type = "text", i
           required={required}
           maxLength={maxLength}
           autoComplete="off"
-          className={`w-full bg-transparent border-b border-border py-4 text-base focus:outline-none focus:border-accent-orange transition-all placeholder:text-foreground/10 font-medium ${Icon ? 'pl-10' : ''} ${showPasswordToggle ? 'pr-12' : ''}`}
+          className={`w-full bg-transparent border-b border-border py-4 text-base focus:outline-none focus:border-accent-orange transition-all placeholder:text-foreground/20 font-medium ${Icon ? 'pl-10' : ''} ${showPasswordToggle ? 'pr-12' : ''}`}
         />
         {showPasswordToggle && (
           <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-0 top-1/2 -translate-y-1/2 text-foreground/20 hover:text-foreground transition-colors">
@@ -241,7 +241,7 @@ const Register = () => {
              <button 
                onClick={() => setSubStep(2)} 
                disabled={!validateStep()} 
-               className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-white shadow-[0_15px_40px_-10px_rgba(255,95,5,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
+               className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-foreground shadow-[0_15px_40px_-10px_rgba(255,95,5,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
              >
                 <span className="text-[11px] font-black uppercase tracking-[0.4em]">Next Step</span>
                 <div className="transition-transform group-hover:rotate-12 group-hover:translate-x-1">
@@ -295,7 +295,7 @@ const Register = () => {
              <button 
                onClick={() => setSubStep(3)} 
                disabled={!validateStep()} 
-               className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-white shadow-[0_15px_40px_-10px_rgba(255,95,5,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
+               className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-foreground shadow-[0_15px_40px_-10px_rgba(255,95,5,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
              >
                 <span className="text-[11px] font-black uppercase tracking-[0.4em]">Next: Identity</span>
                 <div className="transition-transform group-hover:rotate-12 group-hover:translate-x-1">
@@ -322,7 +322,7 @@ const Register = () => {
              <button 
                 onClick={handleRegisterUser} 
                 disabled={loading || !validateStep()}
-                className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-white shadow-[0_15px_40px_-10px_rgba(255,95,5,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
+                className={`px-10 py-5 flex items-center gap-4 rounded-full transition-all group hover:-rotate-1 hover:scale-[1.02] active:scale-[0.98] ${validateStep() ? 'bg-accent-orange text-foreground shadow-[0_15px_40px_-10px_rgba(255,95,5,0.4)]' : 'bg-foreground/5 text-foreground/20 cursor-not-allowed'}`}
              >
                 {loading ? <Loader2 className="animate-spin" size={16} /> : (
                   <>
@@ -402,12 +402,12 @@ const Register = () => {
       <nav className="h-20 px-6 md:px-12 flex items-center justify-between border-b border-border bg-background sticky top-0 z-50">
         <Link to="/" className="flex items-center gap-3 group">
            <div className="w-10 h-10 bg-accent-orange flex items-center justify-center rounded-full transition-transform group-hover:scale-110 shadow-[0_0_20px_rgba(255,95,5,0.4)]">
-             <Zap className="text-white fill-white" size={20} />
+             <Zap className="text-foreground fill-white" size={20} />
            </div>
            <span className="text-xl font-heading font-black tracking-tighter uppercase">EstateX</span>
         </Link>
         <div className="flex items-center gap-8">
-           <button onClick={toggleTheme} className="p-3 text-zinc-400 hover:text-foreground transition-colors">
+           <button onClick={toggleTheme} className="p-3 text-foreground/50 hover:text-foreground transition-colors">
              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
            </button>
            <Link to="/login">
