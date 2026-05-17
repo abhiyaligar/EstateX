@@ -38,8 +38,8 @@ const MacroAnalyticsModal = ({ isOpen, onClose, data, onSave }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <Card className="max-w-md w-full bg-[#0a0a0a] border-white/10 shadow-2xl">
-        <CardHeader className="border-b border-white/5">
+      <Card className="max-w-md w-full bg-background border-black/10 dark:border-white/10 shadow-2xl">
+        <CardHeader className="border-b border-black/5 dark:border-white/5">
           <CardTitle className="text-xl font-bold uppercase tracking-tighter">
             {data ? 'Update Analytics Node' : 'Initialize Analytics Node'}
           </CardTitle>
@@ -48,49 +48,49 @@ const MacroAnalyticsModal = ({ isOpen, onClose, data, onSave }) => {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-white/40">Pincode</label>
+              <label className="text-[10px] uppercase tracking-widest text-black/40 dark:text-white/40">Pincode</label>
               <Input 
                 disabled={!!data}
                 placeholder="e.g. 400001"
                 value={formData.pincode}
                 onChange={(e) => setFormData({...formData, pincode: e.target.value})}
                 required
-                className="bg-white/5 border-white/10 font-mono"
+                className="bg-black/5 dark:bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 font-mono"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest text-white/40">YoY Growth (%)</label>
+                <label className="text-[10px] uppercase tracking-widest text-black/40 dark:text-white/40">YoY Growth (%)</label>
                 <Input 
                   type="number" step="0.01"
                   placeholder="12.5"
                   value={formData.yoy_growth_percentage}
                   onChange={(e) => setFormData({...formData, yoy_growth_percentage: e.target.value})}
                   required
-                  className="bg-white/5 border-white/10 font-mono"
+                  className="bg-black/5 dark:bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 font-mono"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest text-white/40">Rental Yield (%)</label>
+                <label className="text-[10px] uppercase tracking-widest text-black/40 dark:text-white/40">Rental Yield (%)</label>
                 <Input 
                   type="number" step="0.1"
                   placeholder="6.5"
                   value={formData.avg_rental_yield}
                   onChange={(e) => setFormData({...formData, avg_rental_yield: e.target.value})}
                   required
-                  className="bg-white/5 border-white/10 font-mono"
+                  className="bg-black/5 dark:bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 font-mono"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-white/40">Demand Score (0-100)</label>
+              <label className="text-[10px] uppercase tracking-widest text-black/40 dark:text-white/40">Demand Score (0-100)</label>
               <Input 
                 type="number"
                 placeholder="85"
                 value={formData.demand_score}
                 onChange={(e) => setFormData({...formData, demand_score: e.target.value})}
                 required
-                className="bg-white/5 border-white/10 font-mono"
+                className="bg-black/5 dark:bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 font-mono"
               />
             </div>
             <div className="flex gap-3 pt-4">
