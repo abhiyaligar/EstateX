@@ -105,19 +105,19 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-[#0a0a0a] text-white flex flex-col selection:bg-[#D4AF37]/30">
+    <div className="h-screen overflow-hidden bg-background text-foreground flex flex-col selection:bg-surface/30">
       {/* Header */}
-      <nav className="h-14 md:h-16 px-6 md:px-12 flex items-center justify-between border-b border-white/5 bg-[#0a0a0a] z-50">
+      <nav className="h-14 md:h-16 px-6 md:px-12 flex items-center justify-between border-b border-black/5 dark:border-white/5 bg-background z-50">
         <Link to="/" className="flex items-center gap-2 group">
           <span className="text-xs md:text-sm font-black tracking-[0.4em] uppercase text-[#D4AF37]">EstateX</span>
         </Link>
-        <Link to="/login" className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors">
+        <Link to="/login" className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 hover:text-foreground transition-colors">
           Back to Login
         </Link>
       </nav>
 
       <main className="flex-1 flex flex-col items-center justify-center p-4 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl max-h-[600px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none opacity-40" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl max-h-[600px] bg-surface/5 rounded-full blur-[120px] pointer-events-none opacity-40" />
 
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }} 
@@ -125,10 +125,10 @@ const ForgotPassword = () => {
           className="w-full max-w-[360px] md:max-w-[400px] space-y-8 md:space-y-10 relative z-10"
         >
           <div className="text-center space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white leading-none">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-none">
               {step === 1 ? 'Reset Access' : 'Verify Identity'}
             </h1>
-            <p className="text-zinc-500 text-[10px] md:text-[11px] font-medium tracking-wide">
+            <p className="text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 text-[10px] md:text-[11px] font-medium tracking-wide">
               {step === 1 ? 'Enter your institutional email to proceed.' : 'Enter the authorization code sent to your email.'}
             </p>
           </div>
@@ -143,7 +143,7 @@ const ForgotPassword = () => {
                   onChange={(e) => { setEmail(e.target.value); setError(''); }}
                   placeholder="investor@domain.com"
                   required
-                  className="w-full bg-transparent border-b border-white/5 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 font-medium"
+                  className="w-full bg-transparent border-b border-black/5 dark:border-white/5 py-2 text-sm text-foreground focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 dark:text-zinc-100 font-medium"
                 />
               </div>
 
@@ -152,7 +152,7 @@ const ForgotPassword = () => {
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-[#D4AF37] text-black py-4 font-black uppercase tracking-[0.3em] text-[10px] hover:bg-[#c4a132] transition-all flex items-center justify-center gap-3"
+                className="w-full bg-surface text-black py-4 font-black uppercase tracking-[0.3em] text-[10px] hover:bg-surface transition-all flex items-center justify-center gap-3"
               >
                 {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : 'Request Authorization'}
               </button>
@@ -168,7 +168,7 @@ const ForgotPassword = () => {
                   placeholder="000000"
                   required
                   maxLength={6}
-                  className="w-full bg-transparent border-b border-white/5 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 font-medium text-center tracking-[0.5em]"
+                  className="w-full bg-transparent border-b border-black/5 dark:border-white/5 py-2 text-sm text-foreground focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 dark:text-zinc-100 font-medium text-center tracking-[0.5em]"
                 />
                 <p className="text-[9px] text-[#D4AF37]/50 mt-2 text-center uppercase tracking-widest">{success || `Code sent to ${email}`}</p>
                 <div className="flex justify-center mt-4">
@@ -193,7 +193,7 @@ const ForgotPassword = () => {
                   onChange={(e) => { setNewPassword(e.target.value); setError(''); }}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-transparent border-b border-white/5 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 font-medium"
+                  className="w-full bg-transparent border-b border-black/5 dark:border-white/5 py-2 text-sm text-foreground focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 dark:text-zinc-100 font-medium"
                 />
               </div>
 
@@ -205,7 +205,7 @@ const ForgotPassword = () => {
                   onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-transparent border-b border-white/5 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 font-medium"
+                  className="w-full bg-transparent border-b border-black/5 dark:border-white/5 py-2 text-sm text-foreground focus:outline-none focus:border-[#D4AF37] transition-all placeholder:text-zinc-900 dark:text-zinc-100 font-medium"
                 />
               </div>
 
@@ -215,7 +215,7 @@ const ForgotPassword = () => {
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-[#D4AF37] text-black py-4 font-black uppercase tracking-[0.3em] text-[10px] hover:bg-[#c4a132] transition-all flex items-center justify-center gap-3"
+                className="w-full bg-surface text-black py-4 font-black uppercase tracking-[0.3em] text-[10px] hover:bg-surface transition-all flex items-center justify-center gap-3"
               >
                 {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : 'Confirm New Password'}
               </button>
@@ -223,7 +223,7 @@ const ForgotPassword = () => {
           )}
 
           <div className="text-center mt-6">
-            <Link to="/login" className="text-[9px] font-bold text-zinc-600 hover:text-white transition-colors uppercase tracking-widest">
+            <Link to="/login" className="text-[9px] font-bold text-zinc-600 hover:text-foreground transition-colors uppercase tracking-widest">
               Return to Login
             </Link>
           </div>
