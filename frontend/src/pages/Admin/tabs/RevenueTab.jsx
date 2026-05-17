@@ -22,10 +22,10 @@ const RevenueTab = ({ pendingSettlements, projects, onInfuse, onReject, onSettle
       className="space-y-6"
     >
       <Card noPadding className="overflow-hidden">
-        <div className="p-8 border-b border-white/5 flex justify-between items-center">
+        <div className="p-8 border-b border-black/5 dark:border-white/5 flex justify-between items-center">
           <div>
-            <h3 className="text-xl font-bold uppercase tracking-tight text-white">Treasury Settlement Center</h3>
-            <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Execute monthly distributions & protocol fee harvests</p>
+            <h3 className="text-xl font-bold uppercase tracking-tight text-foreground">Treasury Settlement Center</h3>
+            <p className="text-xs text-black/40 dark:text-white/40 mt-1 uppercase tracking-widest">Execute monthly distributions & protocol fee harvests</p>
           </div>
           <Button 
             variant="outline" 
@@ -44,7 +44,7 @@ const RevenueTab = ({ pendingSettlements, projects, onInfuse, onReject, onSettle
                 <td colSpan="6" className="p-32 text-center">
                    <div className="flex flex-col items-center gap-4 opacity-20">
                       <CircleDollarSign size={48} />
-                      <p className="text-xs uppercase tracking-[0.4em] font-bold text-white">Treasury Balanced: No Pending Cycles</p>
+                      <p className="text-xs uppercase tracking-[0.4em] font-bold text-foreground">Treasury Balanced: No Pending Cycles</p>
                    </div>
                 </td>
               </tr>
@@ -53,21 +53,21 @@ const RevenueTab = ({ pendingSettlements, projects, onInfuse, onReject, onSettle
                 <AdminTableRow key={cycle.id}>
                   <AdminTableCell>
                     <div className="flex flex-col">
-                      <span className="font-bold text-white uppercase text-[11px] tracking-wider mb-1">
+                      <span className="font-bold text-foreground uppercase text-[11px] tracking-wider mb-1">
                         {projects.find(p => p.id === cycle.project_id)?.title || 'Unknown Asset'}
                       </span>
-                      <span className="text-[9px] text-white/30 uppercase tracking-[0.1em] font-mono">
+                      <span className="text-[9px] text-black/30 dark:text-white/30 uppercase tracking-[0.1em] font-mono">
                         PERIOD: {new Date(cycle.year, cycle.month - 1).toLocaleString('default', { month: 'short', year: 'numeric' })}
                       </span>
                     </div>
                   </AdminTableCell>
                   <AdminTableCell>
-                    <span className="font-mono text-xs font-bold text-white">₹{parseFloat(cycle.gross_amount).toLocaleString()}</span>
+                    <span className="font-mono text-xs font-bold text-foreground">₹{parseFloat(cycle.gross_amount).toLocaleString()}</span>
                   </AdminTableCell>
                   <AdminTableCell>
                     <div className="flex flex-col">
                       <span className="font-mono text-xs font-bold text-amber-500/80">₹{parseFloat(cycle.fee_amount).toLocaleString()}</span>
-                      <span className="text-[8px] text-white/20 uppercase font-bold">1% HARVEST</span>
+                      <span className="text-[8px] text-black/20 dark:text-white/20 uppercase font-bold">1% HARVEST</span>
                     </div>
                   </AdminTableCell>
                   <AdminTableCell>
