@@ -22,7 +22,7 @@ export const Loader = ({ className, size = 24, text }) => {
 };
 
 export const FullScreenLoader = ({ text = "Loading..." }) => (
-  <div className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center bg-white/80 backdrop-blur-sm dark:bg-slate-950/80">
+  <div className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center bg-black/80 dark:bg-white/80 backdrop-blur-sm dark:bg-slate-950/80">
     <Loader size={48} text={text} />
   </div>
 );
