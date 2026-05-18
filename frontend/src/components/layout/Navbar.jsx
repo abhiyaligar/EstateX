@@ -39,7 +39,7 @@ export const LandingNav = () => {
       <div className="flex items-center gap-4 lg:gap-8 pl-4">
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <Zap size={20} className="text-accent-orange fill-accent-orange" />
-          <span className="hidden sm:block text-lg md:text-xl font-heading font-black tracking-tighter text-white uppercase">EstateX</span>
+          <span className="text-lg md:text-xl font-heading font-black tracking-tighter text-white uppercase">EstateX</span>
         </Link>
 
         <div className="hidden lg:flex items-center gap-1">
