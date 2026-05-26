@@ -249,20 +249,13 @@ This project includes comprehensive documentation covering:
    - Business logic structure
    - Service layer architecture
    - Authentication and authorization
-
-### 4. **Blockchain & Smart Contracts** (`docs/04-BLOCKCHAIN-ARCHITECTURE.md`)
-   - Smart contract design
-   - Token economics
-   - Fund flow automation
-   - Security considerations
-
 ### 5. **Database Schema** (`docs/05-DATABASE-SCHEMA.md`)
    - Entity relationships
    - Table definitions
    - Indexing strategy
    - Data integrity rules
 
-### 6. **API Documentation** (`docs/06-API-REFERENCE.md`)
+### 5. **API Documentation** (`docs/06-API-REFERENCE.md`)
    - Endpoint specifications
    - Request/response formats
    - Authentication requirements
