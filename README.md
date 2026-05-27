@@ -1,6 +1,6 @@
 # EstateX: Trade Properties Like Stocks
 
-**A Blockchain-Powered Real Estate Crowdfunding Platform for Financial Democratization in India**
+**A Real Estates Tokenized Trading Platform**
 
 ---
 
