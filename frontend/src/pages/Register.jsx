@@ -130,7 +130,27 @@ const Register = () => {
   });
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+
+    if (name === 'aadhaar') {
+      value = value.replace(/\D/g, '').slice(0, 12);
+    }
+
+    if (name === 'contactNumber') {
+      let rawValue = value.replace(/[^\d+]/g, '');
+      if (rawValue.startsWith('+91')) {
+        const remainingDigits = rawValue.slice(3).replace(/\D/g, '').slice(0, 10);
+        value = remainingDigits.length > 0 ? `+91 ${remainingDigits}` : '+91 ';
+      } else {
+        const digits = rawValue.replace(/\D/g, '').slice(0, 10);
+        if (digits.length === 10) {
+          value = `+91 ${digits}`;
+        } else {
+          value = digits;
+        }
+      }
+    }
+
     setFormData(prev => ({ ...prev, [name]: value }));
     if (error) setError('');
   };
@@ -158,9 +178,14 @@ const Register = () => {
     if (subStep === 2) {
       if (designation === 'builder') return formData.entityName && formData.registrationType && formData.licenseNumber;
       if (designation === 'institutional') return formData.entityName && formData.aumTier && formData.jurisdiction;
-      if (designation === 'investor') return formData.firstName && formData.lastName && formData.contactNumber && formData.investmentPreference;
+      if (designation === 'investor') {
+        const phoneDigits = formData.contactNumber.replace(/\D/g, '');
+        const isMobileValid = (phoneDigits.length === 10 && !formData.contactNumber.startsWith('+91')) || 
+                              (formData.contactNumber.startsWith('+91') && phoneDigits.length === 12);
+        return formData.firstName && formData.lastName && isMobileValid && formData.investmentPreference;
+      }
     }
-    if (subStep === 3) return formData.aadhaar.length === 12 && formData.pan.length === 10;
+    if (subStep === 3) return formData.aadhaar.length === 12 && /^\d{12}$/.test(formData.aadhaar) && formData.pan.length === 10;
     if (subStep === 4) return formData.otp.length === 6;
     return true;
   };
@@ -285,7 +310,7 @@ const Register = () => {
                 <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Legal First Name" />
                 <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Legal Last Name" />
               </div>
-              <FormInput label="Contact Number" name="contactNumber" value={formData.contactNumber} onChange={handleInputChange} placeholder="+91 XXXXX XXXXX" />
+              <FormInput label="Contact Number" name="contactNumber" value={formData.contactNumber} onChange={handleInputChange} placeholder="+91 XXXXX XXXXX" maxLength={15} />
               <FormSelect label="Preference" name="investmentPreference" value={formData.investmentPreference} onChange={handleInputChange} options={['Residential', 'Commercial', 'Land']} />
             </>
           )}
