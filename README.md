@@ -161,7 +161,7 @@ EstateX creates a secure, transparent, and technologically advanced crowdfunding
 ## Technology Stack
 
 ### Frontend
-- **Framework**: Next.js 14 with React 18
+- **Framework**: React 
 - **Styling**: Tailwind CSS 3.4
 - **Visualization**: TradingView Lightweight Charts (OHLCV terminal), Recharts (portfolio analytics)
 - **Web3**: Web3.js for blockchain wallet connectivity
